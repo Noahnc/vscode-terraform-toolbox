@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch Extension",
+      "type": "extensionHost",
+      "request": "launch",
+      "runtimeExecutable": "${execPath}",
+      "preLaunchTask": "${defaultBuildTask}",
+      "args": ["-u", "bdd", "--timeout", "999999", "--colors", "--extensionDevelopmentPath=${workspaceRoot}"]
+    }
+  ]
+}
