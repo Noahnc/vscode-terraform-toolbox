@@ -143,6 +143,9 @@ export async function activate(context: vscode.ExtensionContext) {
 async function spacectlInit(settings: Settings): Promise<[IspaceliftClient, Ispacectl, string]> {
   const spacectlProfileName = settings.spacectlProfileName;
   const spacectlInstance = new Spacectl(helpers.runShellCommand);
+  if (spacectlProfileName !== null && spacectlProfileName !== undefined) {
+    spacectlInstance.setUserprofile(spacectlProfileName);
+  }
   await spacectlInstance.ensureSpacectlIsInstalled();
   let spaceliftTenantID: string;
   if (settings.spaceliftTenantID === null || settings.spaceliftTenantID === undefined) {
@@ -154,8 +157,5 @@ async function spacectlInit(settings: Settings): Promise<[IspaceliftClient, Ispa
   const spaceliftEndpoint = "https://" + spaceliftTenantID + cst.SPACELIFT_BASE_DOMAIN + "/graphql";
   const spacelift = new SpaceliftClient(new GraphQLClient(spaceliftEndpoint), spacectlInstance.getExportedToken.bind(spacectlInstance));
   await spacelift.authenticate();
-  if (spacectlProfileName !== undefined) {
-    spacectlInstance.setUserprofile(spacectlProfileName);
-  }
   return [spacelift, spacectlInstance, spaceliftTenantID];
 }
