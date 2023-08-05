@@ -16,19 +16,19 @@ export class TfActiveWorkspaceItem extends BaseStatusBarItem {
 
   protected async run() {
     if (!checkIfTerraformFileOpen()) {
-      this._statusBarItem.dispose();
+      this._statusBarItem.hide();
       return;
     }
     if (vscode.window.activeTextEditor?.document.uri === undefined) {
       getLogger().debug("No active text editor, hiding status bar item");
-      this._statusBarItem.dispose();
+      this._statusBarItem.hide();
       return;
     }
     const openFolderPath = vscode.Uri.joinPath(vscode.window.activeTextEditor?.document.uri, "..");
     const currentWorkspace = await this._tfProjectHelper.getCurrentWorkspaceFromEnvFile(openFolderPath);
     if (currentWorkspace === undefined) {
       getLogger().debug("terraform directory not initialized, hiding status bar item");
-      this._statusBarItem.dispose();
+      this._statusBarItem.hide();
       return;
     }
     if (currentWorkspace !== this._statusBarItem.text) {

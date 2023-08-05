@@ -12,13 +12,13 @@ export class TfActiveVersionItem extends BaseStatusBarItem {
 
   protected async run() {
     if (!checkIfTerraformFileOpen()) {
-      this._statusBarItem.dispose();
+      this._statusBarItem.hide();
       return;
     }
     const activeVersion = this._versionManager.getActiveVersion();
     if (activeVersion === undefined) {
       getLogger().debug("No terraform version installed, hiding status bar item");
-      this._statusBarItem.dispose();
+      this._statusBarItem.hide();
       return;
     }
     if (activeVersion !== this._statusBarItem.text) {

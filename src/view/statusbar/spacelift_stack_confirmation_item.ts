@@ -25,7 +25,7 @@ export class SpaceliftPenStackConfCount extends BaseStatusBarItem {
     const pendingConfirmationCount = stacks.pendingConfirmation.length;
     if (pendingConfirmationCount === 0) {
       getLogger().debug("No stacks pending confirmation, hiding status bar item");
-      this._statusBarItem.dispose();
+      this._statusBarItem.hide();
       return;
     }
     let statusText: string;
