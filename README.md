@@ -1,28 +1,28 @@
-# 1. Terraform-Toolbox VSCode Extension
+# Terraform-Toolbox VSCode Extension
 
 VSCode extension adding a bunch of featurees regarding Terraform and Spacelift.
 
-- [1. Terraform-Toolbox VSCode Extension](#1-terraform-toolbox-vscode-extension)
-  - [1.1. Motivation](#11-motivation)
-  - [1.2. Getting startet](#12-getting-startet)
-    - [1.2.1. Terraform version manager](#121-terraform-version-manager)
-    - [1.2.2. Spacelift](#122-spacelift)
-  - [1.3. Features](#13-features)
-    - [1.3.1. Terraform version manager](#131-terraform-version-manager)
-    - [1.3.2. Terraform workspace](#132-terraform-workspace)
-    - [1.3.3. Terraform Init](#133-terraform-init)
-    - [1.3.4. Spacelift](#134-spacelift)
-  - [1.4. Important Notes](#14-important-notes)
+- [Terraform-Toolbox VSCode Extension](#terraform-toolbox-vscode-extension)
+  - [Motivation](#motivation)
+  - [Getting startet](#getting-startet)
+    - [Terraform version manager](#terraform-version-manager)
+    - [Spacelift](#spacelift)
+  - [Features](#features)
+    - [Terraform version manager](#terraform-version-manager-1)
+    - [Terraform workspace](#terraform-workspace)
+    - [Terraform Init](#terraform-init)
+    - [Spacelift](#spacelift-1)
+  - [Important Notes](#important-notes)
 
-## 1.1. Motivation
+## Motivation
 
 The main motivation behind building this extension was to improve the terraform workflow at my employer, [CMInformatik](https://www.cmiag.ch). The extension therefore contains some features that are specific to our workflow. However, I think that some of the features might be useful for other people as well. If you have any suggestions or ideas for improvements, feel free to open an issue or a pull request.
 
-## 1.2. Getting startet
+## Getting startet
 
 The following features require manual configuration and installation steps:
 
-### 1.2.1. Terraform version manager
+### Terraform version manager
 
 The following requirements must be met for the terraform version manager to work:
 
@@ -31,7 +31,7 @@ The following requirements must be met for the terraform version manager to work
   - Windows: `%USERPROFILE%\.terraform-toolbox\active`
   - Mac: `$HOME/.terraform-toolbox/active`
 
-### 1.2.2. Spacelift
+### Spacelift
 
 To use any spacelift feature of this extension, [spacectl](https://github.com/spacelift-io/spacectlhttps://github.com/spacect) has to be installed and available in your Path. You also have to set an userprofile in spacectl with the command:
 
@@ -43,9 +43,9 @@ Regarding spacelift, no authentication is required in VSCode. The extension uses
 
 If you don't want to use any spacelift features, you can simply not install the spacectl, this will disable all spacelift features of the extension.
 
-## 1.3. Features
+## Features
 
-### 1.3.1. Terraform version manager
+### Terraform version manager
 
 This extension adds a terraform version manager, that allows you to install and switch between any terraform version available on the hashicorp/terraform Github releases page (including betas, alphas and rc). The extension downloads the source code of the selected terraform version and builds it locally. The active binary is stored in the following folder: `%USERPROFILE%\.terraform-toolbox/active` (Windows) or `$HOME/.terraform-toolbox/active` (Mac). Not active but installed versions are stored in `$HOME/.terraform-toolbox/terraform` (Mac) or `%USERPROFILE%\.terraform-toolbox\terraform` (Windows).
 
@@ -56,7 +56,7 @@ This extension adds a terraform version manager, that allows you to install and 
 
 ![terraform-version](Images/examples/terraform_version.gif)
 
-### 1.3.2. Terraform workspace
+### Terraform workspace
 
 Tired of switching between terraform workspaces in the terminal? This extension adds a status bar item showing the currently active terraform workspace. By clicking on the status bar item, you can select and switch to a different workspace. The extension adds the following features regarding terraform workspaces:
 
@@ -66,7 +66,7 @@ Tired of switching between terraform workspaces in the terminal? This extension 
 
 ![terraform-workspace](Images/examples/terraform_workspace.gif)
 
-### 1.3.3. Terraform Init
+### Terraform Init
 
 Since terraform init is required for many features of the official Hashicorp Terraform extension to work, this extension adds some features to make the terraform init process easier:
 
@@ -76,7 +76,7 @@ Since terraform init is required for many features of the official Hashicorp Ter
 
 ![terraform-init](Images/examples/terraform_init.gif)
 
-### 1.3.4. Spacelift
+### Spacelift
 
 Spacelift is a Terraform CI/CD tool. They provide a cli-tool, called spacectl, that allows you to run proposed runs of your local terraform code on Spacelift. However, the cli requires you to specify the Spacelift stack-id and the working directory of the terraform-project, for which the proposed run should be created. To make this process easier, this extension adds two commands as wrapper around the spacectl:
 
@@ -86,6 +86,6 @@ Spacelift is a Terraform CI/CD tool. They provide a cli-tool, called spacectl, t
 
 <img src="Images/examples/PendingStackStatusBar.png" alt="drawing" width="500" title="Spacelift Stacks Status Bar item"/>
 
-## 1.4. Important Notes
+## Important Notes
 
 This extension is still in early development. We are using it at CMInformatik for our daily work, but there might still be some bugs. If you find any bugs or have any suggestions for improvements, feel free to open an issue or a pull request.
