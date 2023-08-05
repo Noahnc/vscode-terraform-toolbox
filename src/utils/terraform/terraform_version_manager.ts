@@ -6,6 +6,7 @@ import * as helpers from "../helper_functions";
 import { getLogger } from "../logger";
 import { VersionManager, versionManagerSettings } from "../version_manager";
 import os = require("os");
+import * as fs from "fs";
 import path = require("path");
 import _7z = require("7zip-min");
 
@@ -59,7 +60,7 @@ export class TerraformVersionManager extends VersionManager {
     return binPath;
   }
 
-  async downloadSourceCodeOfRelease(release: Release) {
+  async downloadSourceCodeOfRelease(release: Release): Promise<string> {
     const fileName = "terraform-" + release.name + ".zip";
     const tempDownloadPath = os.tmpdir();
     const zipFilePath = path.join(tempDownloadPath, fileName);
@@ -84,6 +85,9 @@ export class TerraformVersionManager extends VersionManager {
         resolve();
       });
     });
+    if (!fs.existsSync(unzippedFolderPath)) {
+      throw new UserShownError("Failed to unzip Terraform source code from " + zipFilePath);
+    }
     helpers.deleteFileIfExists(zipFilePath);
     return unzippedFolderPath;
   }

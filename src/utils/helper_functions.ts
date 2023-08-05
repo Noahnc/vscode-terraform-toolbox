@@ -107,6 +107,10 @@ export async function downloadFile(url: string, filePath: string): Promise<boole
     const response = await axios.get(url, { responseType: "arraybuffer" });
     const fileData = Buffer.from(response.data, "binary");
     fs.writeFileSync(filePath, fileData);
+    if (!fs.existsSync(filePath)) {
+      getLogger().debug("Error saving file to: " + filePath);
+      return false;
+    }
     getLogger().debug("File: " + filePath + " has been downloaded");
     return true;
   } catch (err) {
