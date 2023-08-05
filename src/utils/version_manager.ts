@@ -31,6 +31,7 @@ export abstract class VersionManager implements IversionManager {
   protected readonly _globalStateVersionName: string;
   protected readonly _activeVersion: vscode.Uri;
   protected readonly _activeVersionFolder: vscode.Uri;
+  protected readonly _metadataFile: vscode.Uri;
 
   constructor(versionManagerSettings: versionManagerSettings) {
     this._baseFolder = vscode.Uri.joinPath(vscode.Uri.file(os.homedir()), versionManagerSettings.baseFolderName);
@@ -38,6 +39,7 @@ export abstract class VersionManager implements IversionManager {
     this._globalStateVersionName = "active" + this._softwareName + "version";
     this._installedVersionsFolder = vscode.Uri.joinPath(this._baseFolder, this._softwareName);
     this._activeVersionFolder = vscode.Uri.joinPath(this._baseFolder, "active");
+    this._metadataFile = vscode.Uri.joinPath(this._installedVersionsFolder, "metadata.json");
     if (os.platform() === "win32") {
       this._activeVersion = vscode.Uri.joinPath(this._activeVersionFolder, versionManagerSettings.binaryName + ".exe");
     } else {
@@ -90,12 +92,42 @@ export abstract class VersionManager implements IversionManager {
   }
 
   getActiveVersion(): string | undefined {
-    return this._context.globalState.get<string>(this._globalStateVersionName);
+    if (!fs.existsSync(this._metadataFile.path)) {
+      return undefined;
+    }
+    let activeVersion: string;
+    try {
+      const metadata = JSON.parse(fs.readFileSync(this._metadataFile.path, "utf8"));
+      activeVersion = metadata.activeVersion;
+    } catch (error) {
+      getLogger().error("Failed to parse metadata file " + this._metadataFile.path + ": " + error);
+      return undefined;
+    }
+    return activeVersion;
+  }
+
+  private createNewMetadataFile(activeVersion: string) {
+    const newContent = { activeVersion: activeVersion };
+    fs.writeFileSync(this._metadataFile.path, JSON.stringify(newContent));
   }
 
   private setActiveVersion(version: string) {
     getLogger().debug("Setting active " + this._softwareName + " version to " + version);
-    this._context.globalState.update(this._globalStateVersionName, version);
+    if (!fs.existsSync(this._metadataFile.path)) {
+      this.createNewMetadataFile(version);
+      return;
+    }
+    let currentContent;
+    try {
+      currentContent = JSON.parse(fs.readFileSync(this._metadataFile.path, "utf8"));
+    } catch (error) {
+      getLogger().error("Failed to parse metadata file " + this._metadataFile.path + ": " + error + ". Creating new metadata file.");
+      this.createNewMetadataFile(version);
+      return;
+    }
+    currentContent.activeVersion = version;
+    fs.writeFileSync(this._metadataFile.path, JSON.stringify(currentContent));
+    return;
   }
 
   async getReleases(): Promise<Releases> {
