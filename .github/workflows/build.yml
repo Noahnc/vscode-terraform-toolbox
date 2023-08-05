@@ -1,0 +1,93 @@
+name: Build and Release
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os:
+          - windows-latest
+          - macos-latest
+          - ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: npm install
+        run: npm ci
+
+      - name: Run tests
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: coactions/setup-xvfb@v1
+        with:
+          run: npm test
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build VSX package
+        run: |
+          npm install --global vsce
+          vsce package
+
+      - name: Upload VSX package
+        uses: actions/upload-artifact@v2
+        with:
+          name: vsx-package
+          path: "*.vsix"
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: get-npm-version
+        id: package-version
+        uses: martinbeentjes/npm-get-version-action@v1.3.1
+
+      - name: Download VSX package
+        uses: actions/download-artifact@v2
+        with:
+          name: vsx-package
+          path: build
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: build/*.vsix
+          tag_name: "v.${{ steps.package-version.outputs.current-version}}"
+          generate_release_notes: true
+      # - name: Publish to Marketplace
+      #   run: npx vsce publish --no-git-tag-version --packagePath $(find . -iname *.vsix)
+      #   env:
+      #     VSCE_PAT: ${{ secrets.VSCE_PAT }}
