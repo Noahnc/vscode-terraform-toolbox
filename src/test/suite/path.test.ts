@@ -85,6 +85,14 @@ describe("Path", () => {
     });
   });
 
+  describe("#directory", () => {
+    it("should return a PathObject with the directory of the path", () => {
+      const pathObj = new PathObject(testFile);
+      const dir = pathObj.directory;
+      expect(dir.path).to.equal(path.join(testDir));
+    });
+  });
+
   describe("#delete", () => {
     it("should delete the file if it exists", () => {
       const pathObj = new PathObject(testFile);

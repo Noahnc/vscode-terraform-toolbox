@@ -32,6 +32,10 @@ export class PathObject {
     return result;
   }
 
+  get directory(): PathObject {
+    return new PathObject(this._pathMeta.dir);
+  }
+
   public isLocked(): boolean {
     if (!this.exists()) {
       throw new Error("File: " + this._path + " does not exist");
