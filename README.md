@@ -1,5 +1,7 @@
 # Terraform-Toolbox VSCode Extension
 
+<img src="Images/terraform_toolbox_icon.png" alt="drawing" width="200" title="Spacelift Stacks Status Bar item"/>
+
 VSCode extension adding a bunch of featurees regarding Terraform and Spacelift.
 
 - [Terraform-Toolbox VSCode Extension](#terraform-toolbox-vscode-extension)
