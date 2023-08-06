@@ -24,41 +24,6 @@ export async function runShellCommand(command: string, envVariables?: any): Prom
   });
 }
 
-export function deleteFolderIfExists(folderPath: string) {
-  // check if folder exists
-  if (fs.existsSync(folderPath)) {
-    getLogger().debug("Deleting folder: " + folderPath);
-    fs.rmdirSync(folderPath, { recursive: true });
-    return;
-  }
-  getLogger().debug("Folder: " + folderPath + " does not exist");
-}
-
-export function deleteFileIfExists(filePath: string) {
-  // check if file exists
-  if (fs.existsSync(filePath)) {
-    getLogger().debug("Deleting file: " + filePath);
-    fs.unlinkSync(filePath);
-    return;
-  }
-  getLogger().debug("File: " + filePath + " does not exist");
-}
-
-export function isLocked(filePath: string): boolean {
-  if (fs.existsSync(filePath) === false) {
-    throw new Error("File: " + filePath + " does not exist");
-  }
-  let locked = false;
-  try {
-    fs.closeSync(fs.openSync(filePath, "r+"));
-  } catch (err) {
-    locked = true;
-    getLogger().debug("File: " + filePath + " is locked");
-  }
-  getLogger().debug("File: " + filePath + " is not locked");
-  return locked;
-}
-
 export function getCurrentProjectInformations(): [vscode.WorkspaceFolder | undefined, vscode.WorkspaceFolder[] | undefined, string | undefined] {
   const workspaceFolders = vscode.workspace.workspaceFolders;
   if (workspaceFolders === undefined) {

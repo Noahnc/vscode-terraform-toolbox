@@ -163,7 +163,7 @@ export abstract class VersionManager implements IversionManager {
     const currentVersion = this.getActiveVersion();
     if (currentVersion !== undefined && fs.existsSync(this._activeVersion.path)) {
       // check if the bin file is locked by the another process
-      if (helpers.isLocked(this._activeVersion.path)) {
+      if (this._activeVersion.isLocked()) {
         getLogger().error(this._softwareName + " binary is locked by the another process, try again in 5 seconds");
         if (retryCount < maxLockRetries) {
           await new Promise((resolve) => setTimeout(resolve, 5000));
