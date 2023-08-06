@@ -7,6 +7,7 @@ export const GET_SPACELIFT_STACKS = gql`
       name
       administrative
       createdAt
+      state
       description
       branch
       projectRoot
