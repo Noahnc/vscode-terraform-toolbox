@@ -95,7 +95,7 @@ export class SetTerraformVersionBasedOnProjectRequirementsCommand extends BaseCo
   private readTfVersionReqFromSpaceliftProjectAllWorkspaces(workspaces: vscode.WorkspaceFolder[]): string[] {
     const terraformVersionRequirements: string[] = [];
     workspaces.forEach((workspace) => {
-      const spaceliftStackTffile = new PathObject(path.join(workspace.uri.path, "Spacelift-Resources", "main.tf"));
+      const spaceliftStackTffile = new PathObject(path.join(workspace.uri.fsPath, "Spacelift-Resources", "main.tf"));
       const requiredTerraformVersion = this.readTfVersionReqFromSpaceliftProjectInWorkspace(spaceliftStackTffile);
       if (requiredTerraformVersion !== undefined) {
         terraformVersionRequirements.push(requiredTerraformVersion);

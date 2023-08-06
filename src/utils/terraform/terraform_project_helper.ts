@@ -68,14 +68,15 @@ export class TerraformProjectHelper implements IterraformProjectHelper {
   }
 
   async findAllTerraformFoldersInOpenWorkspaces(): Promise<PathObject[]> {
-    const terraformFiles = await vscode.workspace.findFiles("**/*.tf", "**/" + this.terraformFolder + "/**", 1000);
+    const terraformFiles = await vscode.workspace.findFiles("**/*.tf", "**/" + this.terraformFolder + "/**", 2000);
     // get all unique folders of the collected files
     const terraformFolders: PathObject[] = [];
     terraformFiles.forEach((file) => {
-      const folder = vscode.Uri.joinPath(file, "..");
+      const folder = new PathObject(path.dirname(file.fsPath));
+
       // check if terraformFolders includes a element with the same path
       if (terraformFolders.some((element) => element.path === folder.path) === false) {
-        terraformFolders.push(new PathObject(folder.path));
+        terraformFolders.push(folder);
       }
     });
     return terraformFolders;

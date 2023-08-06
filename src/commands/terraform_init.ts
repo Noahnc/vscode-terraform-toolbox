@@ -92,7 +92,7 @@ export class TerraformInitCurrentProjectCommand extends BaseCommand {
       hideInfoMsgs ? null : vscode.window.showWarningMessage("No terraform project open. Please open a terraform project to use this command");
       return;
     }
-    const currentFolder = new PathObject(path.join(currentWorkspace.uri.path, currentFolderRelative));
+    const currentFolder = new PathObject(path.join(currentWorkspace.uri.fsPath, currentFolderRelative));
     try {
       await this.tfProjectHelper.initTerraformFolder(currentFolder, true);
     } catch (error) {
@@ -123,7 +123,7 @@ export class TerraformFetchModulesCurrentProjectCommand extends BaseCommand {
       hideInfoMsgs ? null : vscode.window.showWarningMessage("No terraform project open. Please open a terraform project to use this command");
       return;
     }
-    const currentFolder = new PathObject(path.join(currentWorkspace.uri.path, currentFolderRelative));
+    const currentFolder = new PathObject(path.join(currentWorkspace.uri.fsPath, currentFolderRelative));
     try {
       await this.tfProjectHelper.refreshModulesInFolder(currentFolder);
     } catch (error) {

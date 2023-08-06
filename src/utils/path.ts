@@ -1,6 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import { getLogger } from "./logger";
+import { platform } from "os";
 
 export class PathObject {
   private readonly _path: string;

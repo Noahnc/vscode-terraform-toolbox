@@ -25,7 +25,7 @@ export class TfActiveWorkspaceItem extends BaseStatusBarItem {
       this._statusBarItem.hide();
       return;
     }
-    const openFile = new PathObject(vscode.window.activeTextEditor?.document.uri.path);
+    const openFile = new PathObject(vscode.window.activeTextEditor?.document.uri.fsPath);
     const currentWorkspace = await this._tfProjectHelper.getCurrentWorkspaceFromEnvFile(openFile.directory);
     if (currentWorkspace === undefined) {
       getLogger().debug("terraform directory not initialized, hiding status bar item");

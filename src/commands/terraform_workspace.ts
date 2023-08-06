@@ -21,7 +21,7 @@ export class ChoseAndSetTerraformWorkspaceCommand extends BaseCommand {
     if (currentWorkspace === undefined || workspaces === undefined || currentOpenFolder === undefined) {
       throw new UserShownError("No workspace open. Open a terraform project to use this command.");
     }
-    const currentOpenFolderAbsolut = new PathObject(path.join(currentWorkspace.uri.path, currentOpenFolder));
+    const currentOpenFolderAbsolut = new PathObject(path.join(currentWorkspace.uri.fsPath, currentOpenFolder));
     const [terraformWorkspaces, activeWorkspace] = await this.tfcli.getWorkspaces(currentOpenFolderAbsolut).catch((error) => {
       throw new UserShownError("Error getting terraform workspaces. Is this folder initialized?");
     });
@@ -87,7 +87,7 @@ export class AutoSetTerraformWorkspaceCommand extends BaseCommand {
     const allreadySetFolders = [];
     await Promise.all(
       workspaces.map(async (workspace) => {
-        const terraformToolboxJsonFile = new PathObject(path.join(workspace.uri.path, ".terraform-toolbox.json"));
+        const terraformToolboxJsonFile = new PathObject(path.join(workspace.uri.fsPath, ".terraform-toolbox.json"));
         if (!terraformToolboxJsonFile.exists()) {
           getLogger().debug("Skipping workspace " + workspace.name + " because it does not contain a .terraform-toolbox.json file.");
           return;
@@ -103,12 +103,12 @@ export class AutoSetTerraformWorkspaceCommand extends BaseCommand {
           getLogger().debug("Skipping workspace " + workspace.name + " because it does not contain a autoSetWorkspace.name property in the .terraform-toolbox.json file.");
         }
         const foldersInWorkspace = terraformFolders.filter((folder: PathObject) => {
-          return folder.path.startsWith(workspace.uri.path);
+          return folder.path.startsWith(workspace.uri.fsPath);
         });
         let filteredFolders;
         if (workspaceJson.autoSetWorkspace.excludedFoldersRelativePaths !== undefined || workspaceJson.autoSetWorkspace.excludedFoldersRelativePaths.length > 0) {
           filteredFolders = foldersInWorkspace.filter((folder: PathObject) => {
-            const relativePath = folder.path.replace(workspace.uri.path, "").replace(/\\/g, "/");
+            const relativePath = folder.path.replace(workspace.uri.fsPath, "").replace(/\\/g, "/");
             return !workspaceJson.autoSetWorkspace.excludedFoldersRelativePaths.includes(relativePath);
           });
         } else {
