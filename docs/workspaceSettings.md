@@ -13,7 +13,7 @@ With the root key `autoSetWorkspace` you can configure settings regarding the `t
 {
   "autoSetWorkspace": {
     "name": "stage",
-    "excludedFoldersRelativePaths": ["ExampleFolder/Project1Folder"]
+    "excludedFoldersRelativePaths": ["/ExampleProjects/Test1"]
   }
 }
 ```
