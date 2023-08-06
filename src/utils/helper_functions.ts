@@ -75,9 +75,13 @@ export function getCurrentProjectInformations(): [vscode.WorkspaceFolder | undef
     return [undefined, workspaceFolders as vscode.WorkspaceFolder[], undefined];
   }
   const currentlyOpenFilePathAbsolut = vscode.window.activeTextEditor?.document.uri.fsPath;
-  const currentlyOpenFolderPathRelative = path.dirname(path.relative(currentWorkspace.uri.fsPath, currentlyOpenFilePathAbsolut)).replace(/\\/g, "/");
+  const currentlyOpenFolderPathRelative = getRelativePathInWorkspace(currentWorkspace, vscode.Uri.file(currentlyOpenFilePathAbsolut));
 
   return [currentWorkspace, workspaceFolders as vscode.WorkspaceFolder[], currentlyOpenFolderPathRelative];
+}
+
+export function getRelativePathInWorkspace(workspace: vscode.WorkspaceFolder, absolutPath: vscode.Uri): string {
+  return path.relative(workspace.uri.path, absolutPath.path).replace(/\\/g, "/");
 }
 
 export async function getUserDecision<T>(placeHolderMsg: string, values: T[], labelAttribute: keyof T, descriptionAttribute?: keyof T): Promise<T | undefined> {

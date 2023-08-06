@@ -106,7 +106,7 @@ export class AutoSetTerraformWorkspaceCommand extends BaseCommand {
         let filteredFolders;
         if (workspaceJson.autoSetWorkspace.excludedFoldersRelativePaths !== undefined || workspaceJson.autoSetWorkspace.excludedFoldersRelativePaths.length > 0) {
           filteredFolders = foldersInWorkspace.filter((folder: vscode.Uri) => {
-            const relativePath = folder.path.replace(workspace.uri.path, "");
+            const relativePath = helpers.getRelativePathInWorkspace(workspace, folder);
             return !workspaceJson.autoSetWorkspace.excludedFoldersRelativePaths.includes(relativePath);
           });
         } else {
