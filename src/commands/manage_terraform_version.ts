@@ -6,6 +6,8 @@ import { getLogger } from "../utils/logger";
 import { TerraformProjectHelper } from "../utils/terraform/terraform_project_helper";
 import { IversionManager } from "../utils/version_manager";
 import { BaseCommand, IvscodeCommandSettings } from "./base_command";
+import { PathObject } from "../utils/path";
+import path = require("path");
 
 export class ChoseAndSetTerraformVersionCommand extends BaseCommand {
   private readonly _versionManager: IversionManager;
@@ -73,9 +75,9 @@ export class SetTerraformVersionBasedOnProjectRequirementsCommand extends BaseCo
   }
 
   // This is a feature specific to our workflow at CMI. We have a file ./Spacelift-Resources/main.tf in our projects, which contains the terraform version requirement for all Stacks in the project.
-  private readTfVersionReqFromSpaceliftProjectInWorkspace(spaceliftStackTfFile: vscode.Uri): string | undefined {
-    if (!fs.existsSync(spaceliftStackTfFile.path)) {
-      getLogger().debug("No spacelift stacks file found at " + spaceliftStackTfFile);
+  private readTfVersionReqFromSpaceliftProjectInWorkspace(spaceliftStackTfFile: PathObject): string | undefined {
+    if (!spaceliftStackTfFile.exists()) {
+      getLogger().debug("No spacelift stacks file found at " + spaceliftStackTfFile.path);
       return undefined;
     }
     const spaceliftStacks = hcl.parseToObject(fs.readFileSync(spaceliftStackTfFile.path, "utf8"));
@@ -93,7 +95,7 @@ export class SetTerraformVersionBasedOnProjectRequirementsCommand extends BaseCo
   private readTfVersionReqFromSpaceliftProjectAllWorkspaces(workspaces: vscode.WorkspaceFolder[]): string[] {
     const terraformVersionRequirements: string[] = [];
     workspaces.forEach((workspace) => {
-      const spaceliftStackTffile = vscode.Uri.joinPath(workspace.uri, "Spacelift-Resources", "main.tf");
+      const spaceliftStackTffile = new PathObject(path.join(workspace.uri.fsPath, "Spacelift-Resources", "main.tf"));
       const requiredTerraformVersion = this.readTfVersionReqFromSpaceliftProjectInWorkspace(spaceliftStackTffile);
       if (requiredTerraformVersion !== undefined) {
         terraformVersionRequirements.push(requiredTerraformVersion);

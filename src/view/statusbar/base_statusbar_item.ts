@@ -38,13 +38,13 @@ export abstract class BaseStatusBarItem {
       }, this._settings.refreshIntervalSeconds * 1000);
     }
   }
-
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async refresh(...args: any[]): Promise<void> {
     await this.run(...args).catch((error) => {
       handleError(error);
     });
   }
-
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected abstract run(...args: any[]): Promise<void>;
 }
 

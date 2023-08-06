@@ -6,6 +6,7 @@ import * as helpers from "./helper_functions";
 import { getLogger } from "./logger";
 import path = require("path");
 import os = require("os");
+import { PathObject } from "./path";
 
 export interface IversionManager {
   switchVersion(chosenRelease: Release): Promise<boolean>;
@@ -26,28 +27,28 @@ export abstract class VersionManager implements IversionManager {
   protected abstract readonly _context: vscode.ExtensionContext;
 
   protected readonly _softwareName: string;
-  protected readonly _installedVersionsFolder: vscode.Uri;
-  protected readonly _baseFolder: vscode.Uri;
-  protected readonly _globalStateVersionName: string;
-  protected readonly _activeVersion: vscode.Uri;
-  protected readonly _activeVersionFolder: vscode.Uri;
+  protected readonly _installedVersionsFolder: PathObject;
+  protected readonly _baseFolder: PathObject;
+  protected readonly _activeVersion: PathObject;
+  protected readonly _activeVersionFolder: PathObject;
+  protected readonly _metadataFile: PathObject;
 
   constructor(versionManagerSettings: versionManagerSettings) {
-    this._baseFolder = vscode.Uri.joinPath(vscode.Uri.file(os.homedir()), versionManagerSettings.baseFolderName);
+    this._baseFolder = new PathObject(path.join(os.homedir(), versionManagerSettings.baseFolderName));
     this._softwareName = versionManagerSettings.softwareName;
-    this._globalStateVersionName = "active" + this._softwareName + "version";
-    this._installedVersionsFolder = vscode.Uri.joinPath(this._baseFolder, this._softwareName);
-    this._activeVersionFolder = vscode.Uri.joinPath(this._baseFolder, "active");
+    this._installedVersionsFolder = this._baseFolder.join(this._softwareName);
+    this._activeVersionFolder = this._baseFolder.join("active");
+    this._metadataFile = this._installedVersionsFolder.join("metadata.json");
     if (os.platform() === "win32") {
-      this._activeVersion = vscode.Uri.joinPath(this._activeVersionFolder, versionManagerSettings.binaryName + ".exe");
+      this._activeVersion = this._activeVersionFolder.join(versionManagerSettings.binaryName + ".exe");
     } else {
-      this._activeVersion = vscode.Uri.joinPath(this._activeVersionFolder, versionManagerSettings.binaryName);
+      this._activeVersion = this._activeVersionFolder.join(versionManagerSettings.binaryName);
     }
   }
 
   protected abstract getReleasesFormSource(): Promise<Releases>;
 
-  protected abstract getBinaryPathForRelease(release: Release): Promise<vscode.Uri>;
+  protected abstract getBinaryPathForRelease(release: Release): Promise<PathObject>;
 
   async switchVersion(chosenRelease: Release): Promise<boolean> {
     if (chosenRelease.isActive) {
@@ -90,12 +91,42 @@ export abstract class VersionManager implements IversionManager {
   }
 
   getActiveVersion(): string | undefined {
-    return this._context.globalState.get<string>(this._globalStateVersionName);
+    if (!fs.existsSync(this._metadataFile.path)) {
+      return undefined;
+    }
+    let activeVersion: string;
+    try {
+      const metadata = JSON.parse(fs.readFileSync(this._metadataFile.path, "utf8"));
+      activeVersion = metadata.activeVersion;
+    } catch (error) {
+      getLogger().error("Failed to parse metadata file " + this._metadataFile.path + ": " + error);
+      return undefined;
+    }
+    return activeVersion;
+  }
+
+  private createNewMetadataFile(activeVersion: string) {
+    const newContent = { activeVersion: activeVersion };
+    fs.writeFileSync(this._metadataFile.path, JSON.stringify(newContent));
   }
 
   private setActiveVersion(version: string) {
     getLogger().debug("Setting active " + this._softwareName + " version to " + version);
-    this._context.globalState.update(this._globalStateVersionName, version);
+    if (!fs.existsSync(this._metadataFile.path)) {
+      this.createNewMetadataFile(version);
+      return;
+    }
+    let currentContent;
+    try {
+      currentContent = JSON.parse(fs.readFileSync(this._metadataFile.path, "utf8"));
+    } catch (error) {
+      getLogger().error("Failed to parse metadata file " + this._metadataFile.path + ": " + error + ". Creating new metadata file.");
+      this.createNewMetadataFile(version);
+      return;
+    }
+    currentContent.activeVersion = version;
+    fs.writeFileSync(this._metadataFile.path, JSON.stringify(currentContent));
+    return;
   }
 
   async getReleases(): Promise<Releases> {
@@ -127,12 +158,12 @@ export abstract class VersionManager implements IversionManager {
     }
   }
 
-  private async handleVersionSwitch(newVersion: Release, newBinPath?: vscode.Uri, retryCount = 0): Promise<void> {
+  private async handleVersionSwitch(newVersion: Release, newBinPath?: PathObject, retryCount = 0): Promise<void> {
     const maxLockRetries = 10;
     const currentVersion = this.getActiveVersion();
     if (currentVersion !== undefined && fs.existsSync(this._activeVersion.path)) {
       // check if the bin file is locked by the another process
-      if (helpers.isLocked(this._activeVersion.path)) {
+      if (this._activeVersion.isLocked()) {
         getLogger().error(this._softwareName + " binary is locked by the another process, try again in 5 seconds");
         if (retryCount < maxLockRetries) {
           await new Promise((resolve) => setTimeout(resolve, 5000));
@@ -140,12 +171,12 @@ export abstract class VersionManager implements IversionManager {
           return await this.handleVersionSwitch(newVersion, newBinPath, retryCount);
         }
       }
-      const currentVersionBinDstPath = vscode.Uri.joinPath(this._installedVersionsFolder, this.getBase64NameForRelease(currentVersion));
+      const currentVersionBinDstPath = this._installedVersionsFolder.join(this.getBase64NameForRelease(currentVersion));
       this.moveBin(this._activeVersion, currentVersionBinDstPath);
     }
     if (newBinPath === undefined) {
       // rename file from version_name to binary name
-      const newVersionBinSrcPath = vscode.Uri.joinPath(this._installedVersionsFolder, this.getBase64NameForRelease(newVersion.name));
+      const newVersionBinSrcPath = this._installedVersionsFolder.join(this.getBase64NameForRelease(newVersion.name));
       this.moveBin(newVersionBinSrcPath, this._activeVersion);
     } else {
       // move file from temp folder to new version folder
@@ -154,7 +185,7 @@ export abstract class VersionManager implements IversionManager {
     this.setActiveVersion(newVersion.name);
   }
 
-  private moveBin(currentBinPath: vscode.Uri, newBinPath: vscode.Uri) {
+  private moveBin(currentBinPath: PathObject, newBinPath: PathObject) {
     getLogger().debug("Moving " + this._softwareName + " binary from " + currentBinPath.path + " to " + newBinPath.path);
     fs.renameSync(currentBinPath.path, newBinPath.path);
   }
@@ -191,7 +222,8 @@ export abstract class VersionManager implements IversionManager {
   deleteReleases(releases: Release[]) {
     getLogger().info("Deleting releases: " + releases.map((release) => release.name));
     releases.forEach((release) => {
-      helpers.deleteFileIfExists(vscode.Uri.joinPath(this._installedVersionsFolder, release.name).path);
+      const releaseFile = this._installedVersionsFolder.join(this.getBase64NameForRelease(release.name));
+      releaseFile.delete();
       release.installed = false;
     });
   }

@@ -3,6 +3,8 @@ import { getLogger } from "../../utils/logger";
 import { IterraformCLI } from "../../utils/terraform/terraform_cli";
 import { IterraformProjectHelper } from "../../utils/terraform/terraform_project_helper";
 import { BaseStatusBarItem, IvscodeStatusBarItemSettings } from "./base_statusbar_item";
+import { PathObject } from "../../utils/path";
+import { checkIfOpenTextEditorIsTerraform } from "../../utils/helper_functions";
 
 export class TfActiveWorkspaceItem extends BaseStatusBarItem {
   private readonly _tfcli: IterraformCLI;
@@ -15,20 +17,20 @@ export class TfActiveWorkspaceItem extends BaseStatusBarItem {
   }
 
   protected async run() {
-    if (!checkIfTerraformFileOpen()) {
-      this._statusBarItem.dispose();
+    if (!checkIfOpenTextEditorIsTerraform()) {
+      this._statusBarItem.hide();
       return;
     }
     if (vscode.window.activeTextEditor?.document.uri === undefined) {
       getLogger().debug("No active text editor, hiding status bar item");
-      this._statusBarItem.dispose();
+      this._statusBarItem.hide();
       return;
     }
-    const openFolderPath = vscode.Uri.joinPath(vscode.window.activeTextEditor?.document.uri, "..");
-    const currentWorkspace = await this._tfProjectHelper.getCurrentWorkspaceFromEnvFile(openFolderPath);
+    const openFile = new PathObject(vscode.window.activeTextEditor?.document.uri.fsPath);
+    const currentWorkspace = await this._tfProjectHelper.getCurrentWorkspaceFromEnvFile(openFile.directory);
     if (currentWorkspace === undefined) {
       getLogger().debug("terraform directory not initialized, hiding status bar item");
-      this._statusBarItem.dispose();
+      this._statusBarItem.hide();
       return;
     }
     if (currentWorkspace !== this._statusBarItem.text) {
@@ -37,15 +39,4 @@ export class TfActiveWorkspaceItem extends BaseStatusBarItem {
     }
     this._statusBarItem.show();
   }
-}
-
-function checkIfTerraformFileOpen(): boolean {
-  const activeDocument = vscode.window.activeTextEditor?.document.uri;
-  if (activeDocument === undefined) {
-    return false;
-  }
-  if (!activeDocument.path.endsWith(".tf") && !activeDocument.path.endsWith(".tfvars")) {
-    return false;
-  }
-  return true;
 }

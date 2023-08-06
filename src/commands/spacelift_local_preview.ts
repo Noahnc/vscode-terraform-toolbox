@@ -17,7 +17,6 @@ export class RunSpacectlLocalPreviewCurrentStackCommand extends BaseCommand {
   }
 
   protected async init() {
-    getLogger().info("Running local preview for current stack");
     const stacks = await this.spacelift.getStacks();
 
     const [currentWorkspace, workspaces, currentFolderRelative] = helpers.getCurrentProjectInformations();

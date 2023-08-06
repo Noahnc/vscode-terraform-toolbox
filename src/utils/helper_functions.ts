@@ -24,39 +24,16 @@ export async function runShellCommand(command: string, envVariables?: any): Prom
   });
 }
 
-export function deleteFolderIfExists(folderPath: string) {
-  // check if folder exists
-  if (fs.existsSync(folderPath)) {
-    getLogger().debug("Deleting folder: " + folderPath);
-    fs.rmdirSync(folderPath, { recursive: true });
-    return;
-  }
-  getLogger().debug("Folder: " + folderPath + " does not exist");
-}
+export function checkIfOpenTextEditorIsTerraform(): boolean {
+  const activeDocument = vscode.window.activeTextEditor?.document;
 
-export function deleteFileIfExists(filePath: string) {
-  // check if file exists
-  if (fs.existsSync(filePath)) {
-    getLogger().debug("Deleting file: " + filePath);
-    fs.unlinkSync(filePath);
-    return;
+  if (activeDocument === undefined) {
+    return false;
   }
-  getLogger().debug("File: " + filePath + " does not exist");
-}
-
-export function isLocked(filePath: string): boolean {
-  if (fs.existsSync(filePath) === false) {
-    throw new Error("File: " + filePath + " does not exist");
+  if (activeDocument.languageId !== "terraform" && activeDocument.languageId !== "terraformjson") {
+    return false;
   }
-  let locked = false;
-  try {
-    fs.closeSync(fs.openSync(filePath, "r+"));
-  } catch (err) {
-    locked = true;
-    getLogger().debug("File: " + filePath + " is locked");
-  }
-  getLogger().debug("File: " + filePath + " is not locked");
-  return locked;
+  return true;
 }
 
 export function getCurrentProjectInformations(): [vscode.WorkspaceFolder | undefined, vscode.WorkspaceFolder[] | undefined, string | undefined] {
@@ -107,6 +84,10 @@ export async function downloadFile(url: string, filePath: string): Promise<boole
     const response = await axios.get(url, { responseType: "arraybuffer" });
     const fileData = Buffer.from(response.data, "binary");
     fs.writeFileSync(filePath, fileData);
+    if (!fs.existsSync(filePath)) {
+      getLogger().debug("Error saving file to: " + filePath);
+      return false;
+    }
     getLogger().debug("File: " + filePath + " has been downloaded");
     return true;
   } catch (err) {

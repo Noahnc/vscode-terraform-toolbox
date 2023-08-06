@@ -2,6 +2,11 @@
 
 All notable changes to the terraform-toolbox extension will be documented in this file.
 
+## [0.1.1]
+
+- (refac) Bug fixing and refactoring.
+- (doc) Added additional documentation.
+
 ## [0.1.0]
 
 - (refac) Refactoring the entire extension.
