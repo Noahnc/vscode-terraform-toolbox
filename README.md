@@ -86,7 +86,7 @@ Spacelift is a Terraform CI/CD tool. They provide a cli-tool, called spacectl, t
 - Command [`tftoolbox.spaceliftLocalPreview`]: Run a local preview of a selected stack on Spacelift. You will be presented with a list of all stacks for the current workspace. The selected stack will be used to run the local preview.
 - StatusBarItem [`StacksPendingConfirmationCount`]: Shows the number of stacks that have pending confirmation in the status bar. Clicking on the status bar item opens your Spacelift portal.
 
-<img src="Images/examples/PendingStackStatusBar.png" alt="drawing" width="500" title="Spacelift Stacks Status Bar item"/>
+<img src="Images/examples/pending_stack_confirmation.png" alt="drawing" width="500" title="Spacelift Stacks Status Bar item"/>
 
 ## Important Notes
 
