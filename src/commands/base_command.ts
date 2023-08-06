@@ -22,6 +22,7 @@ export abstract class BaseCommand {
     this._context.subscriptions.push(vscode.commands.registerCommand(this._settings.command, this.run.bind(this)));
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async run(...args: any[]): Promise<void> {
     getLogger().debug("Running command " + this._settings.command);
     await this.init(...args)
@@ -38,7 +39,7 @@ export abstract class BaseCommand {
         handleError(error);
       });
   }
-
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected abstract init(...args: any[]): Promise<void>;
 
   getCommandName(): string {

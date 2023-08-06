@@ -4,12 +4,11 @@ import { UserShownError } from "../../custom_errors";
 import { Release, Releases } from "../../models/github/release";
 import * as helpers from "../helper_functions";
 import { getLogger } from "../logger";
+import { PathObject } from "../path";
 import { VersionManager, versionManagerSettings } from "../version_manager";
 import os = require("os");
-import * as fs from "fs";
 import path = require("path");
 import _7z = require("7zip-min");
-import { PathObject } from "../path";
 
 export class TerraformVersionManager extends VersionManager {
   protected readonly _context: vscode.ExtensionContext;
@@ -82,7 +81,7 @@ export class TerraformVersionManager extends VersionManager {
       throw new UserShownError("Failed to download Terraform source code from " + downloadURL);
     }
     await new Promise<void>((resolve) => {
-      _7z.unpack(zipFile.path, tempDownload.path, (err: any) => {
+      _7z.unpack(zipFile.path, tempDownload.path, () => {
         resolve();
       });
     });
@@ -94,7 +93,7 @@ export class TerraformVersionManager extends VersionManager {
   }
 
   async ensureGoIsInstalled() {
-    const [success, stdout, stderr] = await helpers.runShellCommand("go help");
+    const [success, ,] = await helpers.runShellCommand("go help");
     if (!success) {
       throw new UserShownError("Go is not installed. In order to use this feature, Go needs to be installed and available in your path.");
     }

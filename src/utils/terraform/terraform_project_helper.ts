@@ -127,6 +127,7 @@ export class TerraformProjectHelper implements IterraformProjectHelper {
       getLogger().debug("Folder " + folder.path + " contains no .terraform folder");
       return [];
     }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let modulesJson: any;
     try {
       modulesJson = JSON.parse(fs.readFileSync(terraformModulesFile.path, "utf8")).Modules;
@@ -134,6 +135,7 @@ export class TerraformProjectHelper implements IterraformProjectHelper {
       getLogger().debug("Error reading modules file: " + terraformModulesFile.path);
       return [];
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     modulesJson.forEach((module: any) => {
       installedModules.push(new Module(module.Key, module.Source, module.Version));
     });
@@ -164,6 +166,7 @@ export class TerraformProjectHelper implements IterraformProjectHelper {
     // find all files in the folder that end with .tf with a depth of 1
     const files = await vscode.workspace.findFiles(new vscode.RelativePattern(folder.path, "*.tf"));
     files.forEach((file) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let hclObject: any;
       try {
         hclObject = this.hclParser.parseToObject(fs.readFileSync(file.fsPath, "utf8"));
@@ -184,7 +187,7 @@ export class TerraformProjectHelper implements IterraformProjectHelper {
     });
     return new terraformResources(foundModules, foundProviders, [...new Set(requiredVersions)]);
   }
-
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getProvidersFromParsedHcl(hclObject: any): Provider[] {
     const foundProviders: Provider[] = [];
     if (!Object.prototype.hasOwnProperty.call(hclObject[0], "terraform")) {
@@ -202,7 +205,7 @@ export class TerraformProjectHelper implements IterraformProjectHelper {
     }
     return foundProviders;
   }
-
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getModulesFromParsedHcl(hclObject: any): Module[] {
     const foundModules: Module[] = [];
     if (!Object.prototype.hasOwnProperty.call(hclObject[0], "module")) {
@@ -217,6 +220,7 @@ export class TerraformProjectHelper implements IterraformProjectHelper {
     return foundModules;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getRequiredTerraformVersionFromParsedHcl(hclObject: any): string[] {
     if (!Object.prototype.hasOwnProperty.call(hclObject[0], "terraform")) {
       getLogger().trace("File does not contain a terraform block");

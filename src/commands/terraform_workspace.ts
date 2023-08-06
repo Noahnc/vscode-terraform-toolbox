@@ -23,7 +23,7 @@ export class ChoseAndSetTerraformWorkspaceCommand extends BaseCommand {
     }
     const currentOpenFolderAbsolut = new PathObject(path.join(currentWorkspace.uri.fsPath, currentOpenFolder));
     const [terraformWorkspaces, activeWorkspace] = await this.tfcli.getWorkspaces(currentOpenFolderAbsolut).catch((error) => {
-      throw new UserShownError("Error getting terraform workspaces. Is this folder initialized?");
+      throw new UserShownError("Error getting terraform workspaces: " + error.toString());
     });
     if (terraformWorkspaces.length === 1) {
       helpers.showInformation("There is only the default workspace in this project.");
@@ -92,6 +92,7 @@ export class AutoSetTerraformWorkspaceCommand extends BaseCommand {
           getLogger().debug("Skipping workspace " + workspace.name + " because it does not contain a .terraform-toolbox.json file.");
           return;
         }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let workspaceJson: any;
         try {
           workspaceJson = JSON.parse(fs.readFileSync(terraformToolboxJsonFile.path, "utf8"));
