@@ -18,4 +18,4 @@ With the root key `autoSetWorkspace` you can configure settings regarding the `t
 }
 ```
 
-> **_NOTE:_** The workspace auto select is only perfomed, if the setting `tftoolbox.terraform.autoSelectWorkspace` is true (default).
+> **_NOTE:_** The workspace auto set is only perfomed, if the usersetting `tftoolbox.terraform.autoSelectWorkspace` is true (default) and the `.terraform-toolbox.json` file exists in the workspace root.
