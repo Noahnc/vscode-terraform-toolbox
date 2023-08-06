@@ -3,6 +3,7 @@ import { getLogger } from "../../utils/logger";
 import { IterraformCLI } from "../../utils/terraform/terraform_cli";
 import { IterraformProjectHelper } from "../../utils/terraform/terraform_project_helper";
 import { BaseStatusBarItem, IvscodeStatusBarItemSettings } from "./base_statusbar_item";
+import { PathObject } from "../../utils/path";
 
 export class TfActiveWorkspaceItem extends BaseStatusBarItem {
   private readonly _tfcli: IterraformCLI;
@@ -24,8 +25,8 @@ export class TfActiveWorkspaceItem extends BaseStatusBarItem {
       this._statusBarItem.hide();
       return;
     }
-    const openFolderPath = vscode.Uri.joinPath(vscode.window.activeTextEditor?.document.uri, "..");
-    const currentWorkspace = await this._tfProjectHelper.getCurrentWorkspaceFromEnvFile(openFolderPath);
+    const openFile = new PathObject(vscode.window.activeTextEditor?.document.uri.path);
+    const currentWorkspace = await this._tfProjectHelper.getCurrentWorkspaceFromEnvFile(openFile.directory);
     if (currentWorkspace === undefined) {
       getLogger().debug("terraform directory not initialized, hiding status bar item");
       this._statusBarItem.hide();

@@ -6,6 +6,8 @@ import { getLogger } from "../utils/logger";
 import { IterraformCLI } from "../utils/terraform/terraform_cli";
 import { TerraformProjectHelper } from "../utils/terraform/terraform_project_helper";
 import { BaseCommand, IvscodeCommandSettings } from "./base_command";
+import { PathObject } from "../utils/path";
+import path = require("path");
 
 export class ChoseAndSetTerraformWorkspaceCommand extends BaseCommand {
   tfcli: IterraformCLI;
@@ -19,8 +21,8 @@ export class ChoseAndSetTerraformWorkspaceCommand extends BaseCommand {
     if (currentWorkspace === undefined || workspaces === undefined || currentOpenFolder === undefined) {
       throw new UserShownError("No workspace open. Open a terraform project to use this command.");
     }
-    const currentOpenFolderUri = vscode.Uri.joinPath(currentWorkspace.uri, currentOpenFolder);
-    const [terraformWorkspaces, activeWorkspace] = await this.tfcli.getWorkspaces(currentOpenFolderUri).catch((error) => {
+    const currentOpenFolderAbsolut = new PathObject(path.join(currentWorkspace.uri.path, currentOpenFolder));
+    const [terraformWorkspaces, activeWorkspace] = await this.tfcli.getWorkspaces(currentOpenFolderAbsolut).catch((error) => {
       throw new UserShownError("Error getting terraform workspaces. Is this folder initialized?");
     });
     if (terraformWorkspaces.length === 1) {
@@ -52,7 +54,7 @@ export class ChoseAndSetTerraformWorkspaceCommand extends BaseCommand {
       helpers.showInformation("The workspace " + chosenWorkspace.label + " is already active.");
       return;
     }
-    const [success, , stderr] = await this.tfcli.setWorkspace(currentOpenFolderUri, chosenWorkspace.label);
+    const [success, , stderr] = await this.tfcli.setWorkspace(currentOpenFolderAbsolut, chosenWorkspace.label);
     if (!success) {
       helpers.showError("Error setting workspace to " + chosenWorkspace.label + ", error: " + stderr);
       return;
@@ -85,8 +87,8 @@ export class AutoSetTerraformWorkspaceCommand extends BaseCommand {
     const allreadySetFolders = [];
     await Promise.all(
       workspaces.map(async (workspace) => {
-        const terraformToolboxJsonFile = vscode.Uri.joinPath(workspace.uri, ".terraform-toolbox.json");
-        if (!fs.existsSync(terraformToolboxJsonFile.path)) {
+        const terraformToolboxJsonFile = new PathObject(path.join(workspace.uri.path, ".terraform-toolbox.json"));
+        if (!terraformToolboxJsonFile.exists()) {
           getLogger().debug("Skipping workspace " + workspace.name + " because it does not contain a .terraform-toolbox.json file.");
           return;
         }
@@ -100,12 +102,12 @@ export class AutoSetTerraformWorkspaceCommand extends BaseCommand {
         if (workspaceJson.autoSetWorkspace.name === undefined) {
           getLogger().debug("Skipping workspace " + workspace.name + " because it does not contain a autoSetWorkspace.name property in the .terraform-toolbox.json file.");
         }
-        const foldersInWorkspace = terraformFolders.filter((folder: vscode.Uri) => {
+        const foldersInWorkspace = terraformFolders.filter((folder: PathObject) => {
           return folder.path.startsWith(workspace.uri.path);
         });
         let filteredFolders;
         if (workspaceJson.autoSetWorkspace.excludedFoldersRelativePaths !== undefined || workspaceJson.autoSetWorkspace.excludedFoldersRelativePaths.length > 0) {
-          filteredFolders = foldersInWorkspace.filter((folder: vscode.Uri) => {
+          filteredFolders = foldersInWorkspace.filter((folder: PathObject) => {
             const relativePath = folder.path.replace(workspace.uri.path, "").replace(/\\/g, "/");
             return !workspaceJson.autoSetWorkspace.excludedFoldersRelativePaths.includes(relativePath);
           });
@@ -117,7 +119,7 @@ export class AutoSetTerraformWorkspaceCommand extends BaseCommand {
           return;
         }
         await Promise.all(
-          filteredFolders.map(async (folder: vscode.Uri) => {
+          filteredFolders.map(async (folder: PathObject) => {
             if (!this.tfProjectHelper.checkFolderHasBeenInitialized(folder)) {
               getLogger().debug("Skipping folder " + folder.path + " because it has not been initialized.");
               return;

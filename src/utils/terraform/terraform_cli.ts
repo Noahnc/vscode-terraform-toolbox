@@ -1,11 +1,12 @@
 import * as vscode from "vscode";
 import { getLogger } from "../logger";
+import { PathObject } from "../path";
 
 export interface IterraformCLI {
-  init(folderPath?: vscode.Uri): Promise<[boolean, string, string]>;
-  getModules(folderPath: vscode.Uri): Promise<[boolean, string, string]>;
-  getWorkspaces(folderPath: vscode.Uri): Promise<[string[], string]>;
-  setWorkspace(folderPath: vscode.Uri, workspace: string): Promise<[boolean, string, string]>;
+  init(folderPath?: PathObject): Promise<[boolean, string, string]>;
+  getModules(folderPath: PathObject): Promise<[boolean, string, string]>;
+  getWorkspaces(folderPath: PathObject): Promise<[string[], string]>;
+  setWorkspace(folderPath: PathObject, workspace: string): Promise<[boolean, string, string]>;
 }
 
 export class TerraformCLI implements IterraformCLI {
@@ -15,21 +16,21 @@ export class TerraformCLI implements IterraformCLI {
     this._cliFunction = cliFunction;
   }
 
-  async init(folderPath?: vscode.Uri): Promise<[boolean, string, string]> {
+  async init(folderPath?: PathObject): Promise<[boolean, string, string]> {
     let terraformInitCommand = "";
     if (folderPath !== undefined) {
-      terraformInitCommand += "-chdir=" + folderPath.fsPath;
+      terraformInitCommand += "-chdir=" + folderPath.path;
     }
     terraformInitCommand += " init -upgrade -input=false -no-color";
     return await this.runTerraformCommand(terraformInitCommand);
   }
 
-  async getModules(folderPath: vscode.Uri): Promise<[boolean, string, string]> {
-    return await this.runTerraformCommand("-chdir=" + folderPath.fsPath + " get -no-color");
+  async getModules(folderPath: PathObject): Promise<[boolean, string, string]> {
+    return await this.runTerraformCommand("-chdir=" + folderPath.path + " get -no-color");
   }
 
-  async getWorkspaces(folderPath: vscode.Uri): Promise<[string[], string]> {
-    const [success, stdout, stderr] = await this.runTerraformCommand("-chdir=" + folderPath.fsPath + " workspace list");
+  async getWorkspaces(folderPath: PathObject): Promise<[string[], string]> {
+    const [success, stdout, stderr] = await this.runTerraformCommand("-chdir=" + folderPath.path + " workspace list");
     if (!success) {
       throw new Error("Error getting terraform workspaces: " + stderr);
     }
@@ -61,8 +62,8 @@ export class TerraformCLI implements IterraformCLI {
     return [workspaceList, workspaceList[activeWorkspaceIndex]];
   }
 
-  async setWorkspace(folderPath: vscode.Uri, workspace: string): Promise<[boolean, string, string]> {
-    return await this.runTerraformCommand("-chdir=" + folderPath.fsPath + " workspace select " + workspace);
+  async setWorkspace(folderPath: PathObject, workspace: string): Promise<[boolean, string, string]> {
+    return await this.runTerraformCommand("-chdir=" + folderPath.path + " workspace select " + workspace);
   }
 
   async runTerraformCommand(command: string): Promise<[boolean, string, string]> {

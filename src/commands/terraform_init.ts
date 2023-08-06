@@ -4,6 +4,8 @@ import { getLogger } from "../utils/logger";
 import { TerraformCLI } from "../utils/terraform/terraform_cli";
 import { IterraformProjectHelper, noValidTerraformFolder, terraformFolderNotInitialized, terraformGetError, terraformInitError } from "../utils/terraform/terraform_project_helper";
 import { BaseCommand, IvscodeCommandSettings } from "./base_command";
+import { PathObject } from "../utils/path";
+import path = require("path");
 
 export class TerraformInitAllProjectsCommand extends BaseCommand {
   tfProjectHelper: IterraformProjectHelper;
@@ -25,7 +27,7 @@ export class TerraformInitAllProjectsCommand extends BaseCommand {
       return;
     }
 
-    const validFolders: vscode.Uri[] = [];
+    const validFolders: PathObject[] = [];
     await Promise.all(
       terraformProjectFolders.map(async (folder) => {
         if (!(await this.tfProjectHelper.checkFolderContainsValidTerraformFiles(folder))) {
@@ -39,7 +41,7 @@ export class TerraformInitAllProjectsCommand extends BaseCommand {
       helpers.showInformation("No Terraform project found that could be initialized", hideInfoMsgs);
       return;
     }
-    const unsuccessfulFolders: vscode.Uri[] = [];
+    const unsuccessfulFolders: PathObject[] = [];
     // show progress bar for the amount of folders
     await vscode.window.withProgress(
       {
@@ -67,7 +69,7 @@ export class TerraformInitAllProjectsCommand extends BaseCommand {
     );
     if (unsuccessfulFolders.length > 0) {
       const failedFoldersRelative = unsuccessfulFolders.map((folder) => {
-        return vscode.workspace.asRelativePath(folder);
+        return vscode.workspace.asRelativePath(folder.path);
       });
       helpers.showError("Error encountered while initializing the following terraform projects: " + failedFoldersRelative.join(", "), hideErrMsgs);
       return;
@@ -90,7 +92,7 @@ export class TerraformInitCurrentProjectCommand extends BaseCommand {
       hideInfoMsgs ? null : vscode.window.showWarningMessage("No terraform project open. Please open a terraform project to use this command");
       return;
     }
-    const currentFolder = vscode.Uri.joinPath(currentWorkspace.uri, currentFolderRelative);
+    const currentFolder = new PathObject(path.join(currentWorkspace.uri.path, currentFolderRelative));
     try {
       await this.tfProjectHelper.initTerraformFolder(currentFolder, true);
     } catch (error) {
@@ -121,7 +123,7 @@ export class TerraformFetchModulesCurrentProjectCommand extends BaseCommand {
       hideInfoMsgs ? null : vscode.window.showWarningMessage("No terraform project open. Please open a terraform project to use this command");
       return;
     }
-    const currentFolder = vscode.Uri.joinPath(currentWorkspace.uri, currentFolderRelative);
+    const currentFolder = new PathObject(path.join(currentWorkspace.uri.path, currentFolderRelative));
     try {
       await this.tfProjectHelper.refreshModulesInFolder(currentFolder);
     } catch (error) {
