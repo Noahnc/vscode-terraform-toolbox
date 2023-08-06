@@ -4,6 +4,7 @@ import { IterraformCLI } from "../../utils/terraform/terraform_cli";
 import { IterraformProjectHelper } from "../../utils/terraform/terraform_project_helper";
 import { BaseStatusBarItem, IvscodeStatusBarItemSettings } from "./base_statusbar_item";
 import { PathObject } from "../../utils/path";
+import { checkIfOpenTextEditorIsTerraform } from "../../utils/helper_functions";
 
 export class TfActiveWorkspaceItem extends BaseStatusBarItem {
   private readonly _tfcli: IterraformCLI;
@@ -16,7 +17,7 @@ export class TfActiveWorkspaceItem extends BaseStatusBarItem {
   }
 
   protected async run() {
-    if (!checkIfTerraformFileOpen()) {
+    if (!checkIfOpenTextEditorIsTerraform()) {
       this._statusBarItem.hide();
       return;
     }
@@ -38,15 +39,4 @@ export class TfActiveWorkspaceItem extends BaseStatusBarItem {
     }
     this._statusBarItem.show();
   }
-}
-
-function checkIfTerraformFileOpen(): boolean {
-  const activeDocument = vscode.window.activeTextEditor?.document.uri;
-  if (activeDocument === undefined) {
-    return false;
-  }
-  if (!activeDocument.path.endsWith(".tf") && !activeDocument.path.endsWith(".tfvars")) {
-    return false;
-  }
-  return true;
 }

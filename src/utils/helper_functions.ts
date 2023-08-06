@@ -24,6 +24,18 @@ export async function runShellCommand(command: string, envVariables?: any): Prom
   });
 }
 
+export function checkIfOpenTextEditorIsTerraform(): boolean {
+  const activeDocument = vscode.window.activeTextEditor?.document;
+
+  if (activeDocument === undefined) {
+    return false;
+  }
+  if (activeDocument.languageId !== "terraform" && activeDocument.languageId !== "terraformjson") {
+    return false;
+  }
+  return true;
+}
+
 export function getCurrentProjectInformations(): [vscode.WorkspaceFolder | undefined, vscode.WorkspaceFolder[] | undefined, string | undefined] {
   const workspaceFolders = vscode.workspace.workspaceFolders;
   if (workspaceFolders === undefined) {
