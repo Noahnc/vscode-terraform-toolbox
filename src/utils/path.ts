@@ -2,10 +2,16 @@ import * as fs from "fs";
 import * as path from "path";
 import { getLogger } from "./logger";
 
-export class Path {
+export class PathObject {
   private readonly _path: string;
+  private readonly _pathMeta: path.ParsedPath;
   constructor(FSPath: string) {
-    this._path = path.resolve(FSPath);
+    this._pathMeta = path.parse(FSPath);
+    this._path = FSPath;
+  }
+
+  get path(): string {
+    return this._path;
   }
 
   public exists(): boolean {
@@ -38,9 +44,9 @@ export class Path {
       fs.closeSync(fs.openSync(this._path, "r+"));
     } catch (err) {
       locked = true;
-      getLogger().debug("File: " + this._path + " is locked");
+      getLogger().trace("File: " + this._path + " is locked");
     }
-    getLogger().debug("File: " + this._path + " is not locked");
+    getLogger().trace("File: " + this._path + " is not locked");
     return locked;
   }
 
@@ -54,6 +60,12 @@ export class Path {
     } else {
       fs.unlinkSync(this._path);
     }
-    getLogger().debug(this._path + " has been deleted");
+    getLogger().trace(this._path + " has been deleted");
+  }
+
+  join(...paths: string[]): PathObject {
+    const joinedPath = path.join(this._path, ...paths);
+    getLogger().trace("Joined path: " + joinedPath);
+    return new PathObject(joinedPath);
   }
 }
