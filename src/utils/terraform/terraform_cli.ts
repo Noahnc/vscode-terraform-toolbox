@@ -63,7 +63,8 @@ export class TerraformCLI implements IterraformCLI {
   }
 
   private getChdirString(folderPath: PathObject): string {
-    return "-chdir=" + "'" + folderPath.path + "'";
+    // return "-chdir=" + "'" + folderPath.path + "'";
+    return "-chdir=" + folderPath.path;
   }
 
   async setWorkspace(folder: PathObject, workspace: string): Promise<[boolean, string, string]> {
