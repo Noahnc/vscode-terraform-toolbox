@@ -2,6 +2,10 @@
 
 All notable changes to the terraform-toolbox extension will be documented in this file.
 
+## [0.1.2]
+
+- (fix) Add missing fetch for Octokit.
+
 ## [0.1.1]
 
 - (refac) Bug fixing and refactoring.
@@ -33,4 +37,4 @@ All notable changes to the terraform-toolbox extension will be documented in thi
 
 ## [0.0.1]
 
-- (feat) Initial version of the extension. Adds commands to run local previews of stacks on Spacelift.
+- (feat) Initial version of the extension. Adds commands to run local previews of stacks on Spacelif
