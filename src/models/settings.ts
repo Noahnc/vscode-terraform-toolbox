@@ -33,6 +33,6 @@ export class Settings {
     return this.getVSCodeSettingKey("tftoolbox.spacelift.stackPendingConfirmationStatusItemUpdateTimeSeconds");
   }
   get excludedGlobPatterns(): string[] {
-    return this.getVSCodeSettingKey("tftoolbox.excludeGlobPaterns");
+    return this.getVSCodeSettingKey("tftoolbox.excludeGlobPatterns");
   }
 }

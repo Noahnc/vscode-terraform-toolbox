@@ -101,16 +101,16 @@
           "default": 30,
           "description": "Time in seconds between refreshes of the status bar item showing the amount of Spacelift stacks requireing comfirmation."
         },
-        "tftoolbox.excludeGlobPaterns": {
+        "tftoolbox.excludeGlobPatterns": {
           "type": "array",
           "items": {
             "type": "string"
           },
           "default": [
-            "**/.terraform/**",
-            "**/.infracost/**"
+            ".*/**",
+            "**/.terraform/**"
           ],
-          "description": "List of global patterns. This will be ignored by the extension when searching for folders with terraform files."
+          "description": "List of exclude glob patterns. Files or folders matching these patterns will be ignored by the extension when searching for terraform folders. The default excludes all .terraform folders and folders in the root workspace starting with a dot."
         },
         "tftoolbox.logLevel": {
           "type": "string",
