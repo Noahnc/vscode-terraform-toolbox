@@ -7,7 +7,7 @@
     "url": "https://github.com/Noahnc/vscode-terraform-toolbox"
   },
   "description": "VSCode extension adding a bunch of featurees regarding Terraform and Spacelift.",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "icon": "Images/terraform_toolbox_icon.png",
   "engines": {
     "vscode": "^1.81.0"
@@ -69,12 +69,12 @@
         "tftoolbox.spacelift.tenantID": {
           "type": "string",
           "default": null,
-          "description": "Spacelift tenant id. If not set, the hostname of the spacectl jwt audience will be used."
+          "description": "Spacelift tenant id. If not set, the tenant-id from the exported spacectl jwt will be used."
         },
         "tftoolbox.spacelift.profileName": {
           "type": "string",
           "default": null,
-          "description": "Spacectl profile name to select when running this extension. If not set, the default profile will be used."
+          "description": "Spacectl profile name to select when running this extension. The currently active Profile will be used when this is not set."
         },
         "tftoolbox.terraform.autoSelectVersion": {
           "type": "boolean",
@@ -99,7 +99,20 @@
         "tftoolbox.spacelift.stackPendingConfirmationStatusItemUpdateTimeSeconds": {
           "type": "number",
           "default": 30,
+          "minimum": 5,
+          "maximum": 300,
           "description": "Time in seconds between refreshes of the status bar item showing the amount of Spacelift stacks requireing comfirmation."
+        },
+        "tftoolbox.excludeGlobPatterns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            ".*/**",
+            "**/.terraform/**"
+          ],
+          "description": "List of exclude glob patterns. Files or folders matching these patterns will be ignored by the extension when searching for terraform folders. The default excludes all .terraform folders and folders in the root workspace starting with a dot."
         },
         "tftoolbox.logLevel": {
           "type": "string",

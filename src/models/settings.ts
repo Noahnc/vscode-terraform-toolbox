@@ -32,4 +32,7 @@ export class Settings {
   get spaceliftStatusBarItemRefreshIntervalSeconds(): number {
     return this.getVSCodeSettingKey("tftoolbox.spacelift.stackPendingConfirmationStatusItemUpdateTimeSeconds");
   }
+  get excludedGlobPatterns(): string[] {
+    return this.getVSCodeSettingKey("tftoolbox.excludeGlobPatterns");
+  }
 }
