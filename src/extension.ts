@@ -28,7 +28,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // ToDO: Replace manual dependencie injection with a DI framework
   const tfcli = new TerraformCLI(helpers.runShellCommand);
-  const tfProjectHelper = new TerraformProjectHelper(hcl, tfcli);
+  const tfProjectHelper = new TerraformProjectHelper(hcl, tfcli, settings);
   const tfVersionManager = new TerraformVersionManager(context, new Octokit({ request: { fetch } }), {
     baseFolderName: cst.EXTENSION_BINARY_FOLDER_NAME,
     softwareName: "Terraform",

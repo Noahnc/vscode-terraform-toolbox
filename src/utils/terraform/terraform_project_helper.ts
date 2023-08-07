@@ -8,6 +8,7 @@ import { terraformResources } from "../../models/terraform/terraform_resources";
 import { getLogger } from "../logger";
 import { IterraformCLI } from "./terraform_cli";
 import { PathObject } from "../path";
+import { Settings } from "../../models/settings";
 
 export interface Ihcl2Parser {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -59,16 +60,24 @@ export class TerraformProjectHelper implements IterraformProjectHelper {
   private readonly hclParser: Ihcl2Parser;
   private readonly tfcli: IterraformCLI;
   private readonly terraformFolder = ".terraform";
-  private readonly vscodeWindow = vscode.window;
+  private readonly settings: Settings;
 
-  constructor(hclParser: Ihcl2Parser, terraformCLI: IterraformCLI, vscodeWindow = vscode.window) {
+  constructor(hclParser: Ihcl2Parser, terraformCLI: IterraformCLI, settings: Settings) {
     this.hclParser = hclParser;
     this.tfcli = terraformCLI;
-    this.vscodeWindow = vscodeWindow;
+    this.settings = settings;
   }
 
   async findAllTerraformFoldersInOpenWorkspaces(): Promise<PathObject[]> {
-    const terraformFiles = await vscode.workspace.findFiles("**/*.tf", "**/" + this.terraformFolder + "/**", 2000);
+    let excludeGlobPatternString = "";
+    if (this.settings.excludedGlobPatterns.length === 0) {
+      excludeGlobPatternString = "**/.terraform/**";
+    } else {
+      this.settings.excludedGlobPatterns.forEach((pattern) => {
+        excludeGlobPatternString += "{" + pattern + "},";
+      });
+    }
+    const terraformFiles = await vscode.workspace.findFiles("**/*.tf", excludeGlobPatternString, 2000);
     // get all unique folders of the collected files
     const terraformFolders: PathObject[] = [];
     terraformFiles.forEach((file) => {
@@ -127,7 +136,7 @@ export class TerraformProjectHelper implements IterraformProjectHelper {
       getLogger().debug("Folder " + folder.path + " contains no .terraform folder");
       return [];
     }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let modulesJson: any;
     try {
       modulesJson = JSON.parse(fs.readFileSync(terraformModulesFile.path, "utf8")).Modules;
