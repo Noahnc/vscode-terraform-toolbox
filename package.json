@@ -69,12 +69,12 @@
         "tftoolbox.spacelift.tenantID": {
           "type": "string",
           "default": null,
-          "description": "Spacelift tenant id. If not set, the hostname of the spacectl jwt audience will be used."
+          "description": "Spacelift tenant id. If not set, the tenant-id from the exported spacectl jwt will be used."
         },
         "tftoolbox.spacelift.profileName": {
           "type": "string",
           "default": null,
-          "description": "Spacectl profile name to select when running this extension. If not set, the default profile will be used."
+          "description": "Spacectl profile name to select when running this extension. The currently active Profile will be used when this is not set."
         },
         "tftoolbox.terraform.autoSelectVersion": {
           "type": "boolean",
@@ -99,6 +99,8 @@
         "tftoolbox.spacelift.stackPendingConfirmationStatusItemUpdateTimeSeconds": {
           "type": "number",
           "default": 30,
+          "minimum": 5,
+          "maximum": 300,
           "description": "Time in seconds between refreshes of the status bar item showing the amount of Spacelift stacks requireing comfirmation."
         },
         "tftoolbox.excludeGlobPatterns": {
