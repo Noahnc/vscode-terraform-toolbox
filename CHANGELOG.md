@@ -2,6 +2,10 @@
 
 All notable changes to the terraform-toolbox extension will be documented in this file.
 
+## [0.1.3]
+
+- (feat) Add a setting to exclude certain files or folders while searching for terraform folders.
+
 ## [0.1.2]
 
 - (fix) Add missing fetch for Octokit.
