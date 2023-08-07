@@ -69,14 +69,8 @@ export class TerraformProjectHelper implements IterraformProjectHelper {
   }
 
   async findAllTerraformFoldersInOpenWorkspaces(): Promise<PathObject[]> {
-    let excludeGlobPatternString = "";
-    if (this.settings.excludedGlobPatterns.length === 0) {
-      excludeGlobPatternString = "**/.terraform/**";
-    } else {
-      this.settings.excludedGlobPatterns.forEach((pattern) => {
-        excludeGlobPatternString += "{" + pattern + "},";
-      });
-    }
+    const excludeGlobPatternString = "{" + this.settings.excludedGlobPatterns.join(",") + "}";
+    getLogger().trace("Searching for terraform folders with exclude pattern: " + excludeGlobPatternString);
     const terraformFiles = await vscode.workspace.findFiles("**/*.tf", excludeGlobPatternString, 2000);
     // get all unique folders of the collected files
     const terraformFolders: PathObject[] = [];
