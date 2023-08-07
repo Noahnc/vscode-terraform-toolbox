@@ -1,5 +1,6 @@
 import { GraphQLClient } from "graphql-request";
 import * as hcl from "hcl2-parser";
+import fetch from "node-fetch";
 import { Octokit } from "octokit";
 import * as vscode from "vscode";
 import { ChoseAndDeleteTerraformVersionsCommand, ChoseAndSetTerraformVersionCommand, SetTerraformVersionBasedOnProjectRequirementsCommand } from "./commands/manage_terraform_version";
@@ -28,7 +29,7 @@ export async function activate(context: vscode.ExtensionContext) {
   // ToDO: Replace manual dependencie injection with a DI framework
   const tfcli = new TerraformCLI(helpers.runShellCommand);
   const tfProjectHelper = new TerraformProjectHelper(hcl, tfcli);
-  const tfVersionManager = new TerraformVersionManager(context, new Octokit(), {
+  const tfVersionManager = new TerraformVersionManager(context, new Octokit({ request: { fetch } }), {
     baseFolderName: cst.EXTENSION_BINARY_FOLDER_NAME,
     softwareName: "Terraform",
     binaryName: "terraform",
