@@ -16,8 +16,7 @@
     "Other"
   ],
   "activationEvents": [
-    "onLanguage:terraform",
-    "onStartupFinished"
+    "onLanguage:terraform"
   ],
   "main": "./out/extension.js",
   "contributes": {
