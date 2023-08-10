@@ -75,7 +75,7 @@ export class Releases {
     });
   }
 
-  get latest(): Release | undefined {
+  get latest(): Release {
     return this.getReleases(false, false, false)[0];
   }
 
