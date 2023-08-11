@@ -9,6 +9,7 @@ VSCode extension adding a bunch of featurees regarding Terraform and Spacelift.
   - [Getting startet](#getting-startet)
     - [Terraform version manager](#terraform-version-manager)
     - [Spacelift](#spacelift)
+  - [Supported platforms](#supported-platforms)
   - [Features](#features)
     - [Terraform version manager](#terraform-version-manager-1)
     - [Terraform workspace](#terraform-workspace)
@@ -28,10 +29,11 @@ The following features require manual configuration and installation steps:
 
 The following requirements must be met for the terraform version manager to work:
 
-- Since the terraform binaries are compiled from source, [GO](https://go.dev/doc/install) must be installed and available in your Path.
-- All compiled binaries are stored in the following folder. This folder must be added to your Path:
+- The active terraform version is stored in the following folder:
   - Windows: `%USERPROFILE%\.terraform-toolbox\active`
   - Mac: `$HOME/.terraform-toolbox/active`
+
+This folder must be added to your path. Also, make sure that you have no other terraform binaries in your path.
 
 ### Spacelift
 
@@ -45,11 +47,21 @@ Regarding spacelift, no authentication is required in VSCode. The extension uses
 
 If you don't want to use any spacelift features, you can simply not install the spacectl, this will disable all spacelift features of the extension.
 
+## Supported platforms
+
+The extension supports all three major OS platforms:
+
+- Windows (x64/x86/arm64)
+- MacOS (x64/arm64)
+- Linux (x64/x86/arm64) (not tested)
+
+MacOS and Windows are regularly used and tested. Linux is not tested, but should work.
+
 ## Features
 
 ### Terraform version manager
 
-This extension adds a terraform version manager, that allows you to install and switch between any terraform version available on the hashicorp/terraform Github releases page (including betas, alphas and rc). The extension downloads the source code of the selected terraform version and builds it locally. The active binary is stored in the following folder: `%USERPROFILE%\.terraform-toolbox/active` (Windows) or `$HOME/.terraform-toolbox/active` (Mac). Not active but installed versions are stored in `$HOME/.terraform-toolbox/terraform` (Mac) or `%USERPROFILE%\.terraform-toolbox\terraform` (Windows).
+This extension adds a terraform version manager, that allows you to install and switch between any terraform version available on the hashicorp/terraform Github releases page (including betas, alphas and rc). The extension downloads the selected version from `https://releases.hashicorp.com/terraform`. The active binary is stored in the following folder: `%USERPROFILE%\.terraform-toolbox/active` (Windows) or `$HOME/.terraform-toolbox/active` (Mac). Not active but installed versions are stored in `$HOME/.terraform-toolbox/terraform` (Mac) or `%USERPROFILE%\.terraform-toolbox\terraform` (Windows).
 
 - Command [`tftoolbox.setTerraformVersion`]: Select and install a specific terraform version.
   ![terraform-version](Images/examples/terraform_version.gif)
