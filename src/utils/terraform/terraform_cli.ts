@@ -1,4 +1,3 @@
-import { get } from "http";
 import { getLogger } from "../logger";
 import { PathObject } from "../path";
 

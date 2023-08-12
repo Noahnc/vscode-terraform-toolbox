@@ -1,5 +1,7 @@
+import * as extract from "extract-zip";
 import { Octokit } from "octokit";
 import * as vscode from "vscode";
+import { UserShownError } from "../../custom_errors";
 import { Release, Releases } from "../../models/github/release";
 import { getLogger } from "../logger";
 import { PathObject } from "../path";
@@ -7,8 +9,6 @@ import { IversionProvider } from "../version_manager";
 import os = require("os");
 import path = require("path");
 import wget = require("wget-improved");
-import { UserShownError } from "../../custom_errors";
-import * as extract from "extract-zip";
 
 export class TerraformVersionProvieder implements IversionProvider {
   protected readonly _context: vscode.ExtensionContext;
