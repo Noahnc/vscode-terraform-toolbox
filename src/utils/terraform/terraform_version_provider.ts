@@ -1,4 +1,3 @@
-import * as extract from "extract-zip";
 import { Octokit } from "octokit";
 import * as vscode from "vscode";
 import { UserShownError } from "../../custom_errors";
@@ -9,7 +8,7 @@ import { IversionProvider } from "../version_manager";
 import os = require("os");
 import path = require("path");
 import wget = require("wget-improved");
-
+import decompress = require("decompress");
 export class TerraformVersionProvieder implements IversionProvider {
   protected readonly _context: vscode.ExtensionContext;
   private readonly _octokit: Octokit;
@@ -36,7 +35,7 @@ export class TerraformVersionProvieder implements IversionProvider {
     extractedFolder.delete();
     getLogger().debug("Unzipping terraform from " + zipPath.path + " to " + extractedFolder.path);
     try {
-      await extract(zipPath.path, { dir: extractedFolder.path });
+      await decompress(zipPath.path, extractedFolder.path);
     } catch (err) {
       throw new UserShownError("Failed to unzip terraform from " + zipPath.path + " to " + extractedFolder.path + " with error: " + err);
     }
