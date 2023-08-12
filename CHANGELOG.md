@@ -2,6 +2,13 @@
 
 All notable changes to the terraform-toolbox extension will be documented in this file.
 
+## [0.2.0]
+
+- (refac) Refactoring terrraform version management (releases are now directly downloaded instead of compiled from source. GO is therefore no longer needed).
+- (fix) Fix bug with file paths containing spaces.
+- (fix) Fix bug with modules not containing a version attribute.
+- (feat) Bundle js files with esbuild.
+
 ## [0.1.3]
 
 - (feat) Add a setting to exclude certain files or folders while searching for terraform folders.
