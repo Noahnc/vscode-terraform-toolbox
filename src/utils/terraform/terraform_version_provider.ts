@@ -4,7 +4,7 @@ import { UserShownError } from "../../custom_errors";
 import { Release, Releases } from "../../models/github/release";
 import { getLogger } from "../logger";
 import { PathObject } from "../path";
-import { IversionProvider } from "../version_manager";
+import { IversionProvider, ReleaseError } from "../version_manager";
 import os = require("os");
 import path = require("path");
 import wget = require("wget-improved");
@@ -37,7 +37,7 @@ export class TerraformVersionProvieder implements IversionProvider {
     try {
       await decompress(zipPath.path, extractedFolder.path);
     } catch (err) {
-      throw new UserShownError("Failed to unzip terraform from " + zipPath.path + " to " + extractedFolder.path + " with error: " + err);
+      throw new ReleaseError("Failed to unzip terraform from " + zipPath.path + " to " + extractedFolder.path + " with error: " + err);
     }
     let terraformFileName = "terraform";
     if (os.platform() === "win32") {
@@ -46,7 +46,7 @@ export class TerraformVersionProvieder implements IversionProvider {
     const terraformFile = extractedFolder.join(terraformFileName);
 
     if (!terraformFile.exists()) {
-      throw new Error("Failed to find terraform binary in zip file " + zipPath.path);
+      throw new ReleaseError("Failed to find terraform binary in zip file " + zipPath.path);
     }
     return terraformFile;
   }
@@ -65,7 +65,7 @@ export class TerraformVersionProvieder implements IversionProvider {
         resolve();
       });
     }).catch((err) => {
-      throw new UserShownError("Failed to download terraform from " + downloadUrl + " to " + downloadZipPath.path + " with error: " + err);
+      throw new ReleaseError("Failed to download terraform from " + downloadUrl + " to " + downloadZipPath.path + " with error: " + err);
     });
     getLogger().debug("Downloaded terraform to " + downloadZipPath.path);
     return downloadZipPath;
@@ -86,11 +86,11 @@ export class TerraformVersionProvieder implements IversionProvider {
     };
     const osName = osMap[os.platform()];
     if (!osName) {
-      throw new Error(`Unsupported platform: ${os.platform()}`);
+      throw new UserShownError(`Unsupported platform: ${os.platform()}`);
     }
     const archName = archMap[os.arch()];
     if (!archName) {
-      throw new Error(`Unsupported architecture: ${os.arch()}`);
+      throw new UserShownError(`Unsupported architecture: ${os.arch()}`);
     }
     const zipName = `terraform_${release.versionNumber}_${osName}_${archName}.zip`;
     return zipName;
@@ -113,7 +113,7 @@ export class TerraformVersionProvieder implements IversionProvider {
       }
     );
     if (!binPath) {
-      throw new Error("Failed to get binary path for release " + release.name);
+      throw new ReleaseError("Failed to get binary path for release " + release.name);
     }
     return binPath;
   }

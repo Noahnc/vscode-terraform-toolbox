@@ -13,6 +13,13 @@ export interface IversionProvider {
   getBinaryPathForRelease(release: Release): Promise<PathObject>;
 }
 
+export class ReleaseError extends UserShownError {
+  constructor(message: string) {
+    super(message);
+    this.name = "ReleaseError";
+  }
+}
+
 export interface IversionManager {
   switchVersion(chosenRelease: Release): Promise<boolean>;
   getReleases(): Promise<Releases>;
