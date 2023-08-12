@@ -13,6 +13,7 @@ import wget = require("wget-improved");
 export class TerraformVersionProvieder implements IversionProvider {
   protected readonly _context: vscode.ExtensionContext;
   private readonly _octokit: Octokit;
+  private readonly _terraformReleaseURL = "https://releases.hashicorp.com/terraform/";
 
   constructor(context: vscode.ExtensionContext, octokit: Octokit) {
     this._context = context;
@@ -53,7 +54,7 @@ export class TerraformVersionProvieder implements IversionProvider {
 
   private async downloadTerraformZip(zipName: string, versionString: string): Promise<PathObject> {
     const downloadZipPath = new PathObject(path.join(os.tmpdir(), zipName));
-    const downloadUrl = "https://releases.hashicorp.com/terraform/" + versionString + "/" + zipName;
+    const downloadUrl = this._terraformReleaseURL + versionString + "/" + zipName;
     getLogger().debug("Downloading terraform from " + downloadUrl);
     downloadZipPath.delete();
     await new Promise<void>((resolve, reject) => {
@@ -71,7 +72,7 @@ export class TerraformVersionProvieder implements IversionProvider {
     return downloadZipPath;
   }
 
-  private getTerraformDownloadInfo(release: Release): [string, string] {
+  private getTerraformDownloadInfo(release: Release): string {
     getLogger().debug("Composing zip name for release " + release.name + " with platform " + os.platform() + " and architecture " + os.arch());
     const osMap: Record<string, string> = {
       win32: "windows",
@@ -92,10 +93,8 @@ export class TerraformVersionProvieder implements IversionProvider {
     if (!archName) {
       throw new Error(`Unsupported architecture: ${os.arch()}`);
     }
-    // remove the v from the version name if it exists
-    const versionName = release.name.startsWith("v") ? release.name.substring(1) : release.name;
-    const zipName = `terraform_${versionName}_${osName}_${archName}.zip`;
-    return [versionName, zipName];
+    const zipName = `terraform_${release.versionNumber}_${osName}_${archName}.zip`;
+    return zipName;
   }
 
   async getBinaryPathForRelease(release: Release): Promise<PathObject> {
@@ -108,8 +107,8 @@ export class TerraformVersionProvieder implements IversionProvider {
       },
       async (progress) => {
         progress.report({ message: "Downloading terraform " + release.name });
-        const [versionString, zipName] = this.getTerraformDownloadInfo(release);
-        const downloadZipPath = await this.downloadTerraformZip(zipName, versionString);
+        const zipName = this.getTerraformDownloadInfo(release);
+        const downloadZipPath = await this.downloadTerraformZip(zipName, release.versionNumber);
         binPath = await this.unzipTerraform(downloadZipPath);
         downloadZipPath.delete();
       }
