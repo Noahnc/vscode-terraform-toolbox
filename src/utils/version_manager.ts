@@ -8,6 +8,18 @@ import path = require("path");
 import os = require("os");
 import { PathObject } from "./path";
 
+export interface IversionProvider {
+  getReleasesFormSource(): Promise<Releases>;
+  getBinaryPathForRelease(release: Release): Promise<PathObject>;
+}
+
+export class ReleaseError extends UserShownError {
+  constructor(message: string) {
+    super(message);
+    this.name = "ReleaseError";
+  }
+}
+
 export interface IversionManager {
   switchVersion(chosenRelease: Release): Promise<boolean>;
   getReleases(): Promise<Releases>;
@@ -23,17 +35,17 @@ export interface versionManagerSettings {
   binaryName: string;
 }
 
-export abstract class VersionManager implements IversionManager {
-  protected abstract readonly _context: vscode.ExtensionContext;
+export class VersionManager implements IversionManager {
+  private readonly _softwareName: string;
+  private readonly _installedVersionsFolder: PathObject;
+  public readonly _baseFolder: PathObject;
+  public readonly _activeVersion: PathObject;
+  private readonly _activeVersionFolder: PathObject;
+  public readonly _metadataFile: PathObject;
+  private readonly _versionProvider: IversionProvider;
 
-  protected readonly _softwareName: string;
-  protected readonly _installedVersionsFolder: PathObject;
-  protected readonly _baseFolder: PathObject;
-  protected readonly _activeVersion: PathObject;
-  protected readonly _activeVersionFolder: PathObject;
-  protected readonly _metadataFile: PathObject;
-
-  constructor(versionManagerSettings: versionManagerSettings) {
+  constructor(versionManagerSettings: versionManagerSettings, versionProvider: IversionProvider) {
+    this._versionProvider = versionProvider;
     this._baseFolder = new PathObject(path.join(os.homedir(), versionManagerSettings.baseFolderName));
     this._softwareName = versionManagerSettings.softwareName;
     this._installedVersionsFolder = this._baseFolder.join(this._softwareName);
@@ -45,10 +57,6 @@ export abstract class VersionManager implements IversionManager {
       this._activeVersion = this._activeVersionFolder.join(versionManagerSettings.binaryName);
     }
   }
-
-  protected abstract getReleasesFormSource(): Promise<Releases>;
-
-  protected abstract getBinaryPathForRelease(release: Release): Promise<PathObject>;
 
   async switchVersion(chosenRelease: Release): Promise<boolean> {
     if (chosenRelease.isActive) {
@@ -62,7 +70,7 @@ export abstract class VersionManager implements IversionManager {
       await this.handleVersionSwitch(chosenRelease);
       return true;
     }
-    const releaseBinPath = await this.getBinaryPathForRelease(chosenRelease);
+    const releaseBinPath = await this._versionProvider.getBinaryPathForRelease(chosenRelease);
     if (!fs.existsSync(releaseBinPath.path)) {
       throw new UserShownError("Failed to get binary for release " + chosenRelease.name);
     }
@@ -130,7 +138,7 @@ export abstract class VersionManager implements IversionManager {
   }
 
   async getReleases(): Promise<Releases> {
-    const releases = await this.getReleasesFormSource();
+    const releases = await this._versionProvider.getReleasesFormSource();
     const installedReleases = this.getInstalledReleases(releases);
     this.setReleaseStatus(releases, installedReleases);
     return releases;

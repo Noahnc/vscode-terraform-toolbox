@@ -15,10 +15,11 @@ import { Ispacectl, Spacectl } from "./utils/spacelift/spacectl";
 import { IspaceliftClient, SpaceliftClient } from "./utils/spacelift/spacelift_client";
 import { TerraformCLI } from "./utils/terraform/terraform_cli";
 import { TerraformProjectHelper } from "./utils/terraform/terraform_project_helper";
-import { TerraformVersionManager } from "./utils/terraform/terraform_version_manager";
 import { SpaceliftPenStackConfCount } from "./view/statusbar/spacelift_stack_confirmation_item";
 import { TfActiveVersionItem } from "./view/statusbar/terraform_version_item";
 import { TfActiveWorkspaceItem } from "./view/statusbar/terraform_workspace_item";
+import { TerraformVersionProvieder } from "./utils/terraform/terraform_version_provider";
+import { VersionManager } from "./utils/version_manager";
 
 export async function activate(context: vscode.ExtensionContext) {
   const settings = new Settings();
@@ -29,11 +30,15 @@ export async function activate(context: vscode.ExtensionContext) {
   // ToDO: Replace manual dependencie injection with a DI framework
   const tfcli = new TerraformCLI(helpers.runShellCommand);
   const tfProjectHelper = new TerraformProjectHelper(hcl, tfcli, settings);
-  const tfVersionManager = new TerraformVersionManager(context, new Octokit({ request: { fetch } }), {
-    baseFolderName: cst.EXTENSION_BINARY_FOLDER_NAME,
-    softwareName: "Terraform",
-    binaryName: "terraform",
-  });
+  const tfVersionProvider = new TerraformVersionProvieder(context, new Octokit({ request: { fetch } }));
+  const tfVersionManager = new VersionManager(
+    {
+      baseFolderName: cst.EXTENSION_BINARY_FOLDER_NAME,
+      softwareName: "Terraform",
+      binaryName: "terraform",
+    },
+    tfVersionProvider
+  );
 
   const tfVersionItem = new TfActiveVersionItem(context, tfVersionManager, {
     alignment: vscode.StatusBarAlignment.Right,

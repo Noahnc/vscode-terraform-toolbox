@@ -1,7 +1,7 @@
 export interface TerraformBaseResource {
   key: string;
   source: string;
-  version: string;
+  version?: string;
 }
 
 export function checkIfAllResourcesInstalled(declaredResources: TerraformBaseResource[], installedResources: TerraformBaseResource[]): boolean {

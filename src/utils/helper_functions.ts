@@ -6,10 +6,10 @@ import * as path from "path";
 import * as vscode from "vscode";
 import { getLogger } from "./logger";
 
-export async function runShellCommand(command: string, envVariables?: any): Promise<[boolean, string, string]> {
+export async function runShellCommand(command: string): Promise<[boolean, string, string]> {
   getLogger().debug("Running shell command: " + command);
   return await new Promise<[boolean, string, string]>((resolve) => {
-    exec(command, { silent: true, env: { ...process.env, GOBIN: envVariables } } as any, (error: any, stdout: any, stderr: any) => {
+    exec(command, { silent: true } as any, (error: any, stdout: any, stderr: any) => {
       getLogger().trace("Stdout: " + stdout);
       getLogger().trace("Stderr: " + stderr);
       if (error) {

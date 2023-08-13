@@ -41,6 +41,12 @@ export class Release {
   get name(): string {
     return this._name;
   }
+  get versionNumber(): string {
+    if (this._name.startsWith("v")) {
+      return this._name.substring(1);
+    }
+    return this._name;
+  }
   get prerelease(): boolean {
     return this._prerelease;
   }
@@ -75,7 +81,7 @@ export class Releases {
     });
   }
 
-  get latest(): Release | undefined {
+  get latest(): Release {
     return this.getReleases(false, false, false)[0];
   }
 

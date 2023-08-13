@@ -10,6 +10,9 @@ on:
 
 jobs:
   test:
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
     strategy:
       matrix:
         os:
@@ -87,7 +90,7 @@ jobs:
           files: build/*.vsix
           tag_name: "v.${{ steps.package-version.outputs.current-version}}"
           generate_release_notes: true
-      # - name: Publish to Marketplace
-      #   run: npx vsce publish --no-git-tag-version --packagePath $(find . -iname *.vsix)
-      #   env:
-      #     VSCE_PAT: ${{ secrets.VSCE_PAT }}
+      - name: Publish to Marketplace
+        run: npx vsce publish --no-git-tag-version --packagePath $(find . -iname *.vsix)
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
