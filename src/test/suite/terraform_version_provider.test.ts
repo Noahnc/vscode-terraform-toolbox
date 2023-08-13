@@ -7,7 +7,15 @@ import fetch from "node-fetch";
 import { ReleaseError } from "../../utils/version_manager";
 
 describe("Terraform version provider", () => {
-  const versionProvider = new TerraformVersionProvieder(mockExtensionContext, new Octokit({ request: { fetch } }));
+  // Non authenticated github api requests on the mac os runner have rate limit issues. As a workaround we use a github auth token from the action env.
+  const githubAuthToken = process.env.GITHUB_TOKEN;
+  let octokit = new Octokit({ request: { fetch } });
+  if (githubAuthToken) {
+    console.log("Using github auth token");
+    octokit = new Octokit({ request: { fetch }, auth: githubAuthToken });
+  }
+
+  const versionProvider = new TerraformVersionProvieder(mockExtensionContext, octokit);
 
   const releasesData = [
     { name: "v1.5.0", prerelease: false, isInstalled: true },
