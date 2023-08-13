@@ -82,7 +82,7 @@ Tired of switching between terraform workspaces in the terminal? This extension 
 
 Since terraform init is required for many features of the official Hashicorp Terraform extension to work, this extension adds some features to make the terraform init process easier:
 
-- Command [`tftoolbox.initCurrentProject`]: Run terraform init in the current folder. Similar to the init Command of the official Hashicorp Terraform extension, but it sets the `--upgrade` flag by default.
+- Command [`tftoolbox.initCurrentProject`]: Run terraform init in the current folder. Similar to the init Command of the official Hashicorp Terraform extension, but it allows you to specify additional terraform init arguments with the setting `tftoolbox.terraform.initArg`.
 - Command [`tftoolbox.initAllProjects`]: Finds all terraform folders in your open workspaces and runs terraform init in each of them asynchronically. With the setting `tftoolbox.terraform.autoInitAllProjects` you can enable to auto init all folders when opening VSCode. More information can be found here: [Terraform init all projects](docs/terraformInitAllProjects.md)
   ![terraform-init](Images/examples/terraform_init.gif)
 - Command [`tftoolbox.initRefreshModules`]: Installs missing modules for the current folder.

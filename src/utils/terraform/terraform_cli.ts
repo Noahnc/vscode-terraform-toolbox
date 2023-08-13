@@ -2,7 +2,7 @@ import { getLogger } from "../logger";
 import { PathObject } from "../path";
 
 export interface IterraformCLI {
-  init(folderPath?: PathObject): Promise<[boolean, string, string]>;
+  init(folderPath?: PathObject, args?: string): Promise<[boolean, string, string]>;
   getModules(folderPath: PathObject): Promise<[boolean, string, string]>;
   getWorkspaces(folderPath: PathObject): Promise<[string[], string]>;
   setWorkspace(folderPath: PathObject, workspace: string): Promise<[boolean, string, string]>;
@@ -15,12 +15,15 @@ export class TerraformCLI implements IterraformCLI {
     this._cliFunction = cliFunction;
   }
 
-  async init(folder?: PathObject): Promise<[boolean, string, string]> {
+  async init(folder?: PathObject, args?: string): Promise<[boolean, string, string]> {
     let terraformInitCommand = "";
     if (folder !== undefined) {
       terraformInitCommand += this.getChdirString(folder);
     }
-    terraformInitCommand += " init -upgrade -input=false -no-color";
+    terraformInitCommand += " init -input=false -no-color";
+    if (args !== undefined) {
+      terraformInitCommand += " " + args;
+    }
     return await this.runTerraformCommand(terraformInitCommand);
   }
 

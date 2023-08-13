@@ -265,7 +265,7 @@ export class TerraformProjectHelper implements IterraformProjectHelper {
           cancellable: false,
         },
         async () => {
-          const [success, , stderr] = await this.tfcli.init(folder);
+          const [success, , stderr] = await this.tfcli.init(folder, this.settings.initArgs);
           if (success === false) {
             throw new terraformInitError("Error running terraform init for Folder:" + folder.path + " error: " + stderr);
           }
@@ -273,7 +273,7 @@ export class TerraformProjectHelper implements IterraformProjectHelper {
       );
       return;
     }
-    const [success, , stderr] = await this.tfcli.init(folder);
+    const [success, , stderr] = await this.tfcli.init(folder, this.settings.initArgs);
     if (success === false) {
       throw new terraformInitError("Error running terraform init for Folder:" + folder.path + " error: " + stderr);
     }

@@ -29,6 +29,9 @@ export class Settings {
   get autoInitAllProjects(): boolean {
     return this.getVSCodeSettingKey("tftoolbox.terraform.autoInitAllProjects");
   }
+  get initArgs(): string {
+    return this.getVSCodeSettingKey("tftoolbox.terraform.initArg");
+  }
   get spaceliftStatusBarItemRefreshIntervalSeconds(): number {
     return this.getVSCodeSettingKey("tftoolbox.spacelift.stackPendingConfirmationStatusItemUpdateTimeSeconds");
   }

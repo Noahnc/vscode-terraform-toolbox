@@ -92,6 +92,11 @@
           "default": false,
           "description": "If set to true, the extension will run terraform init for all folders in your workspace containing terraform files on startup."
         },
+        "tftoolbox.terraform.initArg": {
+          "type": "string",
+          "default": "-upgrade",
+          "description": "Additional args when running any of the terraform init commands. -input=false and -no-color are always added. Multiple args can be specified by separating them with a space."
+        },
         "tftoolbox.spacelift.showSpaceliftInitErrorOnStart": {
           "type": "boolean",
           "default": true,
