@@ -36,12 +36,12 @@ export interface versionManagerSettings {
 }
 
 export class VersionManager implements IversionManager {
-  protected readonly _softwareName: string;
-  protected readonly _installedVersionsFolder: PathObject;
-  protected readonly _baseFolder: PathObject;
-  protected readonly _activeVersion: PathObject;
-  protected readonly _activeVersionFolder: PathObject;
-  protected readonly _metadataFile: PathObject;
+  private readonly _softwareName: string;
+  private readonly _installedVersionsFolder: PathObject;
+  public readonly _baseFolder: PathObject;
+  public readonly _activeVersion: PathObject;
+  private readonly _activeVersionFolder: PathObject;
+  public readonly _metadataFile: PathObject;
   private readonly _versionProvider: IversionProvider;
 
   constructor(versionManagerSettings: versionManagerSettings, versionProvider: IversionProvider) {
