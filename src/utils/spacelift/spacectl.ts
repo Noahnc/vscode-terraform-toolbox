@@ -4,6 +4,7 @@ import { UserShownError } from "../../custom_errors";
 import { SpaceliftJwt } from "../../models/spacelift/jwt";
 import { Stack } from "../../models/spacelift/stack";
 import { getLogger } from "../logger";
+import { ICli } from "../cli";
 
 export interface Ispacectl {
   executeLocalPreview(stack: Stack, projectPath: string): Promise<void>;
@@ -13,10 +14,10 @@ export interface Ispacectl {
 }
 
 export class Spacectl implements Ispacectl {
-  private _cliFunction: (arg0: string) => Promise<[boolean, string, string]>;
+  private _cli: ICli;
 
-  constructor(cliFunction: any) {
-    this._cliFunction = cliFunction;
+  constructor(cli: ICli) {
+    this._cli = cli;
   }
 
   async executeLocalPreview(stack: Stack, projectPath: string) {
@@ -62,6 +63,6 @@ export class Spacectl implements Ispacectl {
   }
 
   private async runSpacectlCommand(subcommand: string): Promise<[boolean, string, string]> {
-    return await this._cliFunction(constants.SPACECTL_COMMAND_NAME + " " + subcommand);
+    return await this._cli.runShellCommand(constants.SPACECTL_COMMAND_NAME + " " + subcommand);
   }
 }
