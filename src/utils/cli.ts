@@ -6,7 +6,7 @@ export interface ICli {
   checkIfBinaryIsInPath(binaryName: string): Promise<boolean>;
 }
 
-export class Cli {
+export class Cli implements ICli {
   async runShellCommand(command: string): Promise<[boolean, string, string]> {
     getLogger().debug("Running shell command: " + command);
     return await new Promise<[boolean, string, string]>((resolve) => {

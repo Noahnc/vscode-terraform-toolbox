@@ -44,12 +44,11 @@ export class Spacectl implements Ispacectl {
   }
 
   async ensureSpacectlIsInstalled() {
-    const [isInstalled, stdout] = await this.runSpacectlCommand("--version");
-    getLogger().trace("spacectl --version stdout: " + stdout);
-    if (!isInstalled) {
-      throw new UserShownError("spacectl is not installed and in your PATH. Please install it and try again.");
+    if (await this._cli.checkIfBinaryIsInPath(constants.SPACECTL_COMMAND_NAME)) {
+      getLogger().debug("spacectl is installed and in path");
+      return;
     }
-    getLogger().debug("spacectl is installed and in your PATH. Version: " + stdout);
+    throw new UserShownError("spacectl not found in your shells path.");
   }
 
   async getExportedToken(): Promise<SpaceliftJwt> {
