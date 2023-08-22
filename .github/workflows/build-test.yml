@@ -2,14 +2,18 @@ name: Build and Release
 
 on:
   pull_request:
-    branches:
-      - main
-  push:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - closed
     branches:
       - main
 
 jobs:
   test:
+    # only run if not closed or closed with merge
+    if: ${{ github.event.pull_request.merged == true || github.event.pull_request.state != 'closed' }}
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -66,10 +70,11 @@ jobs:
 
   release:
     needs: build
+    # only run if merged and lable release is set
+    if: ${{ github.event.pull_request.merged == true && contains(github.event.pull_request.labels.*.name, 'release') }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
