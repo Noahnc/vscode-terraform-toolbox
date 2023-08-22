@@ -6,24 +6,6 @@ import * as path from "path";
 import * as vscode from "vscode";
 import { getLogger } from "./logger";
 
-export async function runShellCommand(command: string): Promise<[boolean, string, string]> {
-  getLogger().debug("Running shell command: " + command);
-  return await new Promise<[boolean, string, string]>((resolve) => {
-    exec(command, { silent: true } as any, (error: any, stdout: any, stderr: any) => {
-      getLogger().trace("Stdout: " + stdout);
-      getLogger().trace("Stderr: " + stderr);
-      if (error) {
-        getLogger().debug("Shell command: " + command + " exited with non zero exit code: " + error);
-        resolve([false, stdout, stderr]);
-        return;
-      }
-      getLogger().debug("Shell command: " + command + " exited with zero exit code");
-      resolve([true, stdout, stderr]);
-      return;
-    });
-  });
-}
-
 export function checkIfOpenTextEditorIsTerraform(): boolean {
   const activeDocument = vscode.window.activeTextEditor?.document;
 
