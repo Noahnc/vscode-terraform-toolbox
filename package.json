@@ -7,7 +7,7 @@
     "url": "https://github.com/Noahnc/vscode-terraform-toolbox"
   },
   "description": "VSCode extension adding a bunch of featurees regarding Terraform and Spacelift.",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "icon": "Images/terraform_toolbox_icon.png",
   "engines": {
     "vscode": "^1.81.0"
@@ -158,8 +158,8 @@
     "@types/node": "20.x",
     "@types/node-fetch": "^2.6.4",
     "@types/vscode": "^1.81.0",
-    "@typescript-eslint/eslint-plugin": "^5.60.1",
-    "@typescript-eslint/parser": "^5.62.0",
+    "@typescript-eslint/eslint-plugin": "^6.4.1",
+    "@typescript-eslint/parser": "^6.4.1",
     "@vscode/test-electron": "^2.3.4",
     "depcheck": "^1.4.3",
     "esbuild": "^0.19.2",

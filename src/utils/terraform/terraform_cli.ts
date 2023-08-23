@@ -1,3 +1,4 @@
+import { ICli } from "../cli";
 import { getLogger } from "../logger";
 import { PathObject } from "../path";
 
@@ -9,10 +10,10 @@ export interface IterraformCLI {
 }
 
 export class TerraformCLI implements IterraformCLI {
-  private _cliFunction: (arg0: string) => Promise<[boolean, string, string]>;
+  private _cli: ICli;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  constructor(cliFunction: any) {
-    this._cliFunction = cliFunction;
+  constructor(cli: ICli) {
+    this._cli = cli;
   }
 
   async init(folder?: PathObject, args?: string): Promise<[boolean, string, string]> {
@@ -74,6 +75,6 @@ export class TerraformCLI implements IterraformCLI {
   }
 
   async runTerraformCommand(command: string): Promise<[boolean, string, string]> {
-    return await this._cliFunction("terraform " + command);
+    return await this._cli.runShellCommand("terraform " + command);
   }
 }

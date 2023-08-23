@@ -46,7 +46,7 @@ export class SpaceliftClient implements IspaceliftClient {
   }
 
   async getStacks(retryCount?: number): Promise<SpaceliftStacks> {
-    const response = await this.sendGraphQLRequest<{ stacks: Stack[] }>(GET_SPACELIFT_STACKS);
+    const response = await this.sendGraphQLRequest<{ stacks: Stack[] }>(GET_SPACELIFT_STACKS, undefined, retryCount);
     if (response === undefined) {
       throw new UserShownError("Failed to get stacks from spacelift.");
     }

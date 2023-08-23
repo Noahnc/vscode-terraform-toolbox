@@ -51,7 +51,9 @@ export interface IterraformProjectHelper {
   checkFolderContainsValidTerraformFiles: (folder: PathObject) => Promise<boolean>;
   getInstalledModulesForFolder: (folder: PathObject) => Promise<Module[]>;
   getDeclaredResourcesForFolder: (folder: PathObject) => Promise<terraformResources | undefined>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getProvidersFromParsedHcl: (hclObject: any) => Provider[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getModulesFromParsedHcl: (hclObject: any) => Module[];
   getCurrentWorkspaceFromEnvFile(folderPath: PathObject): Promise<string | undefined>;
 }

@@ -107,13 +107,17 @@ export class AutoSetTerraformWorkspaceCommand extends BaseCommand {
           return folder.path.startsWith(workspace.uri.fsPath);
         });
         let filteredFolders;
-        if (workspaceJson.autoSetWorkspace.excludedFoldersRelativePaths !== undefined || workspaceJson.autoSetWorkspace.excludedFoldersRelativePaths.length > 0) {
+
+        if (workspaceJson.autoSetWorkspace.excludedFoldersRelativePaths === undefined || workspaceJson.autoSetWorkspace.excludedFoldersRelativePaths === null) {
+          filteredFolders = foldersInWorkspace;
+        } else if (workspaceJson.autoSetWorkspace.excludedFoldersRelativePaths.length === 0) {
+          filteredFolders = foldersInWorkspace;
+        } else {
+          getLogger().debug("Found the following excluded folders in workspace " + workspace.name + ": " + workspaceJson.autoSetWorkspace.excludedFoldersRelativePaths.join(", "));
           filteredFolders = foldersInWorkspace.filter((folder: PathObject) => {
             const relativePath = folder.path.replace(workspace.uri.fsPath, "").replace(/\\/g, "/");
             return !workspaceJson.autoSetWorkspace.excludedFoldersRelativePaths.includes(relativePath);
           });
-        } else {
-          filteredFolders = foldersInWorkspace;
         }
         if (filteredFolders.length === 0) {
           getLogger().debug("Skipping workspace " + workspace.name + " because it does not contain a terraform folder.");
