@@ -20,6 +20,7 @@ import { TfActiveVersionItem } from "./view/statusbar/terraform_version_item";
 import { TfActiveWorkspaceItem } from "./view/statusbar/terraform_workspace_item";
 import { TerraformVersionProvieder } from "./utils/terraform/terraform_version_provider";
 import { VersionManager } from "./utils/version_manager";
+import { Cli } from "./utils/cli";
 
 export async function activate(context: vscode.ExtensionContext) {
   const settings = new Settings();
@@ -28,7 +29,7 @@ export async function activate(context: vscode.ExtensionContext) {
   getLogger().info("Activating extension");
 
   // ToDO: Replace manual dependencie injection with a DI framework
-  const tfcli = new TerraformCLI(helpers.runShellCommand);
+  const tfcli = new TerraformCLI(new Cli());
   const tfProjectHelper = new TerraformProjectHelper(hcl, tfcli, settings);
   const tfVersionProvider = new TerraformVersionProvieder(context, new Octokit({ request: { fetch } }));
   const tfVersionManager = new VersionManager(
@@ -148,7 +149,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 async function spacectlInit(settings: Settings): Promise<[IspaceliftClient, Ispacectl, string]> {
   const spacectlProfileName = settings.spacectlProfileName;
-  const spacectlInstance = new Spacectl(helpers.runShellCommand);
+  const spacectlInstance = new Spacectl(new Cli());
   if (spacectlProfileName !== null && spacectlProfileName !== undefined) {
     spacectlInstance.setUserprofile(spacectlProfileName);
   }

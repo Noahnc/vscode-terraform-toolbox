@@ -2,6 +2,12 @@
 
 All notable changes to the terraform-toolbox extension will be documented in this file.
 
+## [0.2.1]
+
+- (tests) Added additional tests.
+- (refac) Some internal refactoring.
+- (fix) Fixed a bug in the auto set workspace command when no 'excludedFoldersRelativePaths' is set in the '.terraform-toolbox.json' file. file.
+
 ## [0.2.0]
 
 - (refac) Refactoring terrraform version management (releases are now directly downloaded instead of compiled from source. GO is therefore no longer needed).
