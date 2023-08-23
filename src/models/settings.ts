@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import { getLogger } from "../utils/logger";
 
 export class Settings {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getVSCodeSettingKey(key: string, allowUndefined = false): any {
     const setting = vscode.workspace.getConfiguration().get(key);
     getLogger().trace("Got setting " + key + ": " + setting);

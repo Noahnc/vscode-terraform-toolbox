@@ -1,4 +1,5 @@
 import { Release, Releases } from "../models/github/release";
+import { getLogger } from "../utils/logger";
 import { PathObject } from "../utils/path";
 import { IversionProvider } from "../utils/version_manager";
 import * as fs from "fs";
@@ -17,6 +18,7 @@ export class MockVersionProvider implements IversionProvider {
   }
 
   async getBinaryPathForRelease(release: Release): Promise<PathObject> {
+    getLogger().debug("Getting binary path for release " + release.name);
     const tempFolder = new PathObject(os.tmpdir());
     let binaryName = "mockbinary";
     if (os.platform() === "win32") {

@@ -63,6 +63,7 @@ export class Releases {
   private readonly releasesMap: Map<string, Release> = new Map();
   private activeReleaseIndex: number | undefined;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(releases: any[]) {
     if (releases.length === 0) {
       throw new Error("No releases found");
@@ -168,7 +169,7 @@ export class Releases {
   }
 
   getReleases(beta = false, rc = false, alpha = false): Release[] {
-    const filteredReleases: Array<any> = [];
+    const filteredReleases: Array<Release> = [];
     // add all releases with prerelease = false
     this.releases.forEach((release) => {
       if (release.prerelease === false) {
