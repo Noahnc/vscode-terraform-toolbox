@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import axios from "axios";
-import { exec } from "child_process";
 import * as fs from "fs";
 import * as path from "path";
 import * as vscode from "vscode";

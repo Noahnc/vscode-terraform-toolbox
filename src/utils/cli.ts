@@ -10,6 +10,7 @@ export class Cli implements ICli {
   async runShellCommand(command: string): Promise<[boolean, string, string]> {
     getLogger().debug("Running shell command: " + command);
     return await new Promise<[boolean, string, string]>((resolve) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       exec(command, { silent: true } as any, (error: any, stdout: any, stderr: any) => {
         getLogger().trace("Stdout: " + stdout);
         getLogger().trace("Stderr: " + stderr);
@@ -31,7 +32,7 @@ export class Cli implements ICli {
     } else {
       command = "which " + binaryName;
     }
-    const [success, stdout, stderr] = await this.runShellCommand(command);
+    const [success, stdout, ] = await this.runShellCommand(command);
     if (!success) {
       getLogger().info("Binary " + binaryName + " not found in path. ");
       return false;

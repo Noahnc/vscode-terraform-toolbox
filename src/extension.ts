@@ -9,7 +9,6 @@ import { TerraformFetchModulesCurrentProjectCommand, TerraformInitAllProjectsCom
 import { AutoSetTerraformWorkspaceCommand, ChoseAndSetTerraformWorkspaceCommand } from "./commands/terraform_workspace";
 import * as cst from "./constants";
 import { Settings } from "./models/settings";
-import * as helpers from "./utils/helper_functions";
 import { getLogger, initLogger } from "./utils/logger";
 import { Ispacectl, Spacectl } from "./utils/spacelift/spacectl";
 import { IspaceliftClient, SpaceliftClient } from "./utils/spacelift/spacelift_client";
