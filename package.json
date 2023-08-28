@@ -163,7 +163,7 @@
     "@vscode/test-electron": "^2.3.4",
     "depcheck": "^1.4.3",
     "esbuild": "^0.19.2",
-    "eslint": "^8.47.0",
+    "eslint": "^8.48.0",
     "glob": "^10.3.3",
     "mocha": "^10.2.0",
     "typescript": "^5.0.4"
