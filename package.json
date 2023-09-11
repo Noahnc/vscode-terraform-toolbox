@@ -151,7 +151,7 @@
     "esbuild-watch": "npm run esbuild-base -- --sourcemap --watch"
   },
   "devDependencies": {
-    "@types/chai": "^4.3.5",
+    "@types/chai": "^4.3.6",
     "@types/decompress": "^4.2.4",
     "@types/glob": "^8.1.0",
     "@types/mocha": "^10.0.1",
@@ -171,7 +171,7 @@
   "dependencies": {
     "@vscode-logging/wrapper": "^1.0.2",
     "axios": "1.5.0",
-    "chai": "^4.3.7",
+    "chai": "^4.3.8",
     "decompress": "^4.2.1",
     "graphql-request": "^6.1.0",
     "hcl2-parser": "^1.0.3",
