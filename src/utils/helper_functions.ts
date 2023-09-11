@@ -1,6 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import axios from "axios";
-import * as fs from "fs";
 import * as path from "path";
 import * as vscode from "vscode";
 import { getLogger } from "./logger";
@@ -60,21 +58,31 @@ export async function getUserDecision<T>(placeHolderMsg: string, values: T[], la
   return choice;
 }
 
-export async function downloadFile(url: string, filePath: string): Promise<boolean> {
-  try {
-    const response = await axios.get(url, { responseType: "arraybuffer" });
-    const fileData = Buffer.from(response.data, "binary");
-    fs.writeFileSync(filePath, fileData);
-    if (!fs.existsSync(filePath)) {
-      getLogger().debug("Error saving file to: " + filePath);
-      return false;
-    }
-    getLogger().debug("File: " + filePath + " has been downloaded");
-    return true;
-  } catch (err) {
-    getLogger().debug("Error downloading file: " + filePath + " from url: " + url + " error: " + err);
+type MessageTypes = "information" | "warning" | "error";
+export async function showNotificationWithDecisions(message: string, settingKey: string, decision: string, type: MessageTypes): Promise<boolean> {
+  if (vscode.workspace.getConfiguration().get(settingKey) === false) {
+    getLogger().trace("User has disabled notification: " + settingKey);
     return false;
   }
+  let messageFunction;
+  if (type === "information") {
+    messageFunction = vscode.window.showInformationMessage;
+  } else if (type === "warning") {
+    messageFunction = vscode.window.showWarningMessage;
+  } else if (type === "error") {
+    messageFunction = vscode.window.showErrorMessage;
+  } else {
+    throw new Error("Unknown notification type: " + type);
+  }
+
+  const selection = await messageFunction(message, decision, "Don't show again");
+  if (selection === decision) {
+    return true;
+  } else if (selection === "Don't show again") {
+    vscode.workspace.getConfiguration().update(settingKey, false, vscode.ConfigurationTarget.Global);
+    return false;
+  }
+  return false;
 }
 
 export function showInformation(message: string, silent = false) {

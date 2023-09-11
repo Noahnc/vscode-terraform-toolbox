@@ -20,6 +20,7 @@ import { TfActiveWorkspaceItem } from "./view/statusbar/terraform_workspace_item
 import { TerraformVersionProvieder } from "./utils/terraform/terraform_version_provider";
 import { VersionManager } from "./utils/version_manager";
 import { Cli } from "./utils/cli";
+import * as helpers from "./utils/helper_functions";
 
 export async function activate(context: vscode.ExtensionContext) {
   const settings = new Settings();
@@ -85,21 +86,18 @@ export async function activate(context: vscode.ExtensionContext) {
     })
     .catch((error) => {
       getLogger().error("Failed to initialize spacectl: " + error);
-      if (vscode.workspace.getConfiguration().get("tftoolbox.spacelift.showSpaceliftInitErrorOnStart")) {
-        vscode.window
-          .showWarningMessage(
-            "Failed to initialize spacectl. Please make sure spacectl is installed and a profile is configured. Somme features will be disabled until spacectl is configured.",
-            "Open spacectl documentation",
-            "Don't show again"
-          )
-          .then((selection) => {
-            if (selection === "Open spacectl documentation") {
-              vscode.env.openExternal(vscode.Uri.parse("https://github.com/spacelift-io/spacectl"));
-            } else if (selection === "Don't show again") {
-              vscode.workspace.getConfiguration().update("tftoolbox.spacelift.showSpaceliftInitErrorOnStart", false, vscode.ConfigurationTarget.Global);
-            }
-          });
-      }
+      helpers
+        .showNotificationWithDecisions(
+          "Failed to initialize spacectl. Some features will be disabled until spacectl is configured.",
+          "tftoolbox.spacelift.showSpaceliftInitErrorOnStart",
+          "Open spacectl documentation",
+          "warning"
+        )
+        .then((result) => {
+          if (result) {
+            vscode.env.openExternal(vscode.Uri.parse("https://github.com/spacelift-io/spacectl"));
+          }
+        });
     });
   // Terraform version management commands
   const setTFVersionBasedOnProjectCommand = new SetTerraformVersionBasedOnProjectRequirementsCommand(
@@ -132,6 +130,18 @@ export async function activate(context: vscode.ExtensionContext) {
     });
   }
 
+  if (tfVersionManager.getActiveVersion() === undefined) {
+    if (
+      await helpers.showNotificationWithDecisions(
+        "No Terraform version installed by this extension yet. Do you want to select a version to install now?",
+        "tftoolbox.spacelift.showNoTerraformVersionInstalledMsg",
+        "Show versions",
+        "information"
+      )
+    ) {
+      await vscode.commands.executeCommand(cst.COMMAND_SET_TERRAFORM_VERSION);
+    }
+  }
   // Init all terraform projects if setting is enabled
   if (settings.autoInitAllProjects) {
     getLogger().info("Auto initializing all projects in the currently open workspaces");
