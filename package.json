@@ -10,7 +10,7 @@
   "version": "0.2.2",
   "icon": "Images/terraform_toolbox_icon.png",
   "engines": {
-    "vscode": "^1.81.0"
+    "vscode": "^1.83.0"
   },
   "categories": [
     "Other"
