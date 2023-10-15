@@ -2,6 +2,10 @@
 
 All notable changes to the terraform-toolbox extension will be documented in this file.
 
+## [0.2.3]
+
+- Update dependencies.
+
 ## [0.2.2]
 
 - (feat): Added a welcome message asking the user if he wants to install a terraform version.
