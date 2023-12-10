@@ -91,7 +91,7 @@ export async function activate(context: vscode.ExtensionContext) {
           alignment: vscode.StatusBarAlignment.Left,
           priority: 100,
           refreshIntervalSeconds: settings.spaceliftStatusBarItemRefreshIntervalSeconds,
-          tooltip: "Spacelift API authentication status",
+          tooltip: "Log-in to Spacelift with spacectl and your Web browser",
           onClickCommand: cst.COMMAND_SPACELIFT_LOGIN,
         },
         authenticationHandler

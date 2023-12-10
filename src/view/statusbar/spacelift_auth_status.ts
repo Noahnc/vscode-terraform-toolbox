@@ -13,8 +13,8 @@ export class SpaceliftApiAuthenticationStatus extends BaseStatusBarItem {
   protected async run() {
     if ((await this._authHandler.check_token_valid()) == false) {
       getLogger().debug("No valid spacelift token, showing status bar item to show login required");
-      this._statusBarItem.text = "$(error)login to Spacectl required";
-      this._statusBarItem.color = "red";
+      this._statusBarItem.text = "$(error) authenticate spacectl";
+      this._statusBarItem.color = "orange";
       this._statusBarItem.show();
       return;
     }
