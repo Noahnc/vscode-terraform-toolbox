@@ -17,9 +17,6 @@ export class RunSpacectlLocalPreviewCurrentStackCommand extends BaseCommand {
   }
 
   protected async init() {
-    if ((await this.spacelift.isAuthenticated()) === false) {
-      throw new UserShownError("Spacectl not authenticated, please login first.");
-    }
     const stacks = await this.spacelift.getStacks();
 
     const [currentWorkspace, workspaces, currentFolderRelative] = helpers.getCurrentProjectInformations();
@@ -46,9 +43,6 @@ export class RunSpacectlLocalPreviewCommand extends BaseCommand {
   }
 
   protected async init() {
-    if ((await this.spacelift.isAuthenticated()) === false) {
-      throw new UserShownError("Spacectl not authenticated, please login first.");
-    }
     const stacks = await this.spacelift.getStacks();
     // eslint-disable-next-line prefer-const
     let [currentWorkspace, workspaces, currentFolderRelative] = helpers.getCurrentProjectInformations();
