@@ -43,7 +43,7 @@ To use any spacelift feature of this extension, [spacectl](https://github.com/sp
 spacectl profile login <profile_name>
 ```
 
-When creating a new profile, make sure to select the option `Use web browser to authenticate`. This will open a browser window, where you can log-in to your spacelift account. This method makes sure that the token used by spacectl is the same as the one used by your Webbrowser. Since Spacelift recently changed its token validity (only 1 token per user is now allowed to be active), this is the only way to make sure that the extension can access your spacelift account without invalidating the spacectl token when using spacelift in the browser. The extension will notify you if the current spacectl token is no longer valid and prompts you to login via the browser.
+When creating a new profile, make sure to select the option `Login with a web browser`. This will open a browser window, where you can log-in to your Spacelift account. This method makes sure that the token used by spacectl is the same as the one used by your Webbrowser. Since Spacelift recently changed its token validity (only 1 token per user is now allowed to be active), this is the only way to make sure that the extension gets an valid access token without revoking your web browsers Spacelift token. Once the token used by spacectl has expired or has been revoked, a status item will be shown. By clicking on the status item, you will be prompted to authenticate spacectl again with your browser.
 
 Regarding spacelift, no authentication is required in VSCode. The extension uses the `spacectl profile export-token` command to get an api token for the current userprofile. This token is then used to authenticate the extension with spacelift.
 
