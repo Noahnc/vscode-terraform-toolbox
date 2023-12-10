@@ -32,6 +32,10 @@
         "title": "spacelift local-preview (current stack)"
       },
       {
+        "command": "tftoolbox.spaceliftLogin",
+        "title": "spacelift login"
+      },
+      {
         "command": "tftoolbox.setTerraformVersion",
         "title": "terraform set version (select from list)"
       },
