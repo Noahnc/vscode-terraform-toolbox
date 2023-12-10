@@ -2,6 +2,10 @@
 
 All notable changes to the terraform-toolbox extension will be documented in this file.
 
+## [0.3.0]
+
+- (feat): New spacectl authentication handling. Since Spacelift has changed its token validity (only 1 token per user is now allowed to be active), the extension now uses the spacectl with web browser login to authenticate the user.
+
 ## [0.2.3]
 
 - Update dependencies.
