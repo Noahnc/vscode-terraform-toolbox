@@ -11,6 +11,7 @@ export interface Ispacectl {
   setUserprofile(profileName: string): Promise<void>;
   ensureSpacectlIsInstalled(): Promise<void>;
   getExportedToken(): Promise<SpaceliftJwt>;
+  loginInteractive(): Promise<boolean>;
 }
 
 export class Spacectl implements Ispacectl {
@@ -49,6 +50,13 @@ export class Spacectl implements Ispacectl {
       return;
     }
     throw new UserShownError("spacectl not found in your shells path.");
+  }
+
+  async loginInteractive(): Promise<boolean> {
+    getLogger().debug("Performing interactive login with spacectl and web browser");
+    const [success, stdout] = await this.runSpacectlCommand("profile login");
+    getLogger().trace("spacectl profile login stdout: " + stdout);
+    return success;
   }
 
   async getExportedToken(): Promise<SpaceliftJwt> {
