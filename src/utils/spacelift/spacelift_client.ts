@@ -1,23 +1,22 @@
 import { GraphQLClient, Variables } from "graphql-request";
 import { UserShownError } from "../../custom_errors";
-import { SpaceliftJwt } from "../../models/spacelift/jwt";
 import { GET_SPACELIFT_STACKS, SpaceliftStacks, Stack } from "../../models/spacelift/stack";
 import * as helper from "../helper_functions";
 import { getLogger } from "../logger";
+import { IspaceliftAuthenticationHandler } from "./spacelift_authentication_handler";
 
 export interface IspaceliftClient {
   getStacks(): Promise<SpaceliftStacks>;
-  authenticate(): Promise<void>;
+  isAuthenticated(): Promise<boolean>;
 }
 
 export class SpaceliftClient implements IspaceliftClient {
   private _spaceliftEndpoint?: string;
   private _client!: GraphQLClient;
-  private _tokenRetrieverFunction: () => Promise<SpaceliftJwt>;
-  private _token: SpaceliftJwt | undefined;
+  private _auth_handler: IspaceliftAuthenticationHandler;
 
-  constructor($client: GraphQLClient, tokenRetrieverFunction: () => Promise<SpaceliftJwt>) {
-    this._tokenRetrieverFunction = tokenRetrieverFunction;
+  constructor($client: GraphQLClient, auth_handler: IspaceliftAuthenticationHandler) {
+    this._auth_handler = auth_handler;
     this._client = $client;
   }
 
@@ -34,14 +33,12 @@ export class SpaceliftClient implements IspaceliftClient {
   }
 
   async authenticate() {
-    if (this._token !== undefined) {
-      if (!this._token.isExpired()) {
-        return;
-      }
+    const jwt = await this._auth_handler.get_token();
+    if (jwt === null) {
+      throw new UserShownError("Spacectl not authenticated.");
     }
-    this._token = await this._tokenRetrieverFunction();
     this._client.setHeaders({
-      authorization: `Bearer ${this._token.rawToken}`,
+      authorization: `Bearer ${jwt.rawToken}`,
     });
   }
 
@@ -53,5 +50,9 @@ export class SpaceliftClient implements IspaceliftClient {
     getLogger().debug("Got " + response.stacks.length + " stacks from spacelift.");
     getLogger().trace("Got stacks from spacelift: " + JSON.stringify(response.stacks));
     return new SpaceliftStacks(response.stacks);
+  }
+
+  async isAuthenticated(): Promise<boolean> {
+    return await this._auth_handler.check_token_valid();
   }
 }

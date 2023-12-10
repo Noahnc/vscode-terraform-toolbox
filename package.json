@@ -7,7 +7,7 @@
     "url": "https://github.com/Noahnc/vscode-terraform-toolbox"
   },
   "description": "VSCode extension adding a bunch of featurees regarding Terraform and Spacelift.",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "icon": "Images/terraform_toolbox_icon.png",
   "engines": {
     "vscode": "^1.83.0"
@@ -30,6 +30,10 @@
       {
         "command": "tftoolbox.spaceliftLocalPreviewCurrentStack",
         "title": "spacelift local-preview (current stack)"
+      },
+      {
+        "command": "tftoolbox.spaceliftLogin",
+        "title": "spacelift login"
       },
       {
         "command": "tftoolbox.setTerraformVersion",

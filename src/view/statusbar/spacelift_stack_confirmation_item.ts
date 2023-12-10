@@ -13,6 +13,11 @@ export class SpaceliftPenStackConfCount extends BaseStatusBarItem {
 
   protected async run() {
     let stacks: SpaceliftStacks;
+    if ((await this._spaceliftClient.isAuthenticated()) === false) {
+      getLogger().debug("Spacelift not authenticated, hiding status bar item");
+      this._statusBarItem.hide();
+      return;
+    }
     try {
       stacks = await this._spaceliftClient.getStacks();
     } catch (error) {

@@ -4,6 +4,7 @@ export const SPACELIFT_BASE_DOMAIN = ".app.spacelift.io";
 
 // commands
 export const COMMAND_LOCAL_PREVIEW = "tftoolbox.spaceliftLocalPreview";
+export const COMMAND_SPACELIFT_LOGIN = "tftoolbox.spaceliftLogin";
 export const COMMAND_LOCAL_PREVIEW_CURRENT_STACK = "tftoolbox.spaceliftLocalPreviewCurrentStack";
 export const COMMAND_SET_TERRAFORM_VERSION = "tftoolbox.setTerraformVersion";
 export const COMMAND_DELETE_TERRAFORM_VERSIONS = "tftoolbox.deleteTerraformVersions";
