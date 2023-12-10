@@ -21,6 +21,8 @@ import { TerraformVersionProvieder } from "./utils/terraform/terraform_version_p
 import { VersionManager } from "./utils/version_manager";
 import { Cli } from "./utils/cli";
 import * as helpers from "./utils/helper_functions";
+import { IspaceliftAuthenticationHandler, SpaceliftAuthenticationHandler } from "./utils/spacelift/spacelift_authentication_handler";
+import { SpaceliftApiAuthenticationStatus } from "./view/statusbar/spacelift_auth_status";
 
 export async function activate(context: vscode.ExtensionContext) {
   const settings = new Settings();
@@ -63,7 +65,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // Init spacelift commands if spacelift is configured
   spacectlInit(settings)
-    .then(([spaceliftClient, spacectlInstance, tenantID]) => {
+    .then(([spaceliftClient, spacectlInstance, tenantID, authenticationHandler]) => {
       new RunSpacectlLocalPreviewCurrentStackCommand(context, { command: cst.COMMAND_LOCAL_PREVIEW_CURRENT_STACK }, spaceliftClient, spacectlInstance);
       new RunSpacectlLocalPreviewCommand(context, { command: cst.COMMAND_LOCAL_PREVIEW }, spaceliftClient, spacectlInstance);
       const openSpaceliftWebPortalCommand = "openSpaceliftWebPortal";
@@ -83,6 +85,25 @@ export async function activate(context: vscode.ExtensionContext) {
         },
         spaceliftClient
       ).refresh();
+      const spaceliftAuthStatusItem = new SpaceliftApiAuthenticationStatus(
+        context,
+        {
+          alignment: vscode.StatusBarAlignment.Left,
+          priority: 100,
+          refreshIntervalSeconds: settings.spaceliftStatusBarItemRefreshIntervalSeconds,
+          tooltip: "Spacelift API authentication status",
+          onClickCommand: cst.COMMAND_SPACELIFT_LOGIN,
+        },
+        authenticationHandler
+      );
+      spaceliftAuthStatusItem.refresh();
+      context.subscriptions.push(
+        vscode.commands.registerCommand(cst.COMMAND_SPACELIFT_LOGIN, async () => {
+          if (await authenticationHandler.login_interactive()) {
+            await spaceliftAuthStatusItem.refresh();
+          }
+        })
+      );
     })
     .catch((error) => {
       getLogger().error("Failed to initialize spacectl: " + error);
@@ -156,7 +177,7 @@ export async function activate(context: vscode.ExtensionContext) {
   tfVersionItem.refresh();
 }
 
-async function spacectlInit(settings: Settings): Promise<[IspaceliftClient, Ispacectl, string]> {
+async function spacectlInit(settings: Settings): Promise<[IspaceliftClient, Ispacectl, string, IspaceliftAuthenticationHandler]> {
   const spacectlProfileName = settings.spacectlProfileName;
   const spacectlInstance = new Spacectl(new Cli());
   if (spacectlProfileName !== null && spacectlProfileName !== undefined) {
@@ -171,7 +192,7 @@ async function spacectlInit(settings: Settings): Promise<[IspaceliftClient, Ispa
     spaceliftTenantID = settings.spaceliftTenantID;
   }
   const spaceliftEndpoint = "https://" + spaceliftTenantID + cst.SPACELIFT_BASE_DOMAIN + "/graphql";
-  const spacelift = new SpaceliftClient(new GraphQLClient(spaceliftEndpoint), spacectlInstance.getExportedToken.bind(spacectlInstance));
-  await spacelift.authenticate();
-  return [spacelift, spacectlInstance, spaceliftTenantID];
+  const authenticationHandler = new SpaceliftAuthenticationHandler(spacectlInstance, spacectlInstance, new GraphQLClient(spaceliftEndpoint));
+  const spacelift = new SpaceliftClient(new GraphQLClient(spaceliftEndpoint), authenticationHandler);
+  return [spacelift, spacectlInstance, spaceliftTenantID, authenticationHandler];
 }
