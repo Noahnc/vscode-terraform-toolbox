@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import { UserShownError } from "../../custom_errors";
 import { getLogger } from "../../utils/logger";
+import * as helper from "../../utils/helper_functions";
 
 export interface IvscodeStatusBarItemSettings {
   alignment: vscode.StatusBarAlignment;
@@ -9,6 +10,7 @@ export interface IvscodeStatusBarItemSettings {
   updateOnDidChangeTextEditorSelection?: boolean;
   refreshIntervalSeconds?: number;
   tooltip: string;
+  checkInternetConnection?: boolean;
 }
 
 export abstract class BaseStatusBarItem {
@@ -40,6 +42,13 @@ export abstract class BaseStatusBarItem {
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async refresh(...args: any[]): Promise<void> {
+    if (this._settings.checkInternetConnection) {
+      if (await helper.checkInternetConnection() === false) {
+        getLogger().debug("No internet connection, hiding status bar item")
+        this._statusBarItem.hide();
+        return;
+      }
+    }
     await this.run(...args).catch((error) => {
       handleError(error);
     });

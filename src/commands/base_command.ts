@@ -1,11 +1,13 @@
 import * as vscode from "vscode";
 import { UserShownError } from "../custom_errors";
 import { getLogger } from "../utils/logger";
+import * as helper from "../utils/helper_functions";
 
 export interface IvscodeCommandSettings {
   command: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   successCallback?: (...arg: any) => Promise<any>;
+  checkInternetConnection?: boolean;
 }
 
 export abstract class BaseCommand {
@@ -25,6 +27,10 @@ export abstract class BaseCommand {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async run(...args: any[]): Promise<void> {
     getLogger().debug("Running command " + this._settings.command);
+    if (this._settings.checkInternetConnection && (await helper.checkInternetConnection()) === false) {
+      helper.showWarning("No internet connection, command " + this._settings.command + " will not be executed");
+      return;
+    }
     await this.init(...args)
       .then(() => {
         getLogger().debug("Successfully ran command " + this._settings.command);
