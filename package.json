@@ -81,6 +81,11 @@
           "default": null,
           "description": "Spacectl profile name to select when running this extension. The currently active Profile will be used when this is not set."
         },
+        "tftoolbox.spacelift.showLoginNotificationOnStartup": {
+          "type": "boolean",
+          "default": false,
+          "description": "If enabled, a notification will be shown regarding spacectl login if spacectl is not authenticated."
+        },
         "tftoolbox.terraform.autoSelectVersion": {
           "type": "boolean",
           "default": false,

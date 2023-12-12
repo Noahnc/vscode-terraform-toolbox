@@ -39,4 +39,7 @@ export class Settings {
   get excludedGlobPatterns(): string[] {
     return this.getVSCodeSettingKey("tftoolbox.excludeGlobPatterns");
   }
+  get showSpacectlNotAuthenticatedWarningOnStartup(): boolean {
+    return this.getVSCodeSettingKey("tftoolbox.spacelift.showLoginNotificationOnStartup");
+  }
 }
