@@ -64,71 +64,84 @@ export async function activate(context: vscode.ExtensionContext) {
   );
 
   // Init spacelift commands if spacelift is configured
-  spacectlInit(settings)
-    .then(([spaceliftClient, spacectlInstance, tenantID, authenticationHandler]) => {
-      new RunSpacectlLocalPreviewCurrentStackCommand(context, { command: cst.COMMAND_LOCAL_PREVIEW_CURRENT_STACK }, spaceliftClient, spacectlInstance);
-      new RunSpacectlLocalPreviewCommand(context, { command: cst.COMMAND_LOCAL_PREVIEW }, spaceliftClient, spacectlInstance);
-      const openSpaceliftWebPortalCommand = "openSpaceliftWebPortal";
-      context.subscriptions.push(
-        vscode.commands.registerCommand(openSpaceliftWebPortalCommand, () => {
-          vscode.env.openExternal(vscode.Uri.parse("https://" + tenantID + cst.SPACELIFT_BASE_DOMAIN));
-        })
-      );
-      new SpaceliftPenStackConfCount(
-        context,
-        {
-          alignment: vscode.StatusBarAlignment.Left,
-          priority: 99,
-          refreshIntervalSeconds: settings.spaceliftStatusBarItemRefreshIntervalSeconds,
-          tooltip: "Count of Spacelift Stacks pending confirmation",
-          onClickCommand: openSpaceliftWebPortalCommand,
-        },
-        spaceliftClient
-      ).refresh();
-      const spaceliftAuthStatusItem = new SpaceliftApiAuthenticationStatus(
-        context,
-        {
-          alignment: vscode.StatusBarAlignment.Left,
-          priority: 100,
-          refreshIntervalSeconds: settings.spaceliftStatusBarItemRefreshIntervalSeconds,
-          tooltip: "Log-in to Spacelift with spacectl and your Web browser",
-          onClickCommand: cst.COMMAND_SPACELIFT_LOGIN,
-        },
-        authenticationHandler
-      );
-      spaceliftAuthStatusItem.refresh();
-      context.subscriptions.push(
-        vscode.commands.registerCommand(cst.COMMAND_SPACELIFT_LOGIN, async () => {
-          if (await authenticationHandler.login_interactive()) {
-            await spaceliftAuthStatusItem.refresh();
-          }
-        })
-      );
-    })
-    .catch((error) => {
-      getLogger().error("Failed to initialize spacectl: " + error);
-      helpers
-        .showNotificationWithDecisions(
-          "Failed to initialize spacectl. Some features will be disabled until spacectl is configured.",
-          "tftoolbox.spacelift.showSpaceliftInitErrorOnStart",
-          "Open spacectl documentation",
-          "warning"
-        )
-        .then((result) => {
-          if (result) {
-            vscode.env.openExternal(vscode.Uri.parse("https://github.com/spacelift-io/spacectl"));
-          }
-        });
-    });
+  spacectlInit(settings).then(([spaceliftClient, spacectlInstance, tenantID, authenticationHandler]) => {
+    new RunSpacectlLocalPreviewCurrentStackCommand(context, { command: cst.COMMAND_LOCAL_PREVIEW_CURRENT_STACK }, spaceliftClient, spacectlInstance);
+    new RunSpacectlLocalPreviewCommand(context, { command: cst.COMMAND_LOCAL_PREVIEW }, spaceliftClient, spacectlInstance);
+    const openSpaceliftWebPortalCommand = "openSpaceliftWebPortal";
+    context.subscriptions.push(
+      vscode.commands.registerCommand(openSpaceliftWebPortalCommand, () => {
+        vscode.env.openExternal(vscode.Uri.parse("https://" + tenantID + cst.SPACELIFT_BASE_DOMAIN));
+      })
+    );
+    new SpaceliftPenStackConfCount(
+      context,
+      {
+        alignment: vscode.StatusBarAlignment.Left,
+        priority: 99,
+        refreshIntervalSeconds: settings.spaceliftStatusBarItemRefreshIntervalSeconds,
+        tooltip: "Count of Spacelift Stacks pending confirmation",
+        onClickCommand: openSpaceliftWebPortalCommand,
+        checkInternetConnection: true,
+      },
+      spaceliftClient
+    ).refresh();
+    const spaceliftAuthStatusItem = new SpaceliftApiAuthenticationStatus(
+      context,
+      {
+        alignment: vscode.StatusBarAlignment.Left,
+        priority: 100,
+        refreshIntervalSeconds: settings.spaceliftStatusBarItemRefreshIntervalSeconds,
+        tooltip: "Log-in to Spacelift with spacectl and your Web browser",
+        onClickCommand: cst.COMMAND_SPACELIFT_LOGIN,
+        checkInternetConnection: true,
+      },
+      authenticationHandler
+    );
+    spaceliftAuthStatusItem.refresh();
+    context.subscriptions.push(
+      vscode.commands.registerCommand(cst.COMMAND_SPACELIFT_LOGIN, async () => {
+        if (await authenticationHandler.login_interactive()) {
+          await spaceliftAuthStatusItem.refresh();
+        }
+      })
+    );
+    authenticationHandler
+      .check_token_valid()
+      .then((valid: boolean) => {
+        if (!valid && settings.showSpacectlNotAuthenticatedWarningOnStartup) {
+          getLogger().info("Spacectl token is not valid, showing notification to log-in to Spacelift");
+          vscode.commands.executeCommand(cst.COMMAND_SPACELIFT_LOGIN);
+        }
+      })
+      .catch((error) => {
+        getLogger().error("Failed to initialize spacectl: " + error);
+        helpers
+          .showNotificationWithDecisions(
+            "Failed to initialize spacectl. Some features will be disabled until spacectl is configured.",
+            "tftoolbox.spacelift.showSpaceliftInitErrorOnStart",
+            "Open spacectl documentation",
+            "warning"
+          )
+          .then((result) => {
+            if (result) {
+              vscode.env.openExternal(vscode.Uri.parse("https://github.com/spacelift-io/spacectl"));
+            }
+          });
+      });
+  });
   // Terraform version management commands
   const setTFVersionBasedOnProjectCommand = new SetTerraformVersionBasedOnProjectRequirementsCommand(
     context,
-    { command: cst.COMMAND_AUTO_SET_TERRAFORM_VERSION, successCallback: tfVersionItem.refresh.bind(tfVersionItem) },
+    { command: cst.COMMAND_AUTO_SET_TERRAFORM_VERSION, successCallback: tfVersionItem.refresh.bind(tfVersionItem), checkInternetConnection: true },
     tfVersionManager,
     tfProjectHelper
   );
-  new ChoseAndSetTerraformVersionCommand(context, { command: cst.COMMAND_SET_TERRAFORM_VERSION, successCallback: tfVersionItem.refresh.bind(tfVersionItem) }, tfVersionManager);
-  new ChoseAndDeleteTerraformVersionsCommand(context, { command: cst.COMMAND_DELETE_TERRAFORM_VERSIONS }, tfVersionManager);
+  new ChoseAndSetTerraformVersionCommand(
+    context,
+    { command: cst.COMMAND_SET_TERRAFORM_VERSION, successCallback: tfVersionItem.refresh.bind(tfVersionItem), checkInternetConnection: true },
+    tfVersionManager
+  );
+  new ChoseAndDeleteTerraformVersionsCommand(context, { command: cst.COMMAND_DELETE_TERRAFORM_VERSIONS, checkInternetConnection: true }, tfVersionManager);
 
   // Terraform init commands
   const tfInitAllProjectsCommand = new TerraformInitAllProjectsCommand(context, { command: cst.COMMAND_INIT_ALL_PROJECTS }, tfProjectHelper);
