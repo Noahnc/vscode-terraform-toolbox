@@ -65,8 +65,8 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // Init spacelift commands if spacelift is configured
   spacectlInit(settings).then(([spaceliftClient, spacectlInstance, tenantID, authenticationHandler]) => {
-    new RunSpacectlLocalPreviewCurrentStackCommand(context, { command: cst.COMMAND_LOCAL_PREVIEW_CURRENT_STACK }, spaceliftClient, spacectlInstance);
-    new RunSpacectlLocalPreviewCommand(context, { command: cst.COMMAND_LOCAL_PREVIEW }, spaceliftClient, spacectlInstance);
+    new RunSpacectlLocalPreviewCurrentStackCommand(context, { command: cst.COMMAND_LOCAL_PREVIEW_CURRENT_STACK, checkInternetConnection: true }, spaceliftClient, spacectlInstance);
+    new RunSpacectlLocalPreviewCommand(context, { command: cst.COMMAND_LOCAL_PREVIEW, checkInternetConnection: true }, spaceliftClient, spacectlInstance);
     const openSpaceliftWebPortalCommand = "openSpaceliftWebPortal";
     context.subscriptions.push(
       vscode.commands.registerCommand(openSpaceliftWebPortalCommand, () => {
