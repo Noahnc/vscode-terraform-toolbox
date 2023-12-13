@@ -2,6 +2,7 @@
 import * as path from "path";
 import * as vscode from "vscode";
 import { getLogger } from "./logger";
+import * as dns from "dns";
 
 export function checkIfOpenTextEditorIsTerraform(): boolean {
   const activeDocument = vscode.window.activeTextEditor?.document;
@@ -102,4 +103,16 @@ export function showError(message: string, silent = false) {
 
 export function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export function checkInternetConnection(): Promise<boolean> {
+  return new Promise((resolve) => {
+    dns.lookup("google.com", function (err: any) {
+      if (err && err.code == "ENOTFOUND") {
+        resolve(false);
+      } else {
+        resolve(true);
+      }
+    });
+  });
 }

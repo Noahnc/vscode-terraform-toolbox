@@ -2,6 +2,11 @@
 
 All notable changes to the terraform-toolbox extension will be documented in this file.
 
+## [0.3.1]
+
+- (refac): The extension now checks your internet connection before running commands that require an internet connection. Status bar items that require an internet connection will be hidden if no internet connection is available.
+- (feat): Added a new setting to control if a login notification should be shown on startup, if the current spacectl token is not valid.
+
 ## [0.3.0]
 
 - (feat): New Spacelift spacectl authentication handling. Since Spacelift has changed its token validity (only 1 token per user is now allowed to be active), the extension now uses the spacectl with web browser login to authenticate the user. If the current token provided by spacectl has expried or is revoked, a status item will be shown. Clicking on the status item will prompt you to authenticate spacectl with your browser.
