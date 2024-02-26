@@ -183,7 +183,7 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "@vscode-logging/wrapper": "^1.0.2",
+    "@vscode-logging/wrapper": "^2.0.0",
     "axios": "1.6.2",
     "chai": "^4.3.10",
     "decompress": "^4.2.1",
