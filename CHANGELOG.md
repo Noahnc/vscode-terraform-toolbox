@@ -2,6 +2,10 @@
 
 All notable changes to the terraform-toolbox extension will be documented in this file.
 
+## [0.3.2]
+
+- (fix): Fixed a bug where the spacelift token was not refreshed in the background from spacectl.
+
 ## [0.3.1]
 
 - (refac): The extension now checks your internet connection before running commands that require an internet connection. Status bar items that require an internet connection will be hidden if no internet connection is available.
