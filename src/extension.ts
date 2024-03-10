@@ -23,6 +23,7 @@ import { Cli } from "./utils/cli";
 import * as helpers from "./utils/helper_functions";
 import { IspaceliftAuthenticationHandler, SpaceliftAuthenticationHandler } from "./utils/spacelift/spacelift_authentication_handler";
 import { SpaceliftApiAuthenticationStatus } from "./view/statusbar/spacelift_auth_status";
+import * as spaceliftTreeView from "./view/TreeDataProvider/tftoolbox_view_container";
 
 export async function activate(context: vscode.ExtensionContext) {
   const settings = new Settings();
@@ -67,6 +68,7 @@ export async function activate(context: vscode.ExtensionContext) {
   spacectlInit(settings).then(([spaceliftClient, spacectlInstance, tenantID, authenticationHandler]) => {
     new RunSpacectlLocalPreviewCurrentStackCommand(context, { command: cst.COMMAND_LOCAL_PREVIEW_CURRENT_STACK, checkInternetConnection: true }, spaceliftClient, spacectlInstance);
     new RunSpacectlLocalPreviewCommand(context, { command: cst.COMMAND_LOCAL_PREVIEW, checkInternetConnection: true }, spaceliftClient, spacectlInstance);
+    spaceliftTreeView.activate(spaceliftClient);
     const openSpaceliftWebPortalCommand = "openSpaceliftWebPortal";
     context.subscriptions.push(
       vscode.commands.registerCommand(openSpaceliftWebPortalCommand, () => {
