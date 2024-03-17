@@ -39,7 +39,24 @@
         }
       ]
     },
+    "menus": {
+      "view/title": [
+        {
+          "command": "tftoolbox.refreshSpaceliftStacksView",
+          "when": "view == terraform-toolbox",
+          "group": "navigation"
+        }
+      ]
+    },
     "commands": [
+      {
+        "command": "tftoolbox.refreshSpaceliftStacksView",
+        "title": "Refresh Spacelift Stacks View",
+        "icon": {
+          "light": "media/refresh-light.svg",
+          "dark": "media/refresh-dark.svg"
+        }
+      },
       {
         "command": "tftoolbox.spaceliftLocalPreview",
         "title": "spacelift local-preview (select stack from open project)"

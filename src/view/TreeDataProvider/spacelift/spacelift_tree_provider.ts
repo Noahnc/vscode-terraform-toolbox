@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { IspaceliftClient } from "../../../utils/spacelift/spacelift_client";
-import { StackGroupTreeName, RootTreeItem, StackTreeItem } from "./spacelift_stack_tree_item";
+import { StackGroupTreeName, RootTreeItem, StackTreeItem } from "./spacelift_stack_tree_items";
 import { Stack } from "../../../models/spacelift/stack";
 
 export class StacksTreeDataProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
@@ -18,19 +18,15 @@ export class StacksTreeDataProvider implements vscode.TreeDataProvider<vscode.Tr
 
   async getChildren(element?: vscode.TreeItem): Promise<vscode.TreeItem[]> {
     if (!element) {
-      // Root level: 'Stacks Pending Confirmation' and 'Spacelift Stacks'
       return [new RootTreeItem(this.pendingConfirmationLabel, vscode.TreeItemCollapsibleState.Collapsed), new RootTreeItem(this.allLabel, vscode.TreeItemCollapsibleState.Collapsed)];
     } else if (element instanceof RootTreeItem && element.label === this.pendingConfirmationLabel) {
-      // Child stacks under 'Stacks Pending Confirmation'
-      const pendingStacks = await this.spaceliftClient.getStacks(); // Implement filtering logic for pending confirmation
+      const pendingStacks = await this.spaceliftClient.getStacks();
       return pendingStacks.pendingConfirmation.map((stack) => new StackTreeItem(stack));
     } else if (element instanceof RootTreeItem && element.label === this.allLabel) {
-      // Branches under 'Spacelift Stacks'
       const stacks = await this.spaceliftClient.getStacks();
       const branches = this.groupStacksByRepositoryAndBranch(stacks.all);
       return branches;
     } else if (element instanceof StackGroupTreeName) {
-      // Stacks under a specific branch
       return element.children.map((stack) => new StackTreeItem(stack));
     }
     return [];
@@ -47,4 +43,14 @@ export class StacksTreeDataProvider implements vscode.TreeDataProvider<vscode.Tr
     });
     return Object.keys(groupedStacks).map((stackKey) => new StackGroupTreeName(stackKey, groupedStacks[stackKey]));
   }
+
+  refresh(): void {
+    this._onDidChangeTreeData.fire(null);
+  }
+}
+
+export function activate(client: IspaceliftClient, refreshCommand: string) {
+  const stacksProvider = new StacksTreeDataProvider(client);
+  vscode.window.createTreeView("spacelift.stacks", { treeDataProvider: stacksProvider });
+  vscode.commands.registerCommand(refreshCommand, () => stacksProvider.refresh());
 }

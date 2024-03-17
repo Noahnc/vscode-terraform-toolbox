@@ -14,3 +14,4 @@ export const COMMAND_INIT_CURRENT_PROJECT = "tftoolbox.initCurrentProject";
 export const COMMAND_INIT_REFRESH_MODULES = "tftoolbox.initRefreshModules";
 export const COMMAND_SET_WORKSPACE = "tftoolbox.setWorkspace";
 export const COMMAND_AUTO_SET_WORKSPACE = "tftoolbox.autoSetWorkspace";
+export const COMMAND_REFRESH_SPACELIFT_STACKS_VIEW = "tftoolbox.refreshSpaceliftStacksView";
