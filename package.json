@@ -22,7 +22,41 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "terraform-toolbox",
+          "title": "Terraform Toolbox",
+          "icon": "media/your-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "terraform-toolbox": [
+        {
+          "id": "spacelift.stacks",
+          "name": "Spacelift Stacks"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "tftoolbox.refreshSpaceliftStacksView",
+          "when": "view == terraform-toolbox",
+          "group": "navigation"
+        }
+      ]
+    },
     "commands": [
+      {
+        "command": "tftoolbox.refreshSpaceliftStacksView",
+        "title": "Refresh Spacelift Stacks View",
+        "icon": {
+          "light": "media/refresh-light.svg",
+          "dark": "media/refresh-dark.svg"
+        }
+      },
       {
         "command": "tftoolbox.spaceliftLocalPreview",
         "title": "spacelift local-preview (select stack from open project)"
