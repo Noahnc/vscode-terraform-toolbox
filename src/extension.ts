@@ -39,6 +39,7 @@ export async function activate(context: vscode.ExtensionContext) {
   // ToDO: Replace manual dependencie injection with a DI framework
   let iacProvider: IIaCProvider;
   let activeVersionManager: IversionManager;
+  let setVersionCommand: string;
   const terraformIacProvider = new TerraformProvider();
   const opentofuIacProvider = new OpenTofuProvider();
 
@@ -49,22 +50,25 @@ export async function activate(context: vscode.ExtensionContext) {
     getLogger().info("Extension is configured to use OpenTofu instead of Terraform");
     iacProvider = opentofuIacProvider;
     activeVersionManager = opentofuVersionManager;
+    setVersionCommand = cst.COMMAND_SET_OPEN_TOFU_VERSION;
   } else {
     getLogger().info("Extension is configured to use Terraform");
     iacProvider = terraformIacProvider;
     activeVersionManager = terraformVersionManager;
+    setVersionCommand = cst.COMMAND_SET_TERRAFORM_VERSION;
   }
 
   const iacCli = new IacCli(new Cli(), iacProvider.getBinaryName());
-  const tfProjectHelper = new IacProjectHelper(hcl, iacCli, settings);
+  const iacProjectHelper = new IacProjectHelper(hcl, iacCli, settings);
 
   const iacVersionItem = new IacActiveVersionItem(context, activeVersionManager, {
     alignment: vscode.StatusBarAlignment.Right,
     priority: 100,
-    onClickCommand: cst.COMMAND_SET_TERRAFORM_VERSION,
+    onClickCommand: setVersionCommand,
     updateOnDidChangeTextEditorSelection: true,
     tooltip: iacProvider.getName() + " version currently active",
   });
+
   const iacWorkspaceItem = new IacActiveWorkspaceItem(
     context,
     {
@@ -75,7 +79,7 @@ export async function activate(context: vscode.ExtensionContext) {
       tooltip: iacProvider.getName() + " workspace of the current folder",
     },
     iacCli,
-    tfProjectHelper
+    iacProjectHelper
   );
 
   // Init spacelift commands if spacelift is configured
@@ -150,7 +154,7 @@ export async function activate(context: vscode.ExtensionContext) {
     context,
     { command: cst.COMMAND_AUTO_SET_TERRAFORM_VERSION, successCallback: iacVersionItem.refresh.bind(iacVersionItem), checkInternetConnection: true },
     terraformVersionManager,
-    tfProjectHelper,
+    iacProjectHelper,
     terraformIacProvider
   );
   new ChoseAndSetIacVersionCommand(
@@ -166,7 +170,7 @@ export async function activate(context: vscode.ExtensionContext) {
     context,
     { command: cst.COMMAND_AUTO_SET_OPEN_TOFU_VERSION, successCallback: iacVersionItem.refresh.bind(iacVersionItem), checkInternetConnection: true },
     opentofuVersionManager,
-    tfProjectHelper,
+    iacProjectHelper,
     opentofuIacProvider
   );
   new ChoseAndSetIacVersionCommand(
@@ -178,9 +182,9 @@ export async function activate(context: vscode.ExtensionContext) {
   new ChoseAndDeleteIacVersionsCommand(context, { command: cst.COMMAND_DELETE_OPEN_TOFU_VERSIONS, checkInternetConnection: true }, opentofuVersionManager, opentofuIacProvider);
 
   // Terraform init commands
-  const tfInitAllProjectsCommand = new TerraformInitAllProjectsCommand(context, { command: cst.COMMAND_INIT_ALL_PROJECTS }, tfProjectHelper);
-  new TerraformInitCurrentProjectCommand(context, { command: cst.COMMAND_INIT_CURRENT_PROJECT }, tfProjectHelper, iacCli);
-  new TerraformFetchModulesCurrentProjectCommand(context, { command: cst.COMMAND_INIT_REFRESH_MODULES }, tfProjectHelper, iacCli);
+  const tfInitAllProjectsCommand = new TerraformInitAllProjectsCommand(context, { command: cst.COMMAND_INIT_ALL_PROJECTS }, iacProjectHelper);
+  new TerraformInitCurrentProjectCommand(context, { command: cst.COMMAND_INIT_CURRENT_PROJECT }, iacProjectHelper, iacCli);
+  new TerraformFetchModulesCurrentProjectCommand(context, { command: cst.COMMAND_INIT_REFRESH_MODULES }, iacProjectHelper, iacCli);
 
   // IaC workspace commands
   new ChoseAndSetTerraformWorkspaceCommand(context, { command: cst.COMMAND_SET_WORKSPACE, successCallback: iacWorkspaceItem.refresh.bind(iacWorkspaceItem) }, iacCli);
@@ -188,7 +192,7 @@ export async function activate(context: vscode.ExtensionContext) {
     context,
     { command: cst.COMMAND_AUTO_SET_WORKSPACE, successCallback: iacWorkspaceItem.refresh.bind(iacWorkspaceItem) },
     iacCli,
-    tfProjectHelper
+    iacProjectHelper
   );
 
   // Check and install new terraform version if setting is enabled
