@@ -1,8 +1,8 @@
 import * as vscode from "vscode";
 import { SpaceliftStacks } from "../../models/spacelift/stack";
 import { getLogger } from "../../utils/logger";
-import { IspaceliftClient } from "../../utils/spacelift/spacelift_client";
-import { BaseStatusBarItem, IvscodeStatusBarItemSettings } from "./base_statusbar_item";
+import { IspaceliftClient } from "../../utils/Spacelift/spaceliftClient";
+import { BaseStatusBarItem, IvscodeStatusBarItemSettings } from "./baseStatusBarItem";
 
 export class SpaceliftPenStackConfCount extends BaseStatusBarItem {
   private readonly _spaceliftClient: IspaceliftClient;

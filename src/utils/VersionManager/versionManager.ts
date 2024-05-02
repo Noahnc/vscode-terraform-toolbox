@@ -1,17 +1,14 @@
 import * as fs from "fs";
 import * as vscode from "vscode";
-import { UserShownError } from "../custom_errors";
-import { Release, Releases } from "../models/github/release";
-import * as helpers from "./helper_functions";
-import { getLogger } from "./logger";
+import { UserShownError } from "../../custom_errors";
+import { Release, Releases } from "../../models/github/release";
+import * as helpers from "../helperFunctions";
+import { getLogger } from "../logger";
 import path = require("path");
 import os = require("os");
-import { PathObject } from "./path";
-
-export interface IversionProvider {
-  getReleasesFormSource(): Promise<Releases>;
-  getBinaryPathForRelease(release: Release): Promise<PathObject>;
-}
+import { PathObject } from "../path";
+import { IversionProvider } from "./IVersionProvider";
+import { versionProviderSettings } from "./IVersionProviderSettings";
 
 export class ReleaseError extends UserShownError {
   constructor(message: string) {
@@ -29,44 +26,38 @@ export interface IversionManager {
   getActiveVersion(): string | undefined;
 }
 
-export interface versionManagerSettings {
-  baseFolderName: string;
-  softwareName: string;
-  binaryName: string;
-}
-
 export class VersionManager implements IversionManager {
-  private readonly _softwareName: string;
   private readonly _installedVersionsFolder: PathObject;
+  private readonly _versionProviderSettings: versionProviderSettings;
   public readonly _baseFolder: PathObject;
   public readonly _activeVersion: PathObject;
   private readonly _activeVersionFolder: PathObject;
   public readonly _metadataFile: PathObject;
   private readonly _versionProvider: IversionProvider;
 
-  constructor(versionManagerSettings: versionManagerSettings, versionProvider: IversionProvider) {
+  constructor(versionProvider: IversionProvider, baseFolderName: string) {
     this._versionProvider = versionProvider;
-    this._baseFolder = new PathObject(path.join(os.homedir(), versionManagerSettings.baseFolderName));
-    this._softwareName = versionManagerSettings.softwareName;
-    this._installedVersionsFolder = this._baseFolder.join(this._softwareName);
+    this._versionProviderSettings = versionProvider.getVersionProviderSettings();
+    this._baseFolder = new PathObject(path.join(os.homedir(), baseFolderName));
+    this._installedVersionsFolder = this._baseFolder.join(this._versionProviderSettings.softwareName);
     this._activeVersionFolder = this._baseFolder.join("active");
     this._metadataFile = this._installedVersionsFolder.join("metadata.json");
     if (os.platform() === "win32") {
-      this._activeVersion = this._activeVersionFolder.join(versionManagerSettings.binaryName + ".exe");
+      this._activeVersion = this._activeVersionFolder.join(this._versionProviderSettings.binaryName + ".exe");
     } else {
-      this._activeVersion = this._activeVersionFolder.join(versionManagerSettings.binaryName);
+      this._activeVersion = this._activeVersionFolder.join(this._versionProviderSettings.binaryName);
     }
   }
 
   async switchVersion(chosenRelease: Release): Promise<boolean> {
     if (chosenRelease.isActive) {
-      getLogger().debug(this._softwareName + " version " + chosenRelease.name + " is already active.");
+      getLogger().debug(this._versionProviderSettings.softwareName + " version " + chosenRelease.name + " is already active.");
       return false;
     }
     this.createRequiredFolders();
-    getLogger().info("Switching to " + this._softwareName + " version " + chosenRelease.name);
+    getLogger().info("Switching to " + this._versionProviderSettings.softwareName + " version " + chosenRelease.name);
     if (chosenRelease.isInstalled) {
-      getLogger().debug(this._softwareName + " version " + chosenRelease.name + " is installed but not active.");
+      getLogger().debug(this._versionProviderSettings.softwareName + " version " + chosenRelease.name + " is installed but not active.");
       await this.handleVersionSwitch(chosenRelease);
       return true;
     }
@@ -75,7 +66,7 @@ export class VersionManager implements IversionManager {
       throw new UserShownError("Failed to get binary for release " + chosenRelease.name);
     }
     await this.handleVersionSwitch(chosenRelease, releaseBinPath);
-    getLogger().debug("Successfully installed and switched to " + this._softwareName + " version " + chosenRelease.name);
+    getLogger().debug("Successfully installed and switched to " + this._versionProviderSettings.softwareName + " version " + chosenRelease.name);
     return true;
   }
 
@@ -89,7 +80,7 @@ export class VersionManager implements IversionManager {
   }
 
   async choseRelease(releases: Releases): Promise<Release | undefined> {
-    const chosenRelease = await helpers.getUserDecision<Release>("Select a " + this._softwareName + " version", releases.all, "name", "status");
+    const chosenRelease = await helpers.getUserDecision<Release>("Select a " + this._versionProviderSettings.softwareName + " version", releases.all, "name", "status");
     if (chosenRelease === undefined) {
       getLogger().debug("No release chosen.");
       return undefined;
@@ -119,7 +110,7 @@ export class VersionManager implements IversionManager {
   }
 
   private setActiveVersion(version: string) {
-    getLogger().debug("Setting active " + this._softwareName + " version to " + version);
+    getLogger().debug("Setting active " + this._versionProviderSettings.softwareName + " version to " + version);
     if (!fs.existsSync(this._metadataFile.path)) {
       this.createNewMetadataFile(version);
       return;
@@ -172,7 +163,7 @@ export class VersionManager implements IversionManager {
     if (currentVersion !== undefined && fs.existsSync(this._activeVersion.path)) {
       // check if the bin file is locked by the another process
       if (this._activeVersion.isLocked()) {
-        getLogger().error(this._softwareName + " binary is locked by the another process, try again in 5 seconds");
+        getLogger().error(this._versionProviderSettings.softwareName + " binary is locked by the another process, try again in 5 seconds");
         if (retryCount < maxLockRetries) {
           await new Promise((resolve) => setTimeout(resolve, 5000));
           retryCount++;
@@ -194,7 +185,7 @@ export class VersionManager implements IversionManager {
   }
 
   private moveBin(currentBinPath: PathObject, newBinPath: PathObject) {
-    getLogger().debug("Moving " + this._softwareName + " binary from " + currentBinPath.path + " to " + newBinPath.path);
+    getLogger().debug("Moving " + this._versionProviderSettings.softwareName + " binary from " + currentBinPath.path + " to " + newBinPath.path);
     fs.renameSync(currentBinPath.path, newBinPath.path);
   }
 

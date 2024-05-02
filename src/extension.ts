@@ -3,26 +3,32 @@ import * as hcl from "hcl2-parser";
 import fetch from "node-fetch";
 import { Octokit } from "octokit";
 import * as vscode from "vscode";
-import { ChoseAndDeleteTerraformVersionsCommand, ChoseAndSetTerraformVersionCommand, SetTerraformVersionBasedOnProjectRequirementsCommand } from "./commands/manage_terraform_version";
-import { RunSpacectlLocalPreviewCommand, RunSpacectlLocalPreviewCurrentStackCommand } from "./commands/spacelift_local_preview";
-import { TerraformFetchModulesCurrentProjectCommand, TerraformInitAllProjectsCommand, TerraformInitCurrentProjectCommand } from "./commands/terraform_init";
-import { AutoSetTerraformWorkspaceCommand, ChoseAndSetTerraformWorkspaceCommand } from "./commands/terraform_workspace";
+import { ChoseAndDeleteIacVersionsCommand, ChoseAndSetIacVersionCommand, SetIacVersionBasedOnProjectRequirementsCommand } from "./commands/ManageIacVersionCommand";
+import { RunSpacectlLocalPreviewCommand, RunSpacectlLocalPreviewCurrentStackCommand } from "./commands/SpaceliftLocalPreviewCommand";
+import { TerraformFetchModulesCurrentProjectCommand, TerraformInitAllProjectsCommand, TerraformInitCurrentProjectCommand } from "./commands/IacInitCommand";
+import { AutoSetTerraformWorkspaceCommand, ChoseAndSetTerraformWorkspaceCommand } from "./commands/IacWorkspaceCommand";
 import * as cst from "./constants";
 import { Settings } from "./models/settings";
-import { getLogger, initLogger } from "./utils/logger";
-import { Ispacectl, Spacectl } from "./utils/spacelift/spacectl";
-import { IspaceliftClient, SpaceliftClient } from "./utils/spacelift/spacelift_client";
-import { TerraformCLI } from "./utils/terraform/terraform_cli";
-import { TerraformProjectHelper } from "./utils/terraform/terraform_project_helper";
-import { SpaceliftPenStackConfCount } from "./view/statusbar/spacelift_stack_confirmation_item";
-import { TfActiveVersionItem } from "./view/statusbar/terraform_version_item";
-import { TfActiveWorkspaceItem } from "./view/statusbar/terraform_workspace_item";
-import { TerraformVersionProvieder } from "./utils/terraform/terraform_version_provider";
-import { VersionManager } from "./utils/version_manager";
 import { Cli } from "./utils/cli";
-import * as helpers from "./utils/helper_functions";
-import { IspaceliftAuthenticationHandler, SpaceliftAuthenticationHandler } from "./utils/spacelift/spacelift_authentication_handler";
-import { SpaceliftApiAuthenticationStatus } from "./view/statusbar/spacelift_auth_status";
+import * as helpers from "./utils/helperFunctions";
+import { getLogger, initLogger } from "./utils/logger";
+import { ISpacectl, Spacectl } from "./utils/Spacelift/spacectl";
+import { IspaceliftClient, SpaceliftClient } from "./utils/Spacelift/spaceliftClient";
+import { OpenTofuVersionProvider } from "./utils/OpenTofu/opentofuVersionProvider";
+import { IacProjectHelper } from "./utils/IaC/iacProjectHelper";
+
+import { IversionManager, VersionManager } from "./utils/VersionManager/versionManager";
+
+import { IacCli } from "./utils/IaC/iacCli";
+import { SpaceliftAuthenticationHandler } from "./utils/Spacelift/spaceliftAuthenticationHandler";
+import { TerraformVersionProvieder } from "./utils/Terraform/terraformVersionProvider";
+import { IacActiveWorkspaceItem } from "./view/statusbar/IacWorkspaceItem";
+import { SpaceliftPenStackConfCount } from "./view/statusbar/spaceliftStackConfirmationItem";
+import { SpaceliftApiAuthenticationStatus } from "./view/statusbar/spaceliftAuthStatusItem";
+import { IacActiveVersionItem } from "./view/statusbar/iacVersionItem";
+import { IIaCProvider } from "./utils/IaC/IIaCProvider";
+import { OpenTofuProvider } from "./utils/OpenTofu/opentofuIacProvider";
+import { TerraformProvider } from "./utils/Terraform/terraformIacProvider";
 
 export async function activate(context: vscode.ExtensionContext) {
   const settings = new Settings();
@@ -31,35 +37,44 @@ export async function activate(context: vscode.ExtensionContext) {
   getLogger().info("Activating extension");
 
   // ToDO: Replace manual dependencie injection with a DI framework
-  const tfcli = new TerraformCLI(new Cli());
-  const tfProjectHelper = new TerraformProjectHelper(hcl, tfcli, settings);
-  const tfVersionProvider = new TerraformVersionProvieder(context, new Octokit({ request: { fetch } }));
-  const tfVersionManager = new VersionManager(
-    {
-      baseFolderName: cst.EXTENSION_BINARY_FOLDER_NAME,
-      softwareName: "Terraform",
-      binaryName: "terraform",
-    },
-    tfVersionProvider
-  );
+  let iacProvider: IIaCProvider;
+  let activeVersionManager: IversionManager;
+  const terraformIacProvider = new TerraformProvider();
+  const opentofuIacProvider = new OpenTofuProvider();
 
-  const tfVersionItem = new TfActiveVersionItem(context, tfVersionManager, {
+  const terraformVersionManager = new VersionManager(new TerraformVersionProvieder(context, new Octokit({ request: { fetch } })), cst.EXTENSION_BINARY_FOLDER_NAME);
+  const opentofuVersionManager = new VersionManager(new OpenTofuVersionProvider(context, new Octokit({ request: { fetch } })), cst.EXTENSION_BINARY_FOLDER_NAME);
+
+  if (settings.useOpenTofuInsteadOfTerraform) {
+    getLogger().info("Extension is configured to use OpenTofu instead of Terraform");
+    iacProvider = opentofuIacProvider;
+    activeVersionManager = opentofuVersionManager;
+  } else {
+    getLogger().info("Extension is configured to use Terraform");
+    iacProvider = terraformIacProvider;
+    activeVersionManager = terraformVersionManager;
+  }
+
+  const iacCli = new IacCli(new Cli(), iacProvider.getBinaryName());
+  const tfProjectHelper = new IacProjectHelper(hcl, iacCli, settings);
+
+  const iacVersionItem = new IacActiveVersionItem(context, activeVersionManager, {
     alignment: vscode.StatusBarAlignment.Right,
     priority: 100,
     onClickCommand: cst.COMMAND_SET_TERRAFORM_VERSION,
     updateOnDidChangeTextEditorSelection: true,
-    tooltip: "Terraform version currently active",
+    tooltip: iacProvider.getName() + " version currently active",
   });
-  const tfWorkspaceItem = new TfActiveWorkspaceItem(
+  const iacWorkspaceItem = new IacActiveWorkspaceItem(
     context,
     {
       alignment: vscode.StatusBarAlignment.Right,
       priority: 99,
       onClickCommand: cst.COMMAND_SET_WORKSPACE,
       updateOnDidChangeTextEditorSelection: true,
-      tooltip: "Terraform workspace of the current folder",
+      tooltip: iacProvider.getName() + " workspace of the current folder",
     },
-    tfcli,
+    iacCli,
     tfProjectHelper
   );
 
@@ -129,45 +144,70 @@ export async function activate(context: vscode.ExtensionContext) {
           });
       });
   });
+
   // Terraform version management commands
-  const setTFVersionBasedOnProjectCommand = new SetTerraformVersionBasedOnProjectRequirementsCommand(
+  const setTFVersionBasedOnProjectCommand = new SetIacVersionBasedOnProjectRequirementsCommand(
     context,
-    { command: cst.COMMAND_AUTO_SET_TERRAFORM_VERSION, successCallback: tfVersionItem.refresh.bind(tfVersionItem), checkInternetConnection: true },
-    tfVersionManager,
-    tfProjectHelper
+    { command: cst.COMMAND_AUTO_SET_TERRAFORM_VERSION, successCallback: iacVersionItem.refresh.bind(iacVersionItem), checkInternetConnection: true },
+    terraformVersionManager,
+    tfProjectHelper,
+    terraformIacProvider
   );
-  new ChoseAndSetTerraformVersionCommand(
+  new ChoseAndSetIacVersionCommand(
     context,
-    { command: cst.COMMAND_SET_TERRAFORM_VERSION, successCallback: tfVersionItem.refresh.bind(tfVersionItem), checkInternetConnection: true },
-    tfVersionManager
+    { command: cst.COMMAND_SET_TERRAFORM_VERSION, successCallback: iacVersionItem.refresh.bind(iacVersionItem), checkInternetConnection: true },
+    terraformVersionManager,
+    terraformIacProvider
   );
-  new ChoseAndDeleteTerraformVersionsCommand(context, { command: cst.COMMAND_DELETE_TERRAFORM_VERSIONS, checkInternetConnection: true }, tfVersionManager);
+  new ChoseAndDeleteIacVersionsCommand(context, { command: cst.COMMAND_DELETE_TERRAFORM_VERSIONS, checkInternetConnection: true }, terraformVersionManager, terraformIacProvider);
+
+  /// OpenTofu version management commands
+  const setOpenTofuVersionBasedOnProjectCommand = new SetIacVersionBasedOnProjectRequirementsCommand(
+    context,
+    { command: cst.COMMAND_AUTO_SET_OPEN_TOFU_VERSION, successCallback: iacVersionItem.refresh.bind(iacVersionItem), checkInternetConnection: true },
+    opentofuVersionManager,
+    tfProjectHelper,
+    opentofuIacProvider
+  );
+  new ChoseAndSetIacVersionCommand(
+    context,
+    { command: cst.COMMAND_SET_OPEN_TOFU_VERSION, successCallback: iacVersionItem.refresh.bind(iacVersionItem), checkInternetConnection: true },
+    opentofuVersionManager,
+    opentofuIacProvider
+  );
+  new ChoseAndDeleteIacVersionsCommand(context, { command: cst.COMMAND_DELETE_OPEN_TOFU_VERSIONS, checkInternetConnection: true }, opentofuVersionManager, opentofuIacProvider);
 
   // Terraform init commands
   const tfInitAllProjectsCommand = new TerraformInitAllProjectsCommand(context, { command: cst.COMMAND_INIT_ALL_PROJECTS }, tfProjectHelper);
-  new TerraformInitCurrentProjectCommand(context, { command: cst.COMMAND_INIT_CURRENT_PROJECT }, tfProjectHelper, tfcli);
-  new TerraformFetchModulesCurrentProjectCommand(context, { command: cst.COMMAND_INIT_REFRESH_MODULES }, tfProjectHelper, tfcli);
+  new TerraformInitCurrentProjectCommand(context, { command: cst.COMMAND_INIT_CURRENT_PROJECT }, tfProjectHelper, iacCli);
+  new TerraformFetchModulesCurrentProjectCommand(context, { command: cst.COMMAND_INIT_REFRESH_MODULES }, tfProjectHelper, iacCli);
 
-  // Terraform workspace commands
-  new ChoseAndSetTerraformWorkspaceCommand(context, { command: cst.COMMAND_SET_WORKSPACE, successCallback: tfWorkspaceItem.refresh.bind(tfWorkspaceItem) }, tfcli);
+  // IaC workspace commands
+  new ChoseAndSetTerraformWorkspaceCommand(context, { command: cst.COMMAND_SET_WORKSPACE, successCallback: iacWorkspaceItem.refresh.bind(iacWorkspaceItem) }, iacCli);
   const autoSetWorkspaceCommand = new AutoSetTerraformWorkspaceCommand(
     context,
-    { command: cst.COMMAND_AUTO_SET_WORKSPACE, successCallback: tfWorkspaceItem.refresh.bind(tfWorkspaceItem) },
-    tfcli,
+    { command: cst.COMMAND_AUTO_SET_WORKSPACE, successCallback: iacWorkspaceItem.refresh.bind(iacWorkspaceItem) },
+    iacCli,
     tfProjectHelper
   );
 
   // Check and install new terraform version if setting is enabled
   if (settings.autoselectVersion) {
-    await setTFVersionBasedOnProjectCommand.run(true).then(() => {
-      tfVersionItem.refresh();
-    });
+    if (settings.useOpenTofuInsteadOfTerraform) {
+      await setOpenTofuVersionBasedOnProjectCommand.run(true).then(() => {
+        iacVersionItem.refresh();
+      });
+    } else {
+      await setTFVersionBasedOnProjectCommand.run(true).then(() => {
+        iacVersionItem.refresh();
+      });
+    }
   }
 
-  if (tfVersionManager.getActiveVersion() === undefined) {
+  if (activeVersionManager.getActiveVersion() === undefined) {
     if (
       await helpers.showNotificationWithDecisions(
-        "No Terraform version installed by this extension yet. Do you want to select a version to install now?",
+        "No " + iacProvider.getName() + " version installed by this extension yet. Do you want to select a version to install now?",
         "tftoolbox.spacelift.showNoTerraformVersionInstalledMsg",
         "Show versions",
         "information"
@@ -187,10 +227,10 @@ export async function activate(context: vscode.ExtensionContext) {
   }
 
   // update status bar item once at start
-  tfVersionItem.refresh();
+  iacVersionItem.refresh();
 }
 
-async function spacectlInit(settings: Settings): Promise<[IspaceliftClient, Ispacectl, string, IspaceliftAuthenticationHandler]> {
+async function spacectlInit(settings: Settings): Promise<[IspaceliftClient, ISpacectl, string, SpaceliftAuthenticationHandler]> {
   const spacectlProfileName = settings.spacectlProfileName;
   const spacectlInstance = new Spacectl(new Cli());
   if (spacectlProfileName !== null && spacectlProfileName !== undefined) {

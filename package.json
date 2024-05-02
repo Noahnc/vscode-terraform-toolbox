@@ -48,6 +48,18 @@
         "title": "terraform set version (from current project requrements)"
       },
       {
+        "command": "tftoolbox.setOpenTofuVersion",
+        "title": "opentofu set version (select from list)"
+      },
+      {
+        "command": "tftoolbox.deleteOpenTofuVersions",
+        "title": "opentofu delete versions (select from list)"
+      },
+      {
+        "command": "tftoolbox.autoSetOpenTofuVersion",
+        "title": "opentofu set version (from current project requrements)"
+      },
+      {
         "command": "tftoolbox.initAllProjects",
         "title": "terraform init (all projects)"
       },
@@ -115,6 +127,11 @@
           "type": "boolean",
           "default": true,
           "description": "Shows an informtion msg on startup if no terraform version is installed by the extension."
+        },
+        "tftoolbox.UseOpenTofuInsteadOfTerraform": {
+          "type": "boolean",
+          "default": false,
+          "description": "If enabled, all features of the extension will be run with OpenTofu instead of Terraform."
         },
         "tftoolbox.spacelift.stackPendingConfirmationStatusItemUpdateTimeSeconds": {
           "type": "number",

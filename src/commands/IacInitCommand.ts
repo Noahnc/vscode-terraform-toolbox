@@ -1,15 +1,15 @@
 import * as vscode from "vscode";
-import * as helpers from "../utils/helper_functions";
+import * as helpers from "../utils/helperFunctions";
 import { getLogger } from "../utils/logger";
-import { TerraformCLI } from "../utils/terraform/terraform_cli";
-import { IterraformProjectHelper, noValidTerraformFolder, terraformFolderNotInitialized, terraformGetError, terraformInitError } from "../utils/terraform/terraform_project_helper";
-import { BaseCommand, IvscodeCommandSettings } from "./base_command";
+import { IacCli } from "../utils/IaC/iacCli";
+import { IIacProjectHelper, noValidTerraformFolder, terraformFolderNotInitialized, terraformGetError, terraformInitError } from "../utils/IaC/iacProjectHelper";
+import { BaseCommand, IvscodeCommandSettings } from "./BaseCommand";
 import { PathObject } from "../utils/path";
 import path = require("path");
 
 export class TerraformInitAllProjectsCommand extends BaseCommand {
-  tfProjectHelper: IterraformProjectHelper;
-  constructor(context: vscode.ExtensionContext, settings: IvscodeCommandSettings, tfProjectHelper: IterraformProjectHelper) {
+  tfProjectHelper: IIacProjectHelper;
+  constructor(context: vscode.ExtensionContext, settings: IvscodeCommandSettings, tfProjectHelper: IIacProjectHelper) {
     super(context, settings);
     this.tfProjectHelper = tfProjectHelper;
   }
@@ -78,9 +78,9 @@ export class TerraformInitAllProjectsCommand extends BaseCommand {
 }
 
 export class TerraformInitCurrentProjectCommand extends BaseCommand {
-  tfProjectHelper: IterraformProjectHelper;
-  tfcli: TerraformCLI;
-  constructor(context: vscode.ExtensionContext, settings: IvscodeCommandSettings, tfProjectHelper: IterraformProjectHelper, tfcli: TerraformCLI) {
+  tfProjectHelper: IIacProjectHelper;
+  tfcli: IacCli;
+  constructor(context: vscode.ExtensionContext, settings: IvscodeCommandSettings, tfProjectHelper: IIacProjectHelper, tfcli: IacCli) {
     super(context, settings);
     this.tfProjectHelper = tfProjectHelper;
     this.tfcli = tfcli;
@@ -109,9 +109,9 @@ export class TerraformInitCurrentProjectCommand extends BaseCommand {
 }
 
 export class TerraformFetchModulesCurrentProjectCommand extends BaseCommand {
-  tfProjectHelper: IterraformProjectHelper;
-  tfcli: TerraformCLI;
-  constructor(context: vscode.ExtensionContext, settings: IvscodeCommandSettings, tfProjectHelper: IterraformProjectHelper, tfcli: TerraformCLI) {
+  tfProjectHelper: IIacProjectHelper;
+  tfcli: IacCli;
+  constructor(context: vscode.ExtensionContext, settings: IvscodeCommandSettings, tfProjectHelper: IIacProjectHelper, tfcli: IacCli) {
     super(context, settings);
     this.tfProjectHelper = tfProjectHelper;
     this.tfcli = tfcli;

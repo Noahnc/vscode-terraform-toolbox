@@ -1,9 +1,9 @@
 import { GraphQLClient, Variables } from "graphql-request";
 import { UserShownError } from "../../custom_errors";
 import { GET_SPACELIFT_STACKS, SpaceliftStacks, Stack } from "../../models/spacelift/stack";
-import * as helper from "../helper_functions";
+import * as helper from "../helperFunctions";
 import { getLogger } from "../logger";
-import { IspaceliftAuthenticationHandler } from "./spacelift_authentication_handler";
+import { ISpaceliftAuthenticationHandler } from "./spaceliftAuthenticationHandler";
 
 export interface IspaceliftClient {
   getStacks(): Promise<SpaceliftStacks>;
@@ -13,9 +13,9 @@ export interface IspaceliftClient {
 export class SpaceliftClient implements IspaceliftClient {
   private _spaceliftEndpoint?: string;
   private _client!: GraphQLClient;
-  private _auth_handler: IspaceliftAuthenticationHandler;
+  private _auth_handler: ISpaceliftAuthenticationHandler;
 
-  constructor($client: GraphQLClient, auth_handler: IspaceliftAuthenticationHandler) {
+  constructor($client: GraphQLClient, auth_handler: ISpaceliftAuthenticationHandler) {
     this._auth_handler = auth_handler;
     this._client = $client;
   }

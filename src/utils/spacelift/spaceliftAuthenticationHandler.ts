@@ -1,8 +1,8 @@
-import { Ispacectl } from "./spacectl";
-import { SpaceliftJwt } from "../../models/spacelift/jwt";
-import { getLogger } from "../logger";
 import { GraphQLClient, gql } from "graphql-request";
 import * as vscode from "vscode";
+import { SpaceliftJwt } from "../../models/spacelift/jwt";
+import { getLogger } from "../logger";
+import { ISpacectl } from "./spacectl";
 
 interface ViewerId {
   viewer: id;
@@ -12,19 +12,19 @@ interface id {
   id: string | undefined;
 }
 
-export interface IspaceliftAuthenticationHandler {
+export interface ISpaceliftAuthenticationHandler {
   get_token(): Promise<SpaceliftJwt | null>;
   check_token_valid(): Promise<boolean>;
   login_interactive(): Promise<boolean>;
 }
 
-export class SpaceliftAuthenticationHandler implements IspaceliftAuthenticationHandler {
-  private _spacectl: Ispacectl;
-  private _cli: Ispacectl;
+export class SpaceliftAuthenticationHandler implements ISpaceliftAuthenticationHandler {
+  private _spacectl: ISpacectl;
+  private _cli: ISpacectl;
   private _spaceliftJwt: SpaceliftJwt | undefined;
   private _graphQLClient: GraphQLClient;
 
-  constructor(spacectl: Ispacectl, cli: Ispacectl, graphqlClient: GraphQLClient) {
+  constructor(spacectl: ISpacectl, cli: ISpacectl, graphqlClient: GraphQLClient) {
     this._spacectl = spacectl;
     this._cli = cli;
     this._graphQLClient = graphqlClient;

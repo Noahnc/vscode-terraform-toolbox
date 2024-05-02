@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { UserShownError } from "../custom_errors";
 import { getLogger } from "../utils/logger";
-import * as helper from "../utils/helper_functions";
+import * as helper from "../utils/helperFunctions";
 
 export interface IvscodeCommandSettings {
   command: string;

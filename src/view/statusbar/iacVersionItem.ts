@@ -1,10 +1,10 @@
 import * as vscode from "vscode";
 import { getLogger } from "../../utils/logger";
-import { IversionManager } from "../../utils/version_manager";
-import { BaseStatusBarItem, IvscodeStatusBarItemSettings } from "./base_statusbar_item";
-import { checkIfOpenTextEditorIsTerraform } from "../../utils/helper_functions";
+import { IversionManager } from "../../utils/VersionManager/versionManager";
+import { BaseStatusBarItem, IvscodeStatusBarItemSettings } from "./baseStatusBarItem";
+import { checkIfOpenTextEditorIsTerraform } from "../../utils/helperFunctions";
 
-export class TfActiveVersionItem extends BaseStatusBarItem {
+export class IacActiveVersionItem extends BaseStatusBarItem {
   private _versionManager: IversionManager;
   constructor(context: vscode.ExtensionContext, versionManager: IversionManager, settings: IvscodeStatusBarItemSettings) {
     super(context, settings);

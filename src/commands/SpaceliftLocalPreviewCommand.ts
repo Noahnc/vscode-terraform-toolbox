@@ -1,16 +1,17 @@
 import * as vscode from "vscode";
 import { UserShownError } from "../custom_errors";
 import { Stack } from "../models/spacelift/stack";
-import * as helpers from "../utils/helper_functions";
+import * as helpers from "../utils/helperFunctions";
 import { getLogger } from "../utils/logger";
-import { Ispacectl } from "../utils/spacelift/spacectl";
-import { IspaceliftClient } from "../utils/spacelift/spacelift_client";
-import { BaseCommand, IvscodeCommandSettings } from "./base_command";
+
+import { BaseCommand, IvscodeCommandSettings } from "./BaseCommand";
+import { ISpacectl } from "../utils/Spacelift/spacectl";
+import { IspaceliftClient } from "../utils/Spacelift/spaceliftClient";
 
 export class RunSpacectlLocalPreviewCurrentStackCommand extends BaseCommand {
   spacelift: IspaceliftClient;
-  spacectl: Ispacectl;
-  constructor(context: vscode.ExtensionContext, settings: IvscodeCommandSettings, spacelift: IspaceliftClient, spacectl: Ispacectl) {
+  spacectl: ISpacectl;
+  constructor(context: vscode.ExtensionContext, settings: IvscodeCommandSettings, spacelift: IspaceliftClient, spacectl: ISpacectl) {
     super(context, settings);
     this.spacelift = spacelift;
     this.spacectl = spacectl;
@@ -35,8 +36,8 @@ export class RunSpacectlLocalPreviewCurrentStackCommand extends BaseCommand {
 
 export class RunSpacectlLocalPreviewCommand extends BaseCommand {
   spacelift: IspaceliftClient;
-  spacectl: Ispacectl;
-  constructor(context: vscode.ExtensionContext, settings: IvscodeCommandSettings, spacelift: IspaceliftClient, spacectl: Ispacectl) {
+  spacectl: ISpacectl;
+  constructor(context: vscode.ExtensionContext, settings: IvscodeCommandSettings, spacelift: IspaceliftClient, spacectl: ISpacectl) {
     super(context, settings);
     this.spacelift = spacelift;
     this.spacectl = spacectl;

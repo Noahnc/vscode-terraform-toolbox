@@ -6,9 +6,9 @@ import { Module } from "../../models/terraform/module";
 import { Provider } from "../../models/terraform/provider";
 import { terraformResources } from "../../models/terraform/terraform_resources";
 import { getLogger } from "../logger";
-import { IterraformCLI } from "./terraform_cli";
-import { PathObject } from "../path";
 import { Settings } from "../../models/settings";
+import { PathObject } from "../path";
+import { IIacCli } from "./iacCli";
 
 export interface Ihcl2Parser {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -43,7 +43,7 @@ export class terraformGetError extends UserShownError {
   }
 }
 
-export interface IterraformProjectHelper {
+export interface IIacProjectHelper {
   initTerraformFolder: (folder: PathObject, withProgress: boolean) => Promise<void>;
   refreshModulesInFolder: (folder: PathObject) => Promise<void>;
   findAllTerraformFoldersInOpenWorkspaces: () => Promise<PathObject[]>;
@@ -51,20 +51,20 @@ export interface IterraformProjectHelper {
   checkFolderContainsValidTerraformFiles: (folder: PathObject) => Promise<boolean>;
   getInstalledModulesForFolder: (folder: PathObject) => Promise<Module[]>;
   getDeclaredResourcesForFolder: (folder: PathObject) => Promise<terraformResources | undefined>;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getProvidersFromParsedHcl: (hclObject: any) => Provider[];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getModulesFromParsedHcl: (hclObject: any) => Module[];
   getCurrentWorkspaceFromEnvFile(folderPath: PathObject): Promise<string | undefined>;
 }
 
-export class TerraformProjectHelper implements IterraformProjectHelper {
+export class IacProjectHelper implements IIacProjectHelper {
   private readonly hclParser: Ihcl2Parser;
-  private readonly tfcli: IterraformCLI;
+  private readonly tfcli: IIacCli;
   private readonly terraformFolder = ".terraform";
   private readonly settings: Settings;
 
-  constructor(hclParser: Ihcl2Parser, terraformCLI: IterraformCLI, settings: Settings) {
+  constructor(hclParser: Ihcl2Parser, terraformCLI: IIacCli, settings: Settings) {
     this.hclParser = hclParser;
     this.tfcli = terraformCLI;
     this.settings = settings;

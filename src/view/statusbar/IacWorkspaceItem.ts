@@ -1,16 +1,16 @@
 import * as vscode from "vscode";
 import { getLogger } from "../../utils/logger";
-import { IterraformCLI } from "../../utils/terraform/terraform_cli";
-import { IterraformProjectHelper } from "../../utils/terraform/terraform_project_helper";
-import { BaseStatusBarItem, IvscodeStatusBarItemSettings } from "./base_statusbar_item";
+import { IIacCli } from "../../utils/IaC/iacCli";
+import { IIacProjectHelper } from "../../utils/IaC/iacProjectHelper";
+import { BaseStatusBarItem, IvscodeStatusBarItemSettings } from "./baseStatusBarItem";
 import { PathObject } from "../../utils/path";
-import { checkIfOpenTextEditorIsTerraform } from "../../utils/helper_functions";
+import { checkIfOpenTextEditorIsTerraform } from "../../utils/helperFunctions";
 
-export class TfActiveWorkspaceItem extends BaseStatusBarItem {
-  private readonly _tfcli: IterraformCLI;
-  private readonly _tfProjectHelper: IterraformProjectHelper;
+export class IacActiveWorkspaceItem extends BaseStatusBarItem {
+  private readonly _tfcli: IIacCli;
+  private readonly _tfProjectHelper: IIacProjectHelper;
 
-  constructor(context: vscode.ExtensionContext, settings: IvscodeStatusBarItemSettings, tfcli: IterraformCLI, tfProjectHelper: IterraformProjectHelper) {
+  constructor(context: vscode.ExtensionContext, settings: IvscodeStatusBarItemSettings, tfcli: IIacCli, tfProjectHelper: IIacProjectHelper) {
     super(context, settings);
     this._tfcli = tfcli;
     this._tfProjectHelper = tfProjectHelper;

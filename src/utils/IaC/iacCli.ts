@@ -2,18 +2,20 @@ import { ICli } from "../cli";
 import { getLogger } from "../logger";
 import { PathObject } from "../path";
 
-export interface IterraformCLI {
+export interface IIacCli {
   init(folderPath?: PathObject, args?: string): Promise<[boolean, string, string]>;
   getModules(folderPath: PathObject): Promise<[boolean, string, string]>;
   getWorkspaces(folderPath: PathObject): Promise<[string[], string]>;
   setWorkspace(folderPath: PathObject, workspace: string): Promise<[boolean, string, string]>;
 }
 
-export class TerraformCLI implements IterraformCLI {
+export class IacCli implements IIacCli {
   private _cli: ICli;
+  private _cliBinary: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  constructor(cli: ICli) {
+  constructor(cli: ICli, cliBinary: string) {
     this._cli = cli;
+    this._cliBinary = cliBinary;
   }
 
   async init(folder?: PathObject, args?: string): Promise<[boolean, string, string]> {
@@ -75,6 +77,6 @@ export class TerraformCLI implements IterraformCLI {
   }
 
   async runTerraformCommand(command: string): Promise<[boolean, string, string]> {
-    return await this._cli.runShellCommand("terraform " + command);
+    return await this._cli.runShellCommand(this._cliBinary + " " + command);
   }
 }

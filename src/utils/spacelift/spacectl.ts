@@ -6,7 +6,7 @@ import { Stack } from "../../models/spacelift/stack";
 import { getLogger } from "../logger";
 import { ICli } from "../cli";
 
-export interface Ispacectl {
+export interface ISpacectl {
   executeLocalPreview(stack: Stack, projectPath: string): Promise<void>;
   setUserprofile(profileName: string): Promise<void>;
   ensureSpacectlIsInstalled(): Promise<void>;
@@ -14,7 +14,7 @@ export interface Ispacectl {
   loginInteractive(): Promise<boolean>;
 }
 
-export class Spacectl implements Ispacectl {
+export class Spacectl implements ISpacectl {
   private _cli: ICli;
 
   constructor(cli: ICli) {

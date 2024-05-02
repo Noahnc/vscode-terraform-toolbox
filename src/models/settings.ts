@@ -42,4 +42,7 @@ export class Settings {
   get showSpacectlNotAuthenticatedWarningOnStartup(): boolean {
     return this.getVSCodeSettingKey("tftoolbox.spacelift.showLoginNotificationOnStartup");
   }
+  get useOpenTofuInsteadOfTerraform(): boolean {
+    return this.getVSCodeSettingKey("tftoolbox.UseOpenTofuInsteadOfTerraform");
+  }
 }

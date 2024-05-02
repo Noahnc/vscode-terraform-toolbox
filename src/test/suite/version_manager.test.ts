@@ -1,10 +1,10 @@
-import { MockVersionProvider } from "../../mocks/version_provider";
+import { MockVersionProvider } from "../../mocks/VersionProviderMock";
 import { Releases } from "../../models/github/release";
-import { VersionManager } from "../../utils/version_manager";
+import { VersionManager } from "../../utils/VersionManager/versionManager";
 import { expect } from "chai";
 
 describe("Version Provider", () => {
-  const versionManager = new VersionManager({ baseFolderName: "version_manager_test", softwareName: "version_manager_test", binaryName: "testbinary" }, new MockVersionProvider());
+  const versionManager = new VersionManager(new MockVersionProvider(), "version_manager_test");
 
   afterEach(async () => {
     versionManager._baseFolder.delete();

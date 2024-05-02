@@ -1,17 +1,17 @@
 import * as fs from "fs";
 import * as vscode from "vscode";
 import { UserShownError } from "../custom_errors";
-import * as helpers from "../utils/helper_functions";
 import { getLogger } from "../utils/logger";
-import { IterraformCLI } from "../utils/terraform/terraform_cli";
-import { TerraformProjectHelper } from "../utils/terraform/terraform_project_helper";
-import { BaseCommand, IvscodeCommandSettings } from "./base_command";
+import { IIacCli } from "../utils/IaC/iacCli";
+import { BaseCommand, IvscodeCommandSettings } from "./BaseCommand";
 import { PathObject } from "../utils/path";
+import * as helpers from "../utils/helperFunctions";
 import path = require("path");
+import { IacProjectHelper } from "../utils/IaC/iacProjectHelper";
 
 export class ChoseAndSetTerraformWorkspaceCommand extends BaseCommand {
-  tfcli: IterraformCLI;
-  constructor(context: vscode.ExtensionContext, settings: IvscodeCommandSettings, tfcli: IterraformCLI) {
+  tfcli: IIacCli;
+  constructor(context: vscode.ExtensionContext, settings: IvscodeCommandSettings, tfcli: IIacCli) {
     super(context, settings);
     this.tfcli = tfcli;
   }
@@ -64,9 +64,9 @@ export class ChoseAndSetTerraformWorkspaceCommand extends BaseCommand {
 }
 
 export class AutoSetTerraformWorkspaceCommand extends BaseCommand {
-  tfcli: IterraformCLI;
-  tfProjectHelper: TerraformProjectHelper;
-  constructor(context: vscode.ExtensionContext, settings: IvscodeCommandSettings, tfcli: IterraformCLI, tfProjectHelper: TerraformProjectHelper) {
+  tfcli: IIacCli;
+  tfProjectHelper: IacProjectHelper;
+  constructor(context: vscode.ExtensionContext, settings: IvscodeCommandSettings, tfcli: IIacCli, tfProjectHelper: IacProjectHelper) {
     super(context, settings);
     this.tfcli = tfcli;
     this.tfProjectHelper = tfProjectHelper;

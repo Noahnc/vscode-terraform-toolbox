@@ -1,10 +1,10 @@
 import { expect } from "chai";
-import { TerraformVersionProvieder } from "../../utils/terraform/terraform_version_provider";
-import { mockExtensionContext } from "../../mocks/extension_context";
+import { TerraformVersionProvieder } from "../../utils/Terraform/terraformVersionProvider";
+import { mockExtensionContext } from "../../mocks/ExtensionContextMock";
 import { Octokit } from "octokit";
 import { Releases } from "../../models/github/release";
 import fetch from "node-fetch";
-import { ReleaseError } from "../../utils/version_manager";
+import { ReleaseError } from "../../utils/VersionManager/versionManager";
 
 describe("Terraform version provider", () => {
   // Non authenticated github api requests on the mac os runner have rate limit issues. As a workaround we use a github auth token from the action env.

@@ -1,9 +1,10 @@
 import { Release, Releases } from "../models/github/release";
 import { getLogger } from "../utils/logger";
 import { PathObject } from "../utils/path";
-import { IversionProvider } from "../utils/version_manager";
 import * as fs from "fs";
 import * as os from "os";
+import { IversionProvider } from "../utils/VersionManager/IVersionProvider";
+import { versionProviderSettings } from "../utils/VersionManager/IVersionProviderSettings";
 
 export class MockVersionProvider implements IversionProvider {
   async getReleasesFormSource(): Promise<Releases> {
@@ -15,6 +16,13 @@ export class MockVersionProvider implements IversionProvider {
       { name: "v1.2.0", prerelease: false },
     ];
     return new Releases(releasesData);
+  }
+
+  getVersionProviderSettings(): versionProviderSettings {
+    return {
+      softwareName: "test",
+      binaryName: "testbinary",
+    };
   }
 
   async getBinaryPathForRelease(release: Release): Promise<PathObject> {

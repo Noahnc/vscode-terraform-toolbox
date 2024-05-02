@@ -32,7 +32,7 @@ export class Cli implements ICli {
     } else {
       command = "which " + binaryName;
     }
-    const [success, stdout, ] = await this.runShellCommand(command);
+    const [success, stdout] = await this.runShellCommand(command);
     if (!success) {
       getLogger().info("Binary " + binaryName + " not found in path. ");
       return false;
