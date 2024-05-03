@@ -7,15 +7,15 @@ export class Settings {
   constructor() {
     this.settingsDict["spaceliftTenantID"] = new SettingsElement("tftoolbox.spacelift.tenantID", true, true);
     this.settingsDict["spacectlProfileName"] = new SettingsElement("tftoolbox.spacelift.profileName", true, true);
-    this.settingsDict["autoselectVersion"] = new SettingsElement("tftoolbox.terraform.autoSelectVersion");
+    this.settingsDict["autoselectVersion"] = new SettingsElement("tftoolbox.iac.autoSelectVersion");
     this.settingsDict["logLevel"] = new SettingsElement("tftoolbox.logLevel");
-    this.settingsDict["autoSelectWorkspace"] = new SettingsElement("tftoolbox.terraform.autoSelectWorkspace");
-    this.settingsDict["autoInitAllProjects"] = new SettingsElement("tftoolbox.terraform.autoInitAllProjects");
-    this.settingsDict["initArgs"] = new SettingsElement("tftoolbox.terraform.initArg");
+    this.settingsDict["autoSelectWorkspace"] = new SettingsElement("tftoolbox.iac.autoSelectWorkspace");
+    this.settingsDict["autoInitAllProjects"] = new SettingsElement("tftoolbox.iac.autoInitAllProjects");
+    this.settingsDict["initArgs"] = new SettingsElement("tftoolbox.iac.initArg");
     this.settingsDict["spaceliftStatusBarItemRefreshIntervalSeconds"] = new SettingsElement("tftoolbox.spacelift.stackPendingConfirmationStatusItemUpdateTimeSeconds");
     this.settingsDict["excludedGlobPatterns"] = new SettingsElement("tftoolbox.excludeGlobPatterns");
     this.settingsDict["showSpacectlNotAuthenticatedWarningOnStartup"] = new SettingsElement("tftoolbox.spacelift.showLoginNotificationOnStartup");
-    this.settingsDict["iacProvider"] = new SettingsElement("tftoolbox.IacProvider", true);
+    this.settingsDict["iacProvider"] = new SettingsElement("tftoolbox.iac.provider", true);
 
     vscode.workspace.onDidChangeConfiguration(this.handleSettingChange.bind(this));
   }

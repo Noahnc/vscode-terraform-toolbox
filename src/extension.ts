@@ -51,6 +51,9 @@ export async function activate(context: vscode.ExtensionContext) {
       iacProvider = opentofuIacProvider;
       primaryVersionManager = opentofuVersionManager;
       setVersionCommand = cst.COMMAND_SET_OPEN_TOFU_VERSION;
+      createCommandAlias(cst.COMMAND_SET_IAC_PROVIDER_VERSION, cst.COMMAND_AUTO_SET_OPEN_TOFU_VERSION);
+      createCommandAlias(cst.COMMAND_DELETE_IAC_PROVIDER_VERSION, cst.COMMAND_DELETE_OPEN_TOFU_VERSIONS);
+      createCommandAlias(cst.COMMAND_AUTO_SET_IAC_PROVIDER_VERSION, cst.COMMAND_AUTO_SET_OPEN_TOFU_VERSION);
       break;
 
     case IacProvider.terraform:
@@ -58,6 +61,9 @@ export async function activate(context: vscode.ExtensionContext) {
       iacProvider = terraformIacProvider;
       primaryVersionManager = terraformVersionManager;
       setVersionCommand = cst.COMMAND_SET_TERRAFORM_VERSION;
+      createCommandAlias(cst.COMMAND_SET_IAC_PROVIDER_VERSION, cst.COMMAND_AUTO_SET_TERRAFORM_VERSION);
+      createCommandAlias(cst.COMMAND_DELETE_IAC_PROVIDER_VERSION, cst.COMMAND_DELETE_TERRAFORM_VERSIONS);
+      createCommandAlias(cst.COMMAND_AUTO_SET_IAC_PROVIDER_VERSION, cst.COMMAND_AUTO_SET_TERRAFORM_VERSION);
       break;
     default:
       throw new Error("IaC provider not supported");
@@ -244,6 +250,10 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // update status bar item once at start
   iacVersionItem.refresh();
+}
+
+function createCommandAlias(command: string, alias: string) {
+  vscode.commands.registerCommand(alias, () => vscode.commands.executeCommand(command));
 }
 
 async function spacectlInit(settings: Settings): Promise<[IspaceliftClient, ISpacectl, string, SpaceliftAuthenticationHandler]> {

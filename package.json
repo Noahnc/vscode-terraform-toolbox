@@ -6,7 +6,7 @@
     "type": "git",
     "url": "https://github.com/Noahnc/vscode-terraform-toolbox"
   },
-  "description": "VSCode extension adding a bunch of featurees regarding Terraform and Spacelift.",
+  "description": "VSCode extension adding a bunch of featurees regarding Terraform / OpenTofu and Spacelift.",
   "version": "0.3.2",
   "icon": "Images/terraform_toolbox_icon.png",
   "engines": {
@@ -36,6 +36,18 @@
         "title": "spacelift login"
       },
       {
+        "command": "tftoolbox.setIacProviderVersion",
+        "title": "tftoolbox set version (select from list)"
+      },
+      {
+        "command": "tftoolbox.deleteIacProviderVersions",
+        "title": "tftoolbox delete versions (select from list)"
+      },
+      {
+        "command": "tftoolbox.autoSetIacProviderVersion",
+        "title": "tftoolbox set version (from current project requrements)"
+      },
+      {
         "command": "tftoolbox.setTerraformVersion",
         "title": "terraform set version (select from list)"
       },
@@ -61,23 +73,23 @@
       },
       {
         "command": "tftoolbox.initAllProjects",
-        "title": "terraform init (all projects)"
+        "title": "tftoolbox init (all projects)"
       },
       {
         "command": "tftoolbox.initCurrentProject",
-        "title": "terraform init (current project)"
+        "title": "tftoolbox init (current project)"
       },
       {
         "command": "tftoolbox.initRefreshModules",
-        "title": "terraform install missing modules (current project)"
+        "title": "tftoolbox install missing modules (current project)"
       },
       {
         "command": "tftoolbox.setWorkspace",
-        "title": "terraform set workspace (current project)"
+        "title": "tftoolbox set workspace (current project)"
       },
       {
         "command": "tftoolbox.autoSetWorkspace",
-        "title": "terraform auto set Workspace"
+        "title": "tftoolbox auto set Workspace"
       }
     ],
     "configuration": {
@@ -98,22 +110,22 @@
           "default": false,
           "description": "If enabled, a notification will be shown regarding spacectl login if spacectl is not authenticated."
         },
-        "tftoolbox.terraform.autoSelectVersion": {
+        "tftoolbox.iac.autoSelectVersion": {
           "type": "boolean",
           "default": false,
           "description": "When enabled, the extension evaluates the required terraform version for all open projects and selects the latest version matching the requirements."
         },
-        "tftoolbox.terraform.autoSelectWorkspace": {
+        "tftoolbox.iac.autoSelectWorkspace": {
           "type": "boolean",
           "default": true,
           "description": "When true, the terraform workspace will be set for each folder based on the .terraform-toolbox configuration file in the workspace root."
         },
-        "tftoolbox.terraform.autoInitAllProjects": {
+        "tftoolbox.iac.autoInitAllProjects": {
           "type": "boolean",
           "default": false,
           "description": "If set to true, the extension will run terraform init for all folders in your workspace containing terraform files on startup."
         },
-        "tftoolbox.terraform.initArg": {
+        "tftoolbox.iac.initArg": {
           "type": "string",
           "default": "-upgrade",
           "description": "Additional args when running any of the terraform init commands. -input=false and -no-color are always added. Multiple args can be specified by separating them with a space."
@@ -128,7 +140,7 @@
           "default": true,
           "description": "Shows an informtion msg on startup if no terraform version is installed by the extension."
         },
-        "tftoolbox.IacProvider": {
+        "tftoolbox.iac.provider": {
           "type": "string",
           "default": "terraform",
           "enum": [
