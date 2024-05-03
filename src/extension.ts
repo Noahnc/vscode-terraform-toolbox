@@ -51,9 +51,6 @@ export async function activate(context: vscode.ExtensionContext) {
       iacProvider = opentofuIacProvider;
       primaryVersionManager = opentofuVersionManager;
       setVersionCommand = cst.COMMAND_SET_OPEN_TOFU_VERSION;
-      createCommandAlias(cst.COMMAND_SET_IAC_PROVIDER_VERSION, cst.COMMAND_AUTO_SET_OPEN_TOFU_VERSION);
-      createCommandAlias(cst.COMMAND_DELETE_IAC_PROVIDER_VERSION, cst.COMMAND_DELETE_OPEN_TOFU_VERSIONS);
-      createCommandAlias(cst.COMMAND_AUTO_SET_IAC_PROVIDER_VERSION, cst.COMMAND_AUTO_SET_OPEN_TOFU_VERSION);
       break;
 
     case IacProvider.terraform:
@@ -61,9 +58,6 @@ export async function activate(context: vscode.ExtensionContext) {
       iacProvider = terraformIacProvider;
       primaryVersionManager = terraformVersionManager;
       setVersionCommand = cst.COMMAND_SET_TERRAFORM_VERSION;
-      createCommandAlias(cst.COMMAND_SET_IAC_PROVIDER_VERSION, cst.COMMAND_AUTO_SET_TERRAFORM_VERSION);
-      createCommandAlias(cst.COMMAND_DELETE_IAC_PROVIDER_VERSION, cst.COMMAND_DELETE_TERRAFORM_VERSIONS);
-      createCommandAlias(cst.COMMAND_AUTO_SET_IAC_PROVIDER_VERSION, cst.COMMAND_AUTO_SET_TERRAFORM_VERSION);
       break;
     default:
       throw new Error("IaC provider not supported");
@@ -207,6 +201,23 @@ export async function activate(context: vscode.ExtensionContext) {
     iacProvider
   );
 
+  // Create version manager command aliases based on the selected IaC provider
+  switch (settings.iacProvider) {
+    case IacProvider.opentofu:
+      createCommandAlias(cst.COMMAND_SET_IAC_PROVIDER_VERSION, cst.COMMAND_SET_OPEN_TOFU_VERSION);
+      createCommandAlias(cst.COMMAND_DELETE_IAC_PROVIDER_VERSION, cst.COMMAND_DELETE_OPEN_TOFU_VERSIONS);
+      createCommandAlias(cst.COMMAND_AUTO_SET_IAC_PROVIDER_VERSION, cst.COMMAND_AUTO_SET_OPEN_TOFU_VERSION);
+      break;
+
+    case IacProvider.terraform:
+      createCommandAlias(cst.COMMAND_SET_IAC_PROVIDER_VERSION, cst.COMMAND_SET_TERRAFORM_VERSION);
+      createCommandAlias(cst.COMMAND_DELETE_IAC_PROVIDER_VERSION, cst.COMMAND_DELETE_TERRAFORM_VERSIONS);
+      createCommandAlias(cst.COMMAND_AUTO_SET_IAC_PROVIDER_VERSION, cst.COMMAND_AUTO_SET_TERRAFORM_VERSION);
+      break;
+    default:
+      throw new Error("IaC provider not supported");
+  }
+
   // Check and install new terraform version if setting is enabled
   if (settings.autoselectVersion) {
     switch (settings.iacProvider) {
@@ -230,7 +241,7 @@ export async function activate(context: vscode.ExtensionContext) {
     if (
       await helpers.showNotificationWithDecisions(
         `No ${iacProvider.name} version installed by this extension yet. Do you want to select a version to install now?`,
-        "tftoolbox.spacelift.showNoTerraformVersionInstalledMsg",
+        "tftoolbox.iac.showNoIacProviderVersionInstalledMsgOnStart",
         "Show versions",
         "information"
       )
@@ -252,7 +263,7 @@ export async function activate(context: vscode.ExtensionContext) {
   iacVersionItem.refresh();
 }
 
-function createCommandAlias(command: string, alias: string) {
+function createCommandAlias(alias: string, command: string) {
   vscode.commands.registerCommand(alias, () => vscode.commands.executeCommand(command));
 }
 
