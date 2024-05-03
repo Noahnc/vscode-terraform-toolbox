@@ -11,60 +11,63 @@ import decompress = require("decompress");
 import { IversionProvider } from "../VersionManager/IVersionProvider";
 import { versionProviderSettings } from "../VersionManager/IVersionProviderSettings";
 import { ReleaseError } from "../VersionManager/versionManager";
+import { IIaCProvider } from "./IIaCProvider";
 
-export class OpenTofuVersionProvider implements IversionProvider {
+export class IacVersionProvider implements IversionProvider {
   protected readonly _context: vscode.ExtensionContext;
   private readonly _octokit: Octokit;
-  private readonly _openTofuBaseUrl = "https://github.com/opentofu/opentofu/releases/download/";
+  private readonly _iacProvider: IIaCProvider;
 
-  constructor(context: vscode.ExtensionContext, octokit: Octokit) {
+  constructor(context: vscode.ExtensionContext, octokit: Octokit, IIaCProvider: IIaCProvider) {
     this._context = context;
     this._octokit = octokit;
+    this._iacProvider = IIaCProvider;
   }
 
   getVersionProviderSettings(): versionProviderSettings {
     return {
-      softwareName: "OpenTofu",
-      binaryName: "tofu",
+      softwareName: this._iacProvider.Name,
+      binaryName: this._iacProvider.BinaryName,
     };
   }
 
   async getReleasesFormSource(): Promise<Releases> {
     const githubReleases = await this._octokit.rest.repos.listReleases({
-      owner: "opentofu",
-      repo: "opentofu",
+      owner: this._iacProvider.GithubOrganization,
+      repo: this._iacProvider.GithubRepository,
       per_page: 100,
     });
-    getLogger().debug("Found " + githubReleases.data.length + " releases on github.");
+    getLogger().debug("Found " + githubReleases.data.length + " releases for " + this._iacProvider.Name + " on github.");
     getLogger().trace("Releases: " + JSON.stringify(githubReleases.data));
     return new Releases(githubReleases.data);
   }
 
-  private async unzipOpenTofu(zipPath: PathObject): Promise<PathObject> {
-    const extractedFolder = new PathObject(path.join(os.tmpdir(), "opentofu-extracted"));
+  private async unzip(zipPath: PathObject): Promise<PathObject> {
+    const folderName = this._iacProvider.Name.toLowerCase() + "-extracted";
+    const extractedFolder = new PathObject(path.join(os.tmpdir(), folderName));
     extractedFolder.delete();
-    getLogger().debug("Unzipping OpenTofu from " + zipPath.path + " to " + extractedFolder.path);
+    getLogger().debug("Unzipping " + this._iacProvider.Name + " from " + zipPath.path + " to " + extractedFolder.path);
     try {
       await decompress(zipPath.path, extractedFolder.path);
     } catch (err) {
-      throw new ReleaseError("Failed to unzip OpenTofu from " + zipPath.path + " to " + extractedFolder.path + " with error: " + err);
+      throw new ReleaseError("Failed to unzip " + this._iacProvider.Name + " from " + zipPath.path + " to " + extractedFolder.path + " with error: " + err);
     }
-    let openTofuFileName = "tofu";
+    let binaryName = this._iacProvider.BinaryName;
     if (os.platform() === "win32") {
-      openTofuFileName += ".exe";
+      binaryName += ".exe";
     }
-    const openTofuFile = extractedFolder.join(openTofuFileName);
+    const binaryFile = extractedFolder.join(binaryName);
 
-    if (!openTofuFile.exists()) {
-      throw new ReleaseError("Failed to find OpenTofu binary in zip file " + zipPath.path);
+    if (!binaryFile.exists()) {
+      throw new ReleaseError("Failed to find " + this._iacProvider.Name + " binary in zip file " + zipPath.path);
     }
-    return openTofuFile;
+    return binaryFile;
   }
 
-  private async downloadOpenTofuZip(zipName: string, versionString: string): Promise<PathObject> {
+  private async downloadRelease(zipName: string, release: Release): Promise<PathObject> {
     const downloadZipPath = new PathObject(path.join(os.tmpdir(), zipName));
-    const downloadUrl = this._openTofuBaseUrl + versionString + "/" + zipName;
-    getLogger().debug("Downloading OpenTofu from " + downloadUrl);
+    const downloadUrl = this._iacProvider.getReleaseDownloadUrl(release, zipName);
+    getLogger().debug("Downloading " + this._iacProvider.Name + " from " + downloadUrl);
     downloadZipPath.delete();
     await new Promise<void>((resolve, reject) => {
       const request = wget.download(downloadUrl, downloadZipPath.path);
@@ -75,14 +78,14 @@ export class OpenTofuVersionProvider implements IversionProvider {
         resolve();
       });
     }).catch((err) => {
-      throw new ReleaseError("Failed to download OpenTofu from " + downloadUrl + " to " + downloadZipPath.path + " with error: " + err);
+      throw new ReleaseError("Failed to download " + this._iacProvider.Name + " from " + downloadUrl + " to " + downloadZipPath.path + " with error: " + err);
     });
-    getLogger().debug("Downloaded OpenTofu to " + downloadZipPath.path);
+    getLogger().debug("Downloaded " + this._iacProvider.Name + " to " + downloadZipPath.path);
     return downloadZipPath;
   }
 
-  private getOpenTofuAssetName(release: Release): string {
-    getLogger().debug("Composing opentofu asset name for release " + release.name + " with platform " + os.platform() + " and architecture " + os.arch());
+  private getAssetName(release: Release): string {
+    getLogger().debug("Composing " + this._iacProvider.Name + " asset name for release " + release.name + " with platform " + os.platform() + " and architecture " + os.arch());
     const osMap: Record<string, string> = {
       win32: "windows",
       darwin: "darwin",
@@ -102,7 +105,7 @@ export class OpenTofuVersionProvider implements IversionProvider {
     if (!archName) {
       throw new UserShownError(`Unsupported architecture: ${os.arch()}`);
     }
-    const zipName = `tofu_${release.versionNumber}_${osName}_${archName}.zip`;
+    const zipName = `${this._iacProvider.BinaryName}_${release.versionNumber}_${osName}_${archName}.zip`;
     return zipName;
   }
 
@@ -115,10 +118,10 @@ export class OpenTofuVersionProvider implements IversionProvider {
         cancellable: false,
       },
       async (progress) => {
-        progress.report({ message: "Downloading OpenTofu " + release.name });
-        const zipName = this.getOpenTofuAssetName(release);
-        const downloadZipPath = await this.downloadOpenTofuZip(zipName, release.name);
-        binPath = await this.unzipOpenTofu(downloadZipPath);
+        progress.report({ message: "Downloading " + this._iacProvider.Name + " " + release.name });
+        const zipName = this.getAssetName(release);
+        const downloadZipPath = await this.downloadRelease(zipName, release);
+        binPath = await this.unzip(downloadZipPath);
         downloadZipPath.delete();
       }
     );

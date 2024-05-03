@@ -14,14 +14,13 @@ import * as helpers from "./utils/helperFunctions";
 import { getLogger, initLogger } from "./utils/logger";
 import { ISpacectl, Spacectl } from "./utils/Spacelift/spacectl";
 import { IspaceliftClient, SpaceliftClient } from "./utils/Spacelift/spaceliftClient";
-import { OpenTofuVersionProvider } from "./utils/OpenTofu/opentofuVersionProvider";
+import { IacVersionProvider } from "./utils/IaC/IacVersionProvider";
 import { IacProjectHelper } from "./utils/IaC/iacProjectHelper";
 
 import { IversionManager, VersionManager } from "./utils/VersionManager/versionManager";
 
 import { IacCli } from "./utils/IaC/iacCli";
 import { SpaceliftAuthenticationHandler } from "./utils/Spacelift/spaceliftAuthenticationHandler";
-import { TerraformVersionProvieder } from "./utils/Terraform/terraformVersionProvider";
 import { IacActiveWorkspaceItem } from "./view/statusbar/IacWorkspaceItem";
 import { SpaceliftPenStackConfCount } from "./view/statusbar/spaceliftStackConfirmationItem";
 import { SpaceliftApiAuthenticationStatus } from "./view/statusbar/spaceliftAuthStatusItem";
@@ -43,8 +42,8 @@ export async function activate(context: vscode.ExtensionContext) {
   const terraformIacProvider = new TerraformProvider();
   const opentofuIacProvider = new OpenTofuProvider();
 
-  const terraformVersionManager = new VersionManager(new TerraformVersionProvieder(context, new Octokit({ request: { fetch } })), cst.EXTENSION_BINARY_FOLDER_NAME);
-  const opentofuVersionManager = new VersionManager(new OpenTofuVersionProvider(context, new Octokit({ request: { fetch } })), cst.EXTENSION_BINARY_FOLDER_NAME);
+  const terraformVersionManager = new VersionManager(new IacVersionProvider(context, new Octokit({ request: { fetch } }), terraformIacProvider), cst.EXTENSION_BINARY_FOLDER_NAME);
+  const opentofuVersionManager = new VersionManager(new IacVersionProvider(context, new Octokit({ request: { fetch } }), opentofuIacProvider), cst.EXTENSION_BINARY_FOLDER_NAME);
 
   if (settings.useOpenTofuInsteadOfTerraform) {
     getLogger().info("Extension is configured to use OpenTofu instead of Terraform");
@@ -58,7 +57,7 @@ export async function activate(context: vscode.ExtensionContext) {
     setVersionCommand = cst.COMMAND_SET_TERRAFORM_VERSION;
   }
 
-  const iacCli = new IacCli(new Cli(), iacProvider.getBinaryName());
+  const iacCli = new IacCli(new Cli(), iacProvider.BinaryName);
   const iacProjectHelper = new IacProjectHelper(hcl, iacCli, settings);
 
   const iacVersionItem = new IacActiveVersionItem(context, activeVersionManager, {
@@ -66,7 +65,7 @@ export async function activate(context: vscode.ExtensionContext) {
     priority: 100,
     onClickCommand: setVersionCommand,
     updateOnDidChangeTextEditorSelection: true,
-    tooltip: iacProvider.getName() + " version currently active",
+    tooltip: iacProvider.Name + " version currently active",
   });
 
   const iacWorkspaceItem = new IacActiveWorkspaceItem(
@@ -76,7 +75,7 @@ export async function activate(context: vscode.ExtensionContext) {
       priority: 99,
       onClickCommand: cst.COMMAND_SET_WORKSPACE,
       updateOnDidChangeTextEditorSelection: true,
-      tooltip: iacProvider.getName() + " workspace of the current folder",
+      tooltip: iacProvider.Name + " workspace of the current folder",
     },
     iacCli,
     iacProjectHelper
@@ -211,7 +210,7 @@ export async function activate(context: vscode.ExtensionContext) {
   if (activeVersionManager.getActiveVersion() === undefined) {
     if (
       await helpers.showNotificationWithDecisions(
-        "No " + iacProvider.getName() + " version installed by this extension yet. Do you want to select a version to install now?",
+        "No " + iacProvider.Name + " version installed by this extension yet. Do you want to select a version to install now?",
         "tftoolbox.spacelift.showNoTerraformVersionInstalledMsg",
         "Show versions",
         "information"

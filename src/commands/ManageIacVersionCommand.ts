@@ -24,12 +24,12 @@ export class ChoseAndSetIacVersionCommand extends BaseCommand {
     const Releases = await this._versionManager.getReleases();
     const chosenRelease = await this._versionManager.choseRelease(Releases);
     if (chosenRelease === undefined) {
-      getLogger().info("No " + this._iacProvider.getName() + " version chosen, skipping...");
+      getLogger().info("No " + this._iacProvider.Name + " version chosen, skipping...");
       return;
     }
     if (!(await this._versionManager.switchVersion(chosenRelease))) {
-      vscode.window.showInformationMessage(this._iacProvider.getName() + " version " + chosenRelease.name + " is already active.");
-      getLogger().debug(this._iacProvider.getName() + " version " + chosenRelease.name + " is already active.");
+      vscode.window.showInformationMessage(this._iacProvider.Name + " version " + chosenRelease.name + " is already active.");
+      getLogger().debug(this._iacProvider.Name + " version " + chosenRelease.name + " is already active.");
       return;
     }
   }
@@ -48,10 +48,10 @@ export class SetIacVersionBasedOnProjectRequirementsCommand extends BaseCommand 
   }
 
   protected async init(silent = false) {
-    getLogger().info("Try to set " + this._iacProvider.getName() + " version based on project requirements.");
+    getLogger().info("Try to set " + this._iacProvider.Name + " version based on project requirements.");
     const [, workspaces] = helpers.getCurrentProjectInformations();
     if (workspaces === undefined) {
-      getLogger().debug("No workspace folder open. Skipping setting " + this._iacProvider.getName() + " version based on project requirements.");
+      getLogger().debug("No workspace folder open. Skipping setting " + this._iacProvider.Name + " version based on project requirements.");
       if (!silent) {
         vscode.window.showInformationMessage("No workspace folder open.");
       }
@@ -60,13 +60,13 @@ export class SetIacVersionBasedOnProjectRequirementsCommand extends BaseCommand 
 
     let iacVersionRequirements = this.readTfVersionReqFromSpaceliftProjectAllWorkspaces(workspaces);
     if (iacVersionRequirements.length === 0) {
-      getLogger().debug("Unable to evaluate required " + this._iacProvider.getName() + " version from spacelift stacks, trying to read version requirement from terraform block");
+      getLogger().debug("Unable to evaluate required " + this._iacProvider.Name + " version from spacelift stacks, trying to read version requirement from terraform block");
       iacVersionRequirements = await this._tfProjectHelper.getRequiredTerraformVersionsForOpenWorkspaces();
     }
     if (iacVersionRequirements.length === 0) {
-      getLogger().debug("No " + this._iacProvider.getName() + " version requirements found in any of your workspace files, skipping...");
+      getLogger().debug("No " + this._iacProvider.Name + " version requirements found in any of your workspace files, skipping...");
       if (!silent) {
-        vscode.window.showInformationMessage("No " + this._iacProvider.getName() + " version requirement found in project stacks.");
+        vscode.window.showInformationMessage("No " + this._iacProvider.Name + " version requirement found in project stacks.");
       }
       return;
     }
@@ -74,7 +74,7 @@ export class SetIacVersionBasedOnProjectRequirementsCommand extends BaseCommand 
     const targetRelease = releases.getNewestReleaseMatchingVersionConstraints(iacVersionRequirements);
     if (!(await this._versionManager.switchVersion(targetRelease))) {
       if (!silent) {
-        vscode.window.showInformationMessage(this._iacProvider.getName() + " version " + targetRelease.name + " is already active.");
+        vscode.window.showInformationMessage(this._iacProvider.Name + " version " + targetRelease.name + " is already active.");
       }
       return;
     }
@@ -90,10 +90,10 @@ export class SetIacVersionBasedOnProjectRequirementsCommand extends BaseCommand 
     getLogger().trace("Spacelift resources file content: " + JSON.stringify(spaceliftStacks));
     try {
       const terraformVersion = spaceliftStacks[0].module["cmi-spacelift-stacks"][0].terraform_version;
-      getLogger().debug("Found " + this._iacProvider.getName() + " version requirement in spacelift stacks: " + terraformVersion);
+      getLogger().debug("Found " + this._iacProvider.Name + " version requirement in spacelift stacks: " + terraformVersion);
       return terraformVersion;
     } catch (error) {
-      getLogger().debug("Unable to read " + this._iacProvider.getName() + " version requirement from spacelift stacks: " + error);
+      getLogger().debug("Unable to read " + this._iacProvider.Name + " version requirement from spacelift stacks: " + error);
       return undefined;
     }
   }
@@ -124,12 +124,12 @@ export class ChoseAndDeleteIacVersionsCommand extends BaseCommand {
   async init() {
     const Releases = await this._versionManager.getReleases();
     if (Releases.installedNotActive.length === 0) {
-      vscode.window.showInformationMessage("No " + this._iacProvider.getName() + " version installed besides the active one.");
+      vscode.window.showInformationMessage("No " + this._iacProvider.Name + " version installed besides the active one.");
       return;
     }
-    const chosenReleases = await this._versionManager.selectMultipleReleases(Releases.installedNotActive, "Select " + this._iacProvider.getName() + " versions to delete");
+    const chosenReleases = await this._versionManager.selectMultipleReleases(Releases.installedNotActive, "Select " + this._iacProvider.Name + " versions to delete");
     if (chosenReleases === undefined) {
-      getLogger().info("No " + this._iacProvider.getName() + " versions chosen. Skipping...");
+      getLogger().info("No " + this._iacProvider.Name + " versions chosen. Skipping...");
       return;
     }
     this._versionManager.deleteReleases(chosenReleases);
