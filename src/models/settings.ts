@@ -15,7 +15,7 @@ export class Settings {
     this._settingsDict["spaceliftStatusBarItemRefreshIntervalSeconds"] = new SettingsElement("tftoolbox.spacelift.stackPendingConfirmationStatusItemUpdateTimeSeconds");
     this._settingsDict["excludedGlobPatterns"] = new SettingsElement("tftoolbox.excludeGlobPatterns");
     this._settingsDict["showSpacectlNotAuthenticatedWarningOnStartup"] = new SettingsElement("tftoolbox.spacelift.showLoginNotificationOnStartup");
-    this._settingsDict["useOpenTofuInsteadOfTerraform"] = new SettingsElement("tftoolbox.UseOpenTofuInsteadOfTerraform", true);
+    this._settingsDict["iacProvider"] = new SettingsElement("tftoolbox.IacProvider", true);
 
     vscode.workspace.onDidChangeConfiguration(this.handleSettingChange.bind(this));
   }
@@ -50,8 +50,12 @@ export class Settings {
   get showSpacectlNotAuthenticatedWarningOnStartup(): boolean {
     return this._settingsDict["showSpacectlNotAuthenticatedWarningOnStartup"].value;
   }
-  get useOpenTofuInsteadOfTerraform(): boolean {
-    return this._settingsDict["useOpenTofuInsteadOfTerraform"].value;
+  get iacProvider(): IacProvider {
+    const provider = this._settingsDict["iacProvider"].value;
+    if (!(provider in IacProvider)) {
+      throw new Error("Unknown IacProvider: " + provider);
+    }
+    return provider;
   }
 
   handleSettingChange(event: vscode.ConfigurationChangeEvent): void {
@@ -105,4 +109,9 @@ class SettingsElement {
 
     return setting;
   }
+}
+
+export enum IacProvider {
+  terraform,
+  opentofu,
 }

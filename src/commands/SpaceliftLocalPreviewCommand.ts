@@ -4,9 +4,9 @@ import { Stack } from "../models/spacelift/stack";
 import * as helpers from "../utils/helperFunctions";
 import { getLogger } from "../utils/logger";
 
-import { BaseCommand, IvscodeCommandSettings } from "./BaseCommand";
 import { ISpacectl } from "../utils/Spacelift/spacectl";
 import { IspaceliftClient } from "../utils/Spacelift/spaceliftClient";
+import { BaseCommand, IvscodeCommandSettings } from "./BaseCommand";
 
 export class RunSpacectlLocalPreviewCurrentStackCommand extends BaseCommand {
   spacelift: IspaceliftClient;

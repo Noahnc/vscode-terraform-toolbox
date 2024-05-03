@@ -8,7 +8,7 @@ import { AutoSetTerraformWorkspaceCommand, ChoseAndSetTerraformWorkspaceCommand 
 import { ChoseAndDeleteIacVersionsCommand, ChoseAndSetIacVersionCommand, SetIacVersionBasedOnProjectRequirementsCommand } from "./commands/ManageIacVersionCommand";
 import { RunSpacectlLocalPreviewCommand, RunSpacectlLocalPreviewCurrentStackCommand } from "./commands/SpaceliftLocalPreviewCommand";
 import * as cst from "./constants";
-import { Settings } from "./models/settings";
+import { IacProvider, Settings } from "./models/settings";
 import { Cli } from "./utils/cli";
 import * as helpers from "./utils/helperFunctions";
 import { IacProjectHelper } from "./utils/IaC/iacProjectHelper";
@@ -37,7 +37,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // ToDO: Replace manual dependencie injection with a DI framework
   let iacProvider: IIaCProvider;
-  let activeVersionManager: IversionManager;
+  let primaryVersionManager: IversionManager;
   let setVersionCommand: string;
   const terraformIacProvider = new TerraformProvider();
   const opentofuIacProvider = new OpenTofuProvider();
@@ -45,22 +45,28 @@ export async function activate(context: vscode.ExtensionContext) {
   const terraformVersionManager = new VersionManager(new IacVersionProvider(context, new Octokit({ request: { fetch } }), terraformIacProvider), cst.EXTENSION_BINARY_FOLDER_NAME);
   const opentofuVersionManager = new VersionManager(new IacVersionProvider(context, new Octokit({ request: { fetch } }), opentofuIacProvider), cst.EXTENSION_BINARY_FOLDER_NAME);
 
-  if (settings.useOpenTofuInsteadOfTerraform) {
-    getLogger().info("Extension is configured to use OpenTofu instead of Terraform");
-    iacProvider = opentofuIacProvider;
-    activeVersionManager = opentofuVersionManager;
-    setVersionCommand = cst.COMMAND_SET_OPEN_TOFU_VERSION;
-  } else {
-    getLogger().info("Extension is configured to use Terraform");
-    iacProvider = terraformIacProvider;
-    activeVersionManager = terraformVersionManager;
-    setVersionCommand = cst.COMMAND_SET_TERRAFORM_VERSION;
+  switch (settings.iacProvider) {
+    case IacProvider.terraform:
+      getLogger().info("Extension is configured to use OpenTofu instead of Terraform");
+      iacProvider = opentofuIacProvider;
+      primaryVersionManager = opentofuVersionManager;
+      setVersionCommand = cst.COMMAND_SET_OPEN_TOFU_VERSION;
+      break;
+
+    case IacProvider.opentofu:
+      getLogger().info("Extension is configured to use Terraform");
+      iacProvider = terraformIacProvider;
+      primaryVersionManager = terraformVersionManager;
+      setVersionCommand = cst.COMMAND_SET_TERRAFORM_VERSION;
+      break;
+    default:
+      throw new Error("IaC provider not supported");
   }
 
   const iacCli = new IacCli(new Cli(), iacProvider.BinaryName);
   const iacProjectHelper = new IacProjectHelper(hcl, iacCli, settings);
 
-  const iacVersionItem = new IacActiveVersionItem(context, activeVersionManager, {
+  const iacVersionItem = new IacActiveVersionItem(context, primaryVersionManager, {
     alignment: vscode.StatusBarAlignment.Right,
     priority: 100,
     onClickCommand: setVersionCommand,
@@ -196,18 +202,24 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // Check and install new terraform version if setting is enabled
   if (settings.autoselectVersion) {
-    if (settings.useOpenTofuInsteadOfTerraform) {
-      await setOpenTofuVersionBasedOnProjectCommand.run(true).then(() => {
-        iacVersionItem.refresh();
-      });
-    } else {
-      await setTFVersionBasedOnProjectCommand.run(true).then(() => {
-        iacVersionItem.refresh();
-      });
+    switch (settings.iacProvider) {
+      case IacProvider.opentofu:
+        await setOpenTofuVersionBasedOnProjectCommand.run(true).then(() => {
+          iacVersionItem.refresh();
+        });
+        break;
+      case IacProvider.terraform:
+        await setTFVersionBasedOnProjectCommand.run(true).then(() => {
+          iacVersionItem.refresh();
+        });
+        break;
+
+      default:
+        throw new Error("IaC provider not supported");
     }
   }
 
-  if (activeVersionManager.getActiveVersion() === undefined) {
+  if (primaryVersionManager.getActiveVersion() === undefined) {
     if (
       await helpers.showNotificationWithDecisions(
         "No " + iacProvider.Name + " version installed by this extension yet. Do you want to select a version to install now?",

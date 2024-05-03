@@ -2,11 +2,11 @@ import path = require("path");
 import * as fs from "fs";
 import * as vscode from "vscode";
 import { UserShownError } from "../../custom_errors";
+import { iacResources } from "../../models/iac/iacResources";
 import { Module } from "../../models/iac/module";
 import { Provider } from "../../models/iac/provider";
-import { iacResources } from "../../models/iac/iac_resources";
-import { getLogger } from "../logger";
 import { Settings } from "../../models/settings";
+import { getLogger } from "../logger";
 import { PathObject } from "../path";
 import { IIacCli } from "./iacCli";
 

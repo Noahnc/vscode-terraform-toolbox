@@ -128,10 +128,14 @@
           "default": true,
           "description": "Shows an informtion msg on startup if no terraform version is installed by the extension."
         },
-        "tftoolbox.UseOpenTofuInsteadOfTerraform": {
-          "type": "boolean",
-          "default": false,
-          "description": "If enabled, all features of the extension will be run with OpenTofu instead of Terraform."
+        "tftoolbox.IacProvider": {
+          "type": "string",
+          "default": "terraform",
+          "enum": [
+            "terraform",
+            "opentofu"
+          ],
+          "description": "The IaC Provider to use for the extension."
         },
         "tftoolbox.spacelift.stackPendingConfirmationStatusItemUpdateTimeSeconds": {
           "type": "number",

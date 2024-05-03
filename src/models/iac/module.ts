@@ -1,4 +1,4 @@
-import { IIacBaseresource } from "./base_resource";
+import { IIacBaseresource } from "./baseResource";
 
 export class Module implements IIacBaseresource {
   key: string;
