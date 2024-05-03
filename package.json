@@ -135,10 +135,10 @@
           "default": true,
           "description": "Disable startup waring if spacectl is not installed and authenticated."
         },
-        "tftoolbox.spacelift.showNoTerraformVersionInstalledMsg": {
+        "tftoolbox.iac.showNoIacProviderVersionInstalledMsgOnStart": {
           "type": "boolean",
           "default": true,
-          "description": "Shows an informtion msg on startup if no terraform version is installed by the extension."
+          "description": "Shows an informtion msg on startup if no version for the active IaC provider is installed by the extension."
         },
         "tftoolbox.iac.provider": {
           "type": "string",

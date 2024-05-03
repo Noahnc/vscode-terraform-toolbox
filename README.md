@@ -57,6 +57,7 @@ If you don't want to use any spacelift features, you can simply not install the 
 ### 0.4.0
 
 - All settings with the pattern `tftoolbox.terraform.*` have been renamed to `tftoolbox.iac.*`.
+- The setting `tftoolbox.spacelift.showNoTerraformVersionInstalledMsg` has been renamed to `tftoolbox.iac.showNoIacProviderVersionInstalledMsgOnStart`.
 
 ## Supported platforms
 
