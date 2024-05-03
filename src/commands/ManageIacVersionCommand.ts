@@ -99,15 +99,15 @@ export class SetIacVersionBasedOnProjectRequirementsCommand extends BaseCommand 
   }
 
   private readTfVersionReqFromSpaceliftProjectAllWorkspaces(workspaces: vscode.WorkspaceFolder[]): string[] {
-    const terraformVersionRequirements: string[] = [];
+    const versionRequirements: string[] = [];
     workspaces.forEach((workspace) => {
       const spaceliftStackTffile = new PathObject(path.join(workspace.uri.fsPath, "Spacelift-Resources", "main.tf"));
       const requiredTerraformVersion = this.readTfVersionReqFromSpaceliftProjectInWorkspace(spaceliftStackTffile);
       if (requiredTerraformVersion !== undefined) {
-        terraformVersionRequirements.push(requiredTerraformVersion);
+        versionRequirements.push(requiredTerraformVersion);
       }
     });
-    return [...new Set(terraformVersionRequirements)];
+    return [...new Set(versionRequirements)];
   }
 }
 

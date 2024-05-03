@@ -21,18 +21,18 @@ export class IacInitAllProjectsCommand extends BaseCommand {
     getLogger().info(`Running ${this.iacProvider.name} init for all projects`);
     const [, workspaces] = helpers.getCurrentProjectInformations();
     if (workspaces === undefined) {
-      helpers.showWarning("No terraform project open. Please open a terraform project to use this command", hideInfoMsgs);
+      helpers.showWarning(`No ${this.iacProvider.name} project open. Please open a ${this.iacProvider.name} project to use this command`, hideInfoMsgs);
       return;
     }
-    const terraformProjectFolders = await this.iacProjectHelper.findAllTerraformFoldersInOpenWorkspaces();
-    if (terraformProjectFolders.length === 0) {
-      helpers.showWarning("No terraform projects found in the current workspace", hideInfoMsgs);
+    const projectFolders = await this.iacProjectHelper.findAllTerraformFoldersInOpenWorkspaces();
+    if (projectFolders.length === 0) {
+      helpers.showWarning(`No ${this.iacProvider.name} projects found in the current workspace`, hideInfoMsgs);
       return;
     }
 
     const validFolders: PathObject[] = [];
     await Promise.all(
-      terraformProjectFolders.map(async (folder) => {
+      projectFolders.map(async (folder) => {
         if (!(await this.iacProjectHelper.checkFolderContainsValidTerraformFiles(folder))) {
           getLogger().info(`Folder ${folder.path} is does not contain any modules or providers, skipping this folder`);
           return;
@@ -41,7 +41,7 @@ export class IacInitAllProjectsCommand extends BaseCommand {
       })
     );
     if (validFolders.length === 0) {
-      helpers.showInformation("No Terraform project found that could be initialized", hideInfoMsgs);
+      helpers.showInformation(`No ${this.iacProvider.name} project found that could be initialized`, hideInfoMsgs);
       return;
     }
     const unsuccessfulFolders: PathObject[] = [];
@@ -49,7 +49,7 @@ export class IacInitAllProjectsCommand extends BaseCommand {
     await vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Window,
-        title: "Initializing terraform projects",
+        title: `Initializing ${this.iacProvider.name} projects`,
         cancellable: false,
       },
       async (progress) => {
@@ -74,7 +74,7 @@ export class IacInitAllProjectsCommand extends BaseCommand {
       const failedFoldersRelative = unsuccessfulFolders.map((folder) => {
         return vscode.workspace.asRelativePath(folder.path);
       });
-      helpers.showError(`Error encountered while initializing the following terraform projects: ${failedFoldersRelative.join(", ")}`, hideErrMsgs);
+      helpers.showError(`Error encountered while initializing the following ${this.iacProvider.name} projects: ${failedFoldersRelative.join(", ")}`, hideErrMsgs);
       return;
     }
   }
@@ -106,7 +106,7 @@ export class IacInitCurrentProjectCommand extends BaseCommand {
   async init(hideErrMsgs = false, hideInfoMsgs = false) {
     const [currentWorkspace, workspaces, currentFolderRelative] = helpers.getCurrentProjectInformations();
     if (workspaces === undefined || currentFolderRelative === undefined || currentWorkspace === undefined) {
-      hideInfoMsgs ? null : vscode.window.showWarningMessage("No terraform project open. Please open a terraform project to use this command");
+      hideInfoMsgs ? null : vscode.window.showWarningMessage(`No ${this.iacProvider.name} project open. Please open a ${this.iacProvider.name} project to use this command`);
       return;
     }
     const currentFolder = new PathObject(path.join(currentWorkspace.uri.fsPath, currentFolderRelative));
@@ -139,7 +139,7 @@ export class IacFetchModulesCurrentProjectCommand extends BaseCommand {
   protected async init(hideErrMsgs = false, hideInfoMsgs = false) {
     const [currentWorkspace, workspaces, currentFolderRelative] = helpers.getCurrentProjectInformations();
     if (workspaces === undefined || currentFolderRelative === undefined || currentWorkspace === undefined) {
-      hideInfoMsgs ? null : vscode.window.showWarningMessage("No terraform project open. Please open a terraform project to use this command");
+      hideInfoMsgs ? null : vscode.window.showWarningMessage(`No ${this.iacProvider.name} project open. Please open a ${this.iacProvider.name} project to use this command`);
       return;
     }
     const currentFolder = new PathObject(path.join(currentWorkspace.uri.fsPath, currentFolderRelative));

@@ -4,7 +4,7 @@ import fetch from "node-fetch";
 import { Octokit } from "octokit";
 import * as vscode from "vscode";
 import { IacFetchModulesCurrentProjectCommand, IacInitAllProjectsCommand, IacInitCurrentProjectCommand } from "./commands/IacInitCommand";
-import { AutoSetTerraformWorkspaceCommand, ChoseAndSetTerraformWorkspaceCommand } from "./commands/IacWorkspaceCommand";
+import { AutoSetIacWorkspaceCommand, ChoseAndSetIacWorkspaceCommand } from "./commands/IacWorkspaceCommand";
 import { ChoseAndDeleteIacVersionsCommand, ChoseAndSetIacVersionCommand, SetIacVersionBasedOnProjectRequirementsCommand } from "./commands/ManageIacVersionCommand";
 import { RunSpacectlLocalPreviewCommand, RunSpacectlLocalPreviewCurrentStackCommand } from "./commands/SpaceliftLocalPreviewCommand";
 import * as cst from "./constants";
@@ -192,8 +192,8 @@ export async function activate(context: vscode.ExtensionContext) {
   new IacFetchModulesCurrentProjectCommand(context, { command: cst.COMMAND_INIT_REFRESH_MODULES }, iacProjectHelper, iacCli, iacProvider);
 
   // IaC workspace commands
-  new ChoseAndSetTerraformWorkspaceCommand(context, { command: cst.COMMAND_SET_WORKSPACE, successCallback: iacWorkspaceItem.refresh.bind(iacWorkspaceItem) }, iacCli, iacProvider);
-  const autoSetWorkspaceCommand = new AutoSetTerraformWorkspaceCommand(
+  new ChoseAndSetIacWorkspaceCommand(context, { command: cst.COMMAND_SET_WORKSPACE, successCallback: iacWorkspaceItem.refresh.bind(iacWorkspaceItem) }, iacCli, iacProvider);
+  const autoSetWorkspaceCommand = new AutoSetIacWorkspaceCommand(
     context,
     { command: cst.COMMAND_AUTO_SET_WORKSPACE, successCallback: iacWorkspaceItem.refresh.bind(iacWorkspaceItem) },
     iacCli,

@@ -10,7 +10,7 @@ import { PathObject } from "../utils/path";
 import { BaseCommand, IvscodeCommandSettings } from "./BaseCommand";
 import path = require("path");
 
-export class ChoseAndSetTerraformWorkspaceCommand extends BaseCommand {
+export class ChoseAndSetIacWorkspaceCommand extends BaseCommand {
   tfcli: IIacCli;
   iacProvider: IIaCProvider;
   constructor(context: vscode.ExtensionContext, settings: IvscodeCommandSettings, tfcli: IIacCli, iacProvider: IIaCProvider) {
@@ -22,19 +22,19 @@ export class ChoseAndSetTerraformWorkspaceCommand extends BaseCommand {
   async init(): Promise<void> {
     const [currentWorkspace, workspaces, currentOpenFolder] = helpers.getCurrentProjectInformations();
     if (currentWorkspace === undefined || workspaces === undefined || currentOpenFolder === undefined) {
-      throw new UserShownError("No workspace open. Open a terraform project to use this command.");
+      throw new UserShownError(`No workspace open. Open a ${this.iacProvider.name} project to use this command.`);
     }
     const currentOpenFolderAbsolut = new PathObject(path.join(currentWorkspace.uri.fsPath, currentOpenFolder));
-    const [terraformWorkspaces, activeWorkspace] = await this.tfcli.getWorkspaces(currentOpenFolderAbsolut).catch((error) => {
-      throw new UserShownError(`Error getting terraform workspaces: ${error.toString()}`);
+    const [iacWorkspaces, activeWorkspace] = await this.tfcli.getWorkspaces(currentOpenFolderAbsolut).catch((error) => {
+      throw new UserShownError(`Error getting ${this.iacProvider.name} workspaces: ${error.toString()}`);
     });
-    if (terraformWorkspaces.length === 1) {
+    if (iacWorkspaces.length === 1) {
       helpers.showInformation("There is only the default workspace in this project.");
       return;
     }
     // show a quickpick to chose the workspace and add a lable to the active workspace
     const chosenWorkspace = await vscode.window.showQuickPick(
-      terraformWorkspaces.map((workspace) => {
+      iacWorkspaces.map((workspace) => {
         if (workspace === activeWorkspace) {
           return {
             label: workspace,
@@ -66,7 +66,7 @@ export class ChoseAndSetTerraformWorkspaceCommand extends BaseCommand {
   }
 }
 
-export class AutoSetTerraformWorkspaceCommand extends BaseCommand {
+export class AutoSetIacWorkspaceCommand extends BaseCommand {
   tfcli: IIacCli;
   tfProjectHelper: IacProjectHelper;
   iacProvider: IIaCProvider;
@@ -80,12 +80,12 @@ export class AutoSetTerraformWorkspaceCommand extends BaseCommand {
   async init(silent = false): Promise<void> {
     const [, workspaces] = helpers.getCurrentProjectInformations();
     if (workspaces === undefined) {
-      helpers.showWarning("No workspace open. Open a terraform project to use this command.", silent);
+      helpers.showWarning(`No workspace open. Open a ${this.iacProvider.name} project to use this command.`, silent);
       return;
     }
-    const terraformFolders = await this.tfProjectHelper.findAllTerraformFoldersInOpenWorkspaces();
-    if (terraformFolders.length === 0) {
-      helpers.showWarning("No terraform folder found in the open workspaces.", silent);
+    const iacFolders = await this.tfProjectHelper.findAllTerraformFoldersInOpenWorkspaces();
+    if (iacFolders.length === 0) {
+      helpers.showWarning(`No ${this.iacProvider.name} folder found in the open workspaces.`, silent);
       return;
     }
     const processedFolders = [];
@@ -108,7 +108,7 @@ export class AutoSetTerraformWorkspaceCommand extends BaseCommand {
         if (workspaceJson.autoSetWorkspace.name === undefined) {
           getLogger().debug(`Skipping workspace ${workspace.name} because it does not contain a autoSetWorkspace.name property in the .terraform-toolbox.json file.`);
         }
-        const foldersInWorkspace = terraformFolders.filter((folder: PathObject) => {
+        const foldersInWorkspace = iacFolders.filter((folder: PathObject) => {
           return folder.path.startsWith(workspace.uri.fsPath);
         });
         let filteredFolders;
@@ -125,7 +125,7 @@ export class AutoSetTerraformWorkspaceCommand extends BaseCommand {
           });
         }
         if (filteredFolders.length === 0) {
-          getLogger().debug(`Skipping workspace ${workspace.name} because it does not contain a terraform folder.`);
+          getLogger().debug(`Skipping workspace ${workspace.name} because it does not contain a ${this.iacProvider.name} folder.`);
           return;
         }
         await Promise.all(
@@ -139,12 +139,12 @@ export class AutoSetTerraformWorkspaceCommand extends BaseCommand {
               getLogger().info(`Skipping folder ${folder.path} because the workspace ${workspaceJson.autoSetWorkspace.name} is already active.`);
               return;
             }
-            const [terraformWorkspaces] = await this.tfcli.getWorkspaces(folder);
-            if (terraformWorkspaces === undefined) {
+            const [iacWorkspaces] = await this.tfcli.getWorkspaces(folder);
+            if (iacWorkspaces === undefined) {
               getLogger().warn(`Skipping folder ${folder.path} because it does not contain any workspaces.`);
               return;
             }
-            if (!terraformWorkspaces.includes(workspaceJson.autoSetWorkspace.name)) {
+            if (!iacWorkspaces.includes(workspaceJson.autoSetWorkspace.name)) {
               getLogger().warn(`Skipping folder ${folder.path} because it does not contain the workspace ${workspaceJson.autoSetWorkspace.name}`);
               return;
             }
