@@ -3,31 +3,31 @@ import * as hcl from "hcl2-parser";
 import fetch from "node-fetch";
 import { Octokit } from "octokit";
 import * as vscode from "vscode";
-import { ChoseAndDeleteIacVersionsCommand, ChoseAndSetIacVersionCommand, SetIacVersionBasedOnProjectRequirementsCommand } from "./commands/ManageIacVersionCommand";
-import { RunSpacectlLocalPreviewCommand, RunSpacectlLocalPreviewCurrentStackCommand } from "./commands/SpaceliftLocalPreviewCommand";
 import { TerraformFetchModulesCurrentProjectCommand, TerraformInitAllProjectsCommand, TerraformInitCurrentProjectCommand } from "./commands/IacInitCommand";
 import { AutoSetTerraformWorkspaceCommand, ChoseAndSetTerraformWorkspaceCommand } from "./commands/IacWorkspaceCommand";
+import { ChoseAndDeleteIacVersionsCommand, ChoseAndSetIacVersionCommand, SetIacVersionBasedOnProjectRequirementsCommand } from "./commands/ManageIacVersionCommand";
+import { RunSpacectlLocalPreviewCommand, RunSpacectlLocalPreviewCurrentStackCommand } from "./commands/SpaceliftLocalPreviewCommand";
 import * as cst from "./constants";
 import { Settings } from "./models/settings";
 import { Cli } from "./utils/cli";
 import * as helpers from "./utils/helperFunctions";
+import { IacProjectHelper } from "./utils/IaC/iacProjectHelper";
+import { IacVersionProvider } from "./utils/IaC/IacVersionProvider";
 import { getLogger, initLogger } from "./utils/logger";
 import { ISpacectl, Spacectl } from "./utils/Spacelift/spacectl";
 import { IspaceliftClient, SpaceliftClient } from "./utils/Spacelift/spaceliftClient";
-import { IacVersionProvider } from "./utils/IaC/IacVersionProvider";
-import { IacProjectHelper } from "./utils/IaC/iacProjectHelper";
 
 import { IversionManager, VersionManager } from "./utils/VersionManager/versionManager";
 
 import { IacCli } from "./utils/IaC/iacCli";
-import { SpaceliftAuthenticationHandler } from "./utils/Spacelift/spaceliftAuthenticationHandler";
-import { IacActiveWorkspaceItem } from "./view/statusbar/IacWorkspaceItem";
-import { SpaceliftPenStackConfCount } from "./view/statusbar/spaceliftStackConfirmationItem";
-import { SpaceliftApiAuthenticationStatus } from "./view/statusbar/spaceliftAuthStatusItem";
-import { IacActiveVersionItem } from "./view/statusbar/iacVersionItem";
 import { IIaCProvider } from "./utils/IaC/IIaCProvider";
 import { OpenTofuProvider } from "./utils/OpenTofu/opentofuIacProvider";
+import { SpaceliftAuthenticationHandler } from "./utils/Spacelift/spaceliftAuthenticationHandler";
 import { TerraformProvider } from "./utils/Terraform/terraformIacProvider";
+import { IacActiveVersionItem } from "./view/statusbar/iacVersionItem";
+import { IacActiveWorkspaceItem } from "./view/statusbar/IacWorkspaceItem";
+import { SpaceliftApiAuthenticationStatus } from "./view/statusbar/spaceliftAuthStatusItem";
+import { SpaceliftPenStackConfCount } from "./view/statusbar/spaceliftStackConfirmationItem";
 
 export async function activate(context: vscode.ExtensionContext) {
   const settings = new Settings();

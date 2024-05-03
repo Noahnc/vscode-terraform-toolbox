@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { getLogger } from "../../utils/logger";
-import { BaseStatusBarItem, IvscodeStatusBarItemSettings } from "./baseStatusBarItem";
 import { ISpaceliftAuthenticationHandler } from "../../utils/Spacelift/spaceliftAuthenticationHandler";
+import { BaseStatusBarItem, IvscodeStatusBarItemSettings } from "./baseStatusBarItem";
 
 export class SpaceliftApiAuthenticationStatus extends BaseStatusBarItem {
   private readonly _authHandler: ISpaceliftAuthenticationHandler;
