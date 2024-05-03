@@ -1,4 +1,4 @@
-import jwt_decode from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 import { getLogger } from "../../utils/logger";
 
 interface DecodedJwt {
@@ -15,7 +15,7 @@ export class SpaceliftJwt {
   private readonly expireAllowedDeltaSec: number;
 
   constructor(jwt: string, expireAllowedDeltaSec = 30) {
-    const decodedJwt: DecodedJwt = jwt_decode(jwt);
+    const decodedJwt: DecodedJwt = jwtDecode(jwt);
     if (decodedJwt === undefined || decodedJwt === null) {
       throw new Error("Failed to decode JWT");
     }

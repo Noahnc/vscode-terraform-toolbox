@@ -1,10 +1,10 @@
-export interface TerraformBaseResource {
+export interface IIacBaseresource {
   key: string;
   source: string;
   version?: string;
 }
 
-export function checkIfAllResourcesInstalled(declaredResources: TerraformBaseResource[], installedResources: TerraformBaseResource[]): boolean {
+export function checkIfAllResourcesInstalled(declaredResources: IIacBaseresource[], installedResources: IIacBaseresource[]): boolean {
   let allResourcesInstalled = true;
   for (const declaredResource of declaredResources) {
     const installedResource = installedResources.find(

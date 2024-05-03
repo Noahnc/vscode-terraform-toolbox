@@ -2,9 +2,9 @@ import path = require("path");
 import * as fs from "fs";
 import * as vscode from "vscode";
 import { UserShownError } from "../../custom_errors";
-import { Module } from "../../models/terraform/module";
-import { Provider } from "../../models/terraform/provider";
-import { terraformResources } from "../../models/terraform/terraform_resources";
+import { Module } from "../../models/iac/module";
+import { Provider } from "../../models/iac/provider";
+import { iacResources } from "../../models/iac/iac_resources";
 import { getLogger } from "../logger";
 import { Settings } from "../../models/settings";
 import { PathObject } from "../path";
@@ -50,7 +50,7 @@ export interface IIacProjectHelper {
   checkFolderHasBeenInitialized: (folder: PathObject) => boolean;
   checkFolderContainsValidTerraformFiles: (folder: PathObject) => Promise<boolean>;
   getInstalledModulesForFolder: (folder: PathObject) => Promise<Module[]>;
-  getDeclaredResourcesForFolder: (folder: PathObject) => Promise<terraformResources | undefined>;
+  getDeclaredResourcesForFolder: (folder: PathObject) => Promise<iacResources | undefined>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getProvidersFromParsedHcl: (hclObject: any) => Provider[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -164,7 +164,7 @@ export class IacProjectHelper implements IIacProjectHelper {
     return uniqueVersions;
   }
 
-  async getDeclaredResourcesForFolder(folder: PathObject): Promise<terraformResources | undefined> {
+  async getDeclaredResourcesForFolder(folder: PathObject): Promise<iacResources | undefined> {
     let foundModules: Module[] = [];
     let foundProviders: Provider[] = [];
     let requiredVersions: string[] = [];
@@ -190,7 +190,7 @@ export class IacProjectHelper implements IIacProjectHelper {
       foundModules = foundModules.concat(this.getModulesFromParsedHcl(hclObject));
       foundProviders = foundProviders.concat(this.getProvidersFromParsedHcl(hclObject));
     });
-    return new terraformResources(foundModules, foundProviders, [...new Set(requiredVersions)]);
+    return new iacResources(foundModules, foundProviders, [...new Set(requiredVersions)]);
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getProvidersFromParsedHcl(hclObject: any): Provider[] {

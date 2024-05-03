@@ -1,6 +1,6 @@
-import { TerraformBaseResource } from "./base_resource";
+import { IIacBaseresource } from "./base_resource";
 
-export class Module implements TerraformBaseResource {
+export class Module implements IIacBaseresource {
   key: string;
   source: string;
   version?: string;
