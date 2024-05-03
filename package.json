@@ -176,14 +176,14 @@
     "@typescript-eslint/parser": "^7.8.0",
     "@vscode/test-electron": "^2.3.8",
     "depcheck": "^1.4.6",
-    "esbuild": "^0.19.9",
+    "esbuild": "^0.20.2",
     "eslint": "^8.56.0",
-    "glob": "^10.3.4",
+    "glob": "^10.3.12",
     "mocha": "^10.2.0",
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "@vscode-logging/wrapper": "^1.0.2",
+    "@vscode-logging/wrapper": "^2.0.0",
     "axios": "1.6.2",
     "chai": "^4.3.10",
     "decompress": "^4.2.1",
