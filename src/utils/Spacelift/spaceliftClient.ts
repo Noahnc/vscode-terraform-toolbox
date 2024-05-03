@@ -12,19 +12,19 @@ export interface IspaceliftClient {
 
 export class SpaceliftClient implements IspaceliftClient {
   private _spaceliftEndpoint?: string;
-  private _client!: GraphQLClient;
-  private _auth_handler: ISpaceliftAuthenticationHandler;
+  private clinet!: GraphQLClient;
+  private authHandler: ISpaceliftAuthenticationHandler;
 
-  constructor($client: GraphQLClient, auth_handler: ISpaceliftAuthenticationHandler) {
-    this._auth_handler = auth_handler;
-    this._client = $client;
+  constructor($client: GraphQLClient, authHandler: ISpaceliftAuthenticationHandler) {
+    this.authHandler = authHandler;
+    this.clinet = $client;
   }
 
   private async sendGraphQLRequest<Type>(query: string, variables?: Variables, retryCount = 5): Promise<Type | undefined> {
     await this.authenticate();
-    return await this._client.request<Type>(query, variables).catch(async (error) => {
+    return await this.clinet.request<Type>(query, variables).catch(async (error) => {
       if (retryCount > 0) {
-        getLogger().error("GraphQL request to Spacelift failed: " + error);
+        getLogger().error(`GraphQL request to Spacelift failed: ${error}`);
         return undefined;
       }
       await helper.delay(1000);
@@ -33,11 +33,11 @@ export class SpaceliftClient implements IspaceliftClient {
   }
 
   async authenticate() {
-    const jwt = await this._auth_handler.get_token();
+    const jwt = await this.authHandler.getToken();
     if (jwt === null) {
       throw new UserShownError("Spacectl not authenticated.");
     }
-    this._client.setHeaders({
+    this.clinet.setHeaders({
       authorization: `Bearer ${jwt.rawToken}`,
     });
   }
@@ -47,12 +47,12 @@ export class SpaceliftClient implements IspaceliftClient {
     if (response === undefined) {
       throw new UserShownError("Failed to get stacks from spacelift.");
     }
-    getLogger().debug("Got " + response.stacks.length + " stacks from spacelift.");
-    getLogger().trace("Got stacks from spacelift: " + JSON.stringify(response.stacks));
+    getLogger().debug(`Got ${response.stacks.length} stacks from spacelift.`);
+    getLogger().trace(`Got stacks from spacelift: ${JSON.stringify(response.stacks)}`);
     return new SpaceliftStacks(response.stacks);
   }
 
   async isAuthenticated(): Promise<boolean> {
-    return await this._auth_handler.check_token_valid();
+    return await this.authHandler.checkTokenValid();
   }
 }

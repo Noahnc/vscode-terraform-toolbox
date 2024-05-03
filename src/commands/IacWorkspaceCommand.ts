@@ -1,19 +1,22 @@
 import * as fs from "fs";
 import * as vscode from "vscode";
 import { UserShownError } from "../custom_errors";
-import { getLogger } from "../utils/logger";
-import { IIacCli } from "../utils/IaC/iacCli";
-import { BaseCommand, IvscodeCommandSettings } from "./BaseCommand";
-import { PathObject } from "../utils/path";
 import * as helpers from "../utils/helperFunctions";
-import path = require("path");
+import { IIacCli } from "../utils/IaC/iacCli";
 import { IacProjectHelper } from "../utils/IaC/iacProjectHelper";
+import { IIaCProvider } from "../utils/IaC/IIaCProvider";
+import { getLogger } from "../utils/logger";
+import { PathObject } from "../utils/path";
+import { BaseCommand, IvscodeCommandSettings } from "./BaseCommand";
+import path = require("path");
 
 export class ChoseAndSetTerraformWorkspaceCommand extends BaseCommand {
   tfcli: IIacCli;
-  constructor(context: vscode.ExtensionContext, settings: IvscodeCommandSettings, tfcli: IIacCli) {
+  iacProvider: IIaCProvider;
+  constructor(context: vscode.ExtensionContext, settings: IvscodeCommandSettings, tfcli: IIacCli, iacProvider: IIaCProvider) {
     super(context, settings);
     this.tfcli = tfcli;
+    this.iacProvider = iacProvider;
   }
 
   async init(): Promise<void> {
@@ -23,7 +26,7 @@ export class ChoseAndSetTerraformWorkspaceCommand extends BaseCommand {
     }
     const currentOpenFolderAbsolut = new PathObject(path.join(currentWorkspace.uri.fsPath, currentOpenFolder));
     const [terraformWorkspaces, activeWorkspace] = await this.tfcli.getWorkspaces(currentOpenFolderAbsolut).catch((error) => {
-      throw new UserShownError("Error getting terraform workspaces: " + error.toString());
+      throw new UserShownError(`Error getting terraform workspaces: ${error.toString()}`);
     });
     if (terraformWorkspaces.length === 1) {
       helpers.showInformation("There is only the default workspace in this project.");
@@ -51,25 +54,27 @@ export class ChoseAndSetTerraformWorkspaceCommand extends BaseCommand {
       return;
     }
     if (chosenWorkspace.label === activeWorkspace) {
-      helpers.showInformation("The workspace " + chosenWorkspace.label + " is already active.");
+      helpers.showInformation(`The workspace ${chosenWorkspace.label} is already active.`);
       return;
     }
     const [success, , stderr] = await this.tfcli.setWorkspace(currentOpenFolderAbsolut, chosenWorkspace.label);
     if (!success) {
-      helpers.showError("Error setting workspace to " + chosenWorkspace.label + ", error: " + stderr);
+      helpers.showError(`Error setting workspace to ${chosenWorkspace.label}, error: ${stderr}`);
       return;
     }
-    getLogger().info("Successfully set workspace to " + chosenWorkspace.label);
+    getLogger().info(`Successfully set workspace to ${chosenWorkspace.label}`);
   }
 }
 
 export class AutoSetTerraformWorkspaceCommand extends BaseCommand {
   tfcli: IIacCli;
   tfProjectHelper: IacProjectHelper;
-  constructor(context: vscode.ExtensionContext, settings: IvscodeCommandSettings, tfcli: IIacCli, tfProjectHelper: IacProjectHelper) {
+  iacProvider: IIaCProvider;
+  constructor(context: vscode.ExtensionContext, settings: IvscodeCommandSettings, tfcli: IIacCli, tfProjectHelper: IacProjectHelper, iacProvider: IIaCProvider) {
     super(context, settings);
     this.tfcli = tfcli;
     this.tfProjectHelper = tfProjectHelper;
+    this.iacProvider = iacProvider;
   }
 
   async init(silent = false): Promise<void> {
@@ -89,7 +94,7 @@ export class AutoSetTerraformWorkspaceCommand extends BaseCommand {
       workspaces.map(async (workspace) => {
         const terraformToolboxJsonFile = new PathObject(path.join(workspace.uri.fsPath, ".terraform-toolbox.json"));
         if (!terraformToolboxJsonFile.exists()) {
-          getLogger().debug("Skipping workspace " + workspace.name + " because it does not contain a .terraform-toolbox.json file.");
+          getLogger().debug(`Skipping workspace ${workspace.name} because it does not contain a .terraform-toolbox.json file.`);
           return;
         }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -97,11 +102,11 @@ export class AutoSetTerraformWorkspaceCommand extends BaseCommand {
         try {
           workspaceJson = JSON.parse(fs.readFileSync(terraformToolboxJsonFile.path, "utf8"));
         } catch (error) {
-          getLogger().error("Error parsing .terraform-toolbox.json file in workspace " + workspace.name + ", error: " + error);
+          getLogger().error(`Error parsing .terraform-toolbox.json file in workspace ${workspace.name}, error: ${error}`);
           return;
         }
         if (workspaceJson.autoSetWorkspace.name === undefined) {
-          getLogger().debug("Skipping workspace " + workspace.name + " because it does not contain a autoSetWorkspace.name property in the .terraform-toolbox.json file.");
+          getLogger().debug(`Skipping workspace ${workspace.name} because it does not contain a autoSetWorkspace.name property in the .terraform-toolbox.json file.`);
         }
         const foldersInWorkspace = terraformFolders.filter((folder: PathObject) => {
           return folder.path.startsWith(workspace.uri.fsPath);
@@ -113,42 +118,42 @@ export class AutoSetTerraformWorkspaceCommand extends BaseCommand {
         } else if (workspaceJson.autoSetWorkspace.excludedFoldersRelativePaths.length === 0) {
           filteredFolders = foldersInWorkspace;
         } else {
-          getLogger().debug("Found the following excluded folders in workspace " + workspace.name + ": " + workspaceJson.autoSetWorkspace.excludedFoldersRelativePaths.join(", "));
+          getLogger().debug(`Found the following excluded folders in workspace ${workspace.name}: ${workspaceJson.autoSetWorkspace.excludedFoldersRelativePaths.join(", ")}`);
           filteredFolders = foldersInWorkspace.filter((folder: PathObject) => {
             const relativePath = folder.path.replace(workspace.uri.fsPath, "").replace(/\\/g, "/");
             return !workspaceJson.autoSetWorkspace.excludedFoldersRelativePaths.includes(relativePath);
           });
         }
         if (filteredFolders.length === 0) {
-          getLogger().debug("Skipping workspace " + workspace.name + " because it does not contain a terraform folder.");
+          getLogger().debug(`Skipping workspace ${workspace.name} because it does not contain a terraform folder.`);
           return;
         }
         await Promise.all(
           filteredFolders.map(async (folder: PathObject) => {
             if (!this.tfProjectHelper.checkFolderHasBeenInitialized(folder)) {
-              getLogger().debug("Skipping folder " + folder.path + " because it has not been initialized.");
+              getLogger().debug(`Skipping folder ${folder.path} because it has not been initialized.`);
               return;
             }
             if ((await this.tfProjectHelper.getCurrentWorkspaceFromEnvFile(folder)) === workspaceJson.autoSetWorkspace.name) {
               allreadySetFolders.push(folder);
-              getLogger().info("Skipping folder " + folder.path + " because the workspace " + workspaceJson.autoSetWorkspace.name + " is already active.");
+              getLogger().info(`Skipping folder ${folder.path} because the workspace ${workspaceJson.autoSetWorkspace.name} is already active.`);
               return;
             }
             const [terraformWorkspaces] = await this.tfcli.getWorkspaces(folder);
             if (terraformWorkspaces === undefined) {
-              getLogger().warn("Skipping folder " + folder.path + " because it does not contain any workspaces.");
+              getLogger().warn(`Skipping folder ${folder.path} because it does not contain any workspaces.`);
               return;
             }
             if (!terraformWorkspaces.includes(workspaceJson.autoSetWorkspace.name)) {
-              getLogger().warn("Skipping folder " + folder.path + " because it does not contain the workspace " + workspaceJson.autoSetWorkspace.name);
+              getLogger().warn(`Skipping folder ${folder.path} because it does not contain the workspace ${workspaceJson.autoSetWorkspace.name}`);
               return;
             }
             const [success, , stderr] = await this.tfcli.setWorkspace(folder, workspaceJson.autoSetWorkspace.name);
             if (!success) {
-              getLogger().error("Error setting workspace to " + workspaceJson.autoSetWorkspace.name + " for folder " + folder.path + ", error: " + stderr);
+              getLogger().error(`Error setting workspace to ${workspaceJson.autoSetWorkspace.name} for folder ${folder.path}, error: ${stderr}`);
               return;
             }
-            getLogger().info("Successfully set workspace to " + workspaceJson.autoSetWorkspace.name + " for folder " + folder.path);
+            getLogger().info(`Successfully set workspace to ${workspaceJson.autoSetWorkspace.name} for folder ${folder.path}`);
             processedFolders.push(folder);
           })
         );
@@ -160,9 +165,9 @@ export class AutoSetTerraformWorkspaceCommand extends BaseCommand {
       return;
     }
     if (processedFolders.length > 0) {
-      helpers.showInformation("Successfully set workspace for " + processedFolders.length + " folders.", silent);
+      helpers.showInformation(`Successfully set workspace for ${processedFolders.length} folders.`, silent);
       return;
     }
-    helpers.showInformation("Workspace is already set for " + allreadySetFolders.length + " folders.", silent);
+    helpers.showInformation(`Workspace is already set for ${allreadySetFolders.length} folders.`, silent);
   }
 }

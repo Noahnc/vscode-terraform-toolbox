@@ -29,12 +29,12 @@ export class Release {
     if (isActive && this._installed === false) {
       throw new Error("Cannot set release active if it is not installed");
     }
-    getLogger().trace("Setting release " + this._name + " property isActive to " + isActive.toString());
+    getLogger().trace(`Setting release ${this._name} property isActive to ${isActive.toString()}`);
     this._isActive = isActive;
   }
 
   set installed(isInstalled: boolean) {
-    getLogger().trace("Setting release " + this._name + " property isInstalled to " + isInstalled.toString());
+    getLogger().trace(`Setting release ${this._name} property isInstalled to ${isInstalled.toString()}`);
     this._installed = isInstalled;
   }
 
@@ -159,7 +159,7 @@ export class Releases {
     }
     // const matchingReleases = releases.filter((release) => semver.satisfies(release.name, versionConstraint));
     if (matchingReleases.length === 0) {
-      throw new UserShownError("No terraform version matching the following constraints found: " + versionConstraints.join(", "));
+      throw new UserShownError(`No terraform version matching the following constraints found: ${versionConstraints.join(", ")}`);
     }
     return matchingReleases[0];
   }
@@ -200,7 +200,7 @@ export class Releases {
         }
       });
     }
-    getLogger().trace("Filtered releases: " + filteredReleases.map((release) => release.name));
+    getLogger().trace(`Filtered releases: ${filteredReleases.map((release) => release.name)}`);
     return this.sortByVersionDescending(filteredReleases);
   }
 }

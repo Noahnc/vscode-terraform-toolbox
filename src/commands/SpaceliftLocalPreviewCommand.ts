@@ -29,7 +29,7 @@ export class RunSpacectlLocalPreviewCurrentStackCommand extends BaseCommand {
       getLogger().info("No workspace chosen, aborting");
       return;
     }
-    getLogger().info("Running local preview for stack: " + chosenWorkspaceStack.name);
+    getLogger().info(`Running local preview for stack: ${chosenWorkspaceStack.name}`);
     this.spacectl.executeLocalPreview(chosenWorkspaceStack, currentWorkspace.uri.fsPath);
   }
 }
@@ -67,7 +67,7 @@ export class RunSpacectlLocalPreviewCommand extends BaseCommand {
       getLogger().info("No workspace chosen, aborting");
       return;
     }
-    getLogger().info("Running local preview for stack: " + chosenWorkspaceStack.name);
+    getLogger().info(`Running local preview for stack: ${chosenWorkspaceStack.name}`);
     this.spacectl.executeLocalPreview(chosenWorkspaceStack, currentWorkspace.uri.fsPath);
   }
 
@@ -82,7 +82,7 @@ export class RunSpacectlLocalPreviewCommand extends BaseCommand {
         uniqueStacks.push(stack);
       }
     }
-    getLogger().trace("Identified unique stacks: " + JSON.stringify(uniqueStacks));
+    getLogger().trace(`Identified unique stacks: ${JSON.stringify(uniqueStacks)}`);
     const chosenStack = await helpers.getUserDecision<Stack>("Select a spacelift stack", uniqueStacks, "projectRoot");
     if (chosenStack === undefined) {
       getLogger().debug("User has not chosen a project");
@@ -99,11 +99,11 @@ async function choseTerraformWorkspace(stacks: Stack[]): Promise<Stack | undefin
     throw new UserShownError("No stack found for this project.");
   }
   if (stacks.length === 1) {
-    getLogger().debug("Only one stack found, using " + stacks[0].name);
+    getLogger().debug(`Only one stack found, using ${stacks[0].name}`);
     return stacks[0];
   }
   const stackNames = stacks.map((stack) => stack.vendorConfig.workspace);
-  getLogger().debug("Asking user to chose one of the following terraform workspaces: " + JSON.stringify(stackNames));
+  getLogger().debug(`Asking user to chose one of the following terraform workspaces: ${JSON.stringify(stackNames)}`);
   const chosenTerraformWorkspaceName = await vscode.window.showQuickPick(stackNames, {
     placeHolder: "Please select a terraform workspace",
   });

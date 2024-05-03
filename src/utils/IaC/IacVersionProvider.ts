@@ -4,70 +4,71 @@ import { UserShownError } from "../../custom_errors";
 import { Release, Releases } from "../../models/github/release";
 import { getLogger } from "../logger";
 import { PathObject } from "../path";
+import { IversionProvider } from "../VersionManager/IVersionProvider";
+import { IversionProviderSettings } from "../VersionManager/IVersionProviderSettings";
+import { ReleaseError } from "../VersionManager/versionManager";
+import { IIaCProvider } from "./IIaCProvider";
 import os = require("os");
 import path = require("path");
 import wget = require("wget-improved");
 import decompress = require("decompress");
-import { IversionProvider } from "../VersionManager/IVersionProvider";
-import { versionProviderSettings } from "../VersionManager/IVersionProviderSettings";
-import { ReleaseError } from "../VersionManager/versionManager";
-import { IIaCProvider } from "./IIaCProvider";
 
 export class IacVersionProvider implements IversionProvider {
-  protected readonly _context: vscode.ExtensionContext;
-  private readonly _octokit: Octokit;
-  private readonly _iacProvider: IIaCProvider;
+  private readonly context: vscode.ExtensionContext;
+  private readonly octokit: Octokit;
+  private readonly iacProvider: IIaCProvider;
 
-  constructor(context: vscode.ExtensionContext, octokit: Octokit, IIaCProvider: IIaCProvider) {
-    this._context = context;
-    this._octokit = octokit;
-    this._iacProvider = IIaCProvider;
+  constructor(context: vscode.ExtensionContext, octokit: Octokit, iacProvder: IIaCProvider) {
+    this.context = context;
+    this.octokit = octokit;
+    this.iacProvider = iacProvder;
   }
 
-  getVersionProviderSettings(): versionProviderSettings {
+  getVersionProviderSettings(): IversionProviderSettings {
     return {
-      softwareName: this._iacProvider.Name,
-      binaryName: this._iacProvider.BinaryName,
+      softwareName: this.iacProvider.name,
+      binaryName: this.iacProvider.binaryName,
     };
   }
 
   async getReleasesFormSource(): Promise<Releases> {
-    const githubReleases = await this._octokit.rest.repos.listReleases({
-      owner: this._iacProvider.GithubOrganization,
-      repo: this._iacProvider.GithubRepository,
+    const githubReleases = await this.octokit.rest.repos.listReleases({
+      owner: this.iacProvider.githubOrganization,
+      repo: this.iacProvider.githubRepository,
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       per_page: 100,
     });
-    getLogger().debug("Found " + githubReleases.data.length + " releases for " + this._iacProvider.Name + " on github.");
-    getLogger().trace("Releases: " + JSON.stringify(githubReleases.data));
+    getLogger().debug(`Found ${githubReleases.data.length} releases for ${this.iacProvider.name} on github.`);
+    getLogger().trace(`Releases: ${JSON.stringify(githubReleases.data)}`);
     return new Releases(githubReleases.data);
   }
 
   private async unzip(zipPath: PathObject): Promise<PathObject> {
-    const folderName = this._iacProvider.Name.toLowerCase() + "-extracted";
+    const folderName = `${this.iacProvider.name.toLowerCase()}-extracted`;
     const extractedFolder = new PathObject(path.join(os.tmpdir(), folderName));
     extractedFolder.delete();
-    getLogger().debug("Unzipping " + this._iacProvider.Name + " from " + zipPath.path + " to " + extractedFolder.path);
+    getLogger().debug(`Unzipping ${this.iacProvider.name} from ${zipPath.path} to ${extractedFolder.path}`);
     try {
       await decompress(zipPath.path, extractedFolder.path);
     } catch (err) {
-      throw new ReleaseError("Failed to unzip " + this._iacProvider.Name + " from " + zipPath.path + " to " + extractedFolder.path + " with error: " + err);
+      throw new ReleaseError(`Failed to unzip ${this.iacProvider.name} from ${zipPath.path} to ${extractedFolder.path} with error: ${err}`);
     }
-    let binaryName = this._iacProvider.BinaryName;
+    let binaryName = this.iacProvider.binaryName;
     if (os.platform() === "win32") {
       binaryName += ".exe";
     }
     const binaryFile = extractedFolder.join(binaryName);
 
     if (!binaryFile.exists()) {
-      throw new ReleaseError("Failed to find " + this._iacProvider.Name + " binary in zip file " + zipPath.path);
+      throw new ReleaseError(`Failed to find ${this.iacProvider.name} binary in zip file ${zipPath.path}`);
     }
     return binaryFile;
   }
 
   private async downloadRelease(zipName: string, release: Release): Promise<PathObject> {
     const downloadZipPath = new PathObject(path.join(os.tmpdir(), zipName));
-    const downloadUrl = this._iacProvider.getReleaseDownloadUrl(release, zipName);
-    getLogger().debug("Downloading " + this._iacProvider.Name + " from " + downloadUrl);
+    const downloadUrl = this.iacProvider.getReleaseDownloadUrl(release, zipName);
+    getLogger().debug(`Downloading ${this.iacProvider.name} from ${downloadUrl}`);
     downloadZipPath.delete();
     await new Promise<void>((resolve, reject) => {
       const request = wget.download(downloadUrl, downloadZipPath.path);
@@ -78,20 +79,21 @@ export class IacVersionProvider implements IversionProvider {
         resolve();
       });
     }).catch((err) => {
-      throw new ReleaseError("Failed to download " + this._iacProvider.Name + " from " + downloadUrl + " to " + downloadZipPath.path + " with error: " + err);
+      throw new ReleaseError(`Failed to download ${this.iacProvider.name} from ${downloadUrl} to ${downloadZipPath.path} with error: ${err}`);
     });
-    getLogger().debug("Downloaded " + this._iacProvider.Name + " to " + downloadZipPath.path);
+    getLogger().debug(`Downloaded ${this.iacProvider.name} to ${downloadZipPath.path}`);
     return downloadZipPath;
   }
 
   private getAssetName(release: Release): string {
-    getLogger().debug("Composing " + this._iacProvider.Name + " asset name for release " + release.name + " with platform " + os.platform() + " and architecture " + os.arch());
+    getLogger().debug(`Composing ${this.iacProvider.name} asset name for release ${release.name} with platform ${os.platform()} and architecture ${os.arch()}`);
     const osMap: Record<string, string> = {
       win32: "windows",
       darwin: "darwin",
       linux: "linux",
     };
     const archMap: Record<string, string> = {
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       386: "386",
       x64: "amd64",
       arm: "arm",
@@ -105,7 +107,7 @@ export class IacVersionProvider implements IversionProvider {
     if (!archName) {
       throw new UserShownError(`Unsupported architecture: ${os.arch()}`);
     }
-    const zipName = `${this._iacProvider.BinaryName}_${release.versionNumber}_${osName}_${archName}.zip`;
+    const zipName = `${this.iacProvider.binaryName}_${release.versionNumber}_${osName}_${archName}.zip`;
     return zipName;
   }
 
@@ -114,11 +116,11 @@ export class IacVersionProvider implements IversionProvider {
     await vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Window,
-        title: this._context.extension.packageJSON.displayName,
+        title: this.context.extension.packageJSON.displayName,
         cancellable: false,
       },
       async (progress) => {
-        progress.report({ message: "Downloading " + this._iacProvider.Name + " " + release.name });
+        progress.report({ message: `Downloading ${this.iacProvider.name} ${release.name}` });
         const zipName = this.getAssetName(release);
         const downloadZipPath = await this.downloadRelease(zipName, release);
         binPath = await this.unzip(downloadZipPath);
@@ -126,7 +128,7 @@ export class IacVersionProvider implements IversionProvider {
       }
     );
     if (!binPath) {
-      throw new ReleaseError("Failed to get binary path for release " + release.name);
+      throw new ReleaseError(`Failed to get binary path for release ${release.name}`);
     }
     return binPath;
   }

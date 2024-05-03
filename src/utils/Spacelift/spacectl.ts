@@ -3,8 +3,8 @@ import * as constants from "../../constants";
 import { UserShownError } from "../../custom_errors";
 import { SpaceliftJwt } from "../../models/spacelift/jwt";
 import { Stack } from "../../models/spacelift/stack";
-import { getLogger } from "../logger";
 import { ICli } from "../cli";
+import { getLogger } from "../logger";
 
 export interface ISpacectl {
   executeLocalPreview(stack: Stack, projectPath: string): Promise<void>;
@@ -23,7 +23,7 @@ export class Spacectl implements ISpacectl {
 
   async executeLocalPreview(stack: Stack, projectPath: string) {
     const terminalName = "Spacelift local preview";
-    getLogger().debug("Executing local preview for stack " + stack.id);
+    getLogger().debug(`Executing local preview for stack ${stack.id}`);
     let terminal = vscode.window.terminals.find((t) => t.name === terminalName);
     if (terminal !== undefined) {
       getLogger().debug("Found existing terminal, disposing it");
@@ -31,16 +31,16 @@ export class Spacectl implements ISpacectl {
     }
     terminal = vscode.window.createTerminal({ name: terminalName, cwd: projectPath });
     terminal.show();
-    terminal.sendText("spacectl stack local-preview -id " + stack.id);
+    terminal.sendText(`spacectl stack local-preview -id ${stack.id}`);
   }
 
   async setUserprofile(profileName: string) {
-    getLogger().debug("Setting spacectl profile to " + profileName);
-    const [success, stdout] = await this.runSpacectlCommand("profile select " + profileName);
-    getLogger().trace("spacectl profile select stdout: " + stdout);
+    getLogger().debug(`Setting spacectl profile to ${profileName}`);
+    const [success, stdout] = await this.runSpacectlCommand(`profile select ${profileName}`);
+    getLogger().trace(`spacectl profile select stdout: ${stdout}`);
     if (success === false && stdout !== "") {
       getLogger().error(stdout);
-      throw new UserShownError("Failed to select spacectl profile " + profileName + ". Make sure you have a profile with this name.");
+      throw new UserShownError(`Failed to select spacectl profile ${profileName}. Make sure you have a profile with this name.`);
     }
   }
 
@@ -55,7 +55,7 @@ export class Spacectl implements ISpacectl {
   async loginInteractive(): Promise<boolean> {
     getLogger().debug("Performing interactive login with spacectl and web browser");
     const [success, stdout] = await this.runSpacectlCommand("profile login");
-    getLogger().trace("spacectl profile login stdout: " + stdout);
+    getLogger().trace(`spacectl profile login stdout: ${stdout}`);
     return success;
   }
 
@@ -70,6 +70,6 @@ export class Spacectl implements ISpacectl {
   }
 
   private async runSpacectlCommand(subcommand: string): Promise<[boolean, string, string]> {
-    return await this._cli.runShellCommand(constants.SPACECTL_COMMAND_NAME + " " + subcommand);
+    return await this._cli.runShellCommand(`${constants.SPACECTL_COMMAND_NAME} ${subcommand}`);
   }
 }

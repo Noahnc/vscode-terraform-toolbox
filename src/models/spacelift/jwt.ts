@@ -35,12 +35,12 @@ export class SpaceliftJwt {
     this.subdomain = decodedJwt.subdomain;
     this.expireAllowedDeltaSec = expireAllowedDeltaSec;
 
-    getLogger().debug("Created spaceliftJwt with exp: " + this.exp + ", aud: " + this.aud.join(", ") + ", raw: " + this.raw.substring(0, 5) + "...");
+    getLogger().debug(`Created spaceliftJwt with exp: ${this.exp}, aud: ${this.aud.join(", ")}, raw: ${this.raw.substring(0, 5)}...`);
   }
 
   isExpired(): boolean {
     const currentEpochTimeSeconds = Date.now() / 1000;
-    getLogger().trace("Checking fi token is expired. Expires at " + this.exp + ", allowed delta: " + this.expireAllowedDeltaSec + " sec, now: " + currentEpochTimeSeconds);
+    getLogger().trace(`Checking fi token is expired. Expires at ${this.exp}, allowed delta: ${this.expireAllowedDeltaSec} sec, now: ${currentEpochTimeSeconds}`);
     if (this.exp - this.expireAllowedDeltaSec < currentEpochTimeSeconds) {
       getLogger().trace("Token is expired");
       return true;

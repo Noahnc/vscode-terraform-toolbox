@@ -10,12 +10,12 @@ export interface IIacCli {
 }
 
 export class IacCli implements IIacCli {
-  private _cli: ICli;
-  private _cliBinary: string;
+  private cli: ICli;
+  private cliBinary: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(cli: ICli, cliBinary: string) {
-    this._cli = cli;
-    this._cliBinary = cliBinary;
+    this.cli = cli;
+    this.cliBinary = cliBinary;
   }
 
   async init(folder?: PathObject, args?: string): Promise<[boolean, string, string]> {
@@ -25,19 +25,19 @@ export class IacCli implements IIacCli {
     }
     terraformInitCommand += " init -input=false -no-color";
     if (args !== undefined) {
-      terraformInitCommand += " " + args;
+      terraformInitCommand += ` ${args}`;
     }
     return await this.runTerraformCommand(terraformInitCommand);
   }
 
   async getModules(folder: PathObject): Promise<[boolean, string, string]> {
-    return await this.runTerraformCommand(this.getChdirString(folder) + " get -no-color");
+    return await this.runTerraformCommand(`${this.getChdirString(folder)} get -no-color`);
   }
 
   async getWorkspaces(folder: PathObject): Promise<[string[], string]> {
-    const [success, stdout, stderr] = await this.runTerraformCommand(this.getChdirString(folder) + " workspace list");
+    const [success, stdout, stderr] = await this.runTerraformCommand(`${this.getChdirString(folder)} workspace list`);
     if (!success) {
-      throw new Error("Error getting terraform workspaces: " + stderr);
+      throw new Error(`Error getting terraform workspaces: ${stderr}`);
     }
     const workspaceList = stdout.split("\n");
     // remove any empty lines
@@ -63,20 +63,20 @@ export class IacCli implements IIacCli {
     if (activeWorkspaceIndex === undefined) {
       throw new Error("Error evaluating active terraform workspace");
     }
-    getLogger().debug("Found workspaces: " + workspaceList);
+    getLogger().debug(`Found workspaces: ${workspaceList}`);
     return [workspaceList, workspaceList[activeWorkspaceIndex]];
   }
 
   private getChdirString(folderPath: PathObject): string {
     // return "-chdir=" + "'" + folderPath.path + "'";
-    return "-chdir=" + '"' + folderPath.path + '"';
+    return `-chdir=` + `"${folderPath.path}"`;
   }
 
   async setWorkspace(folder: PathObject, workspace: string): Promise<[boolean, string, string]> {
-    return await this.runTerraformCommand(this.getChdirString(folder) + " workspace select " + workspace);
+    return await this.runTerraformCommand(`${this.getChdirString(folder)} workspace select ${workspace}`);
   }
 
   async runTerraformCommand(command: string): Promise<[boolean, string, string]> {
-    return await this._cli.runShellCommand(this._cliBinary + " " + command);
+    return await this.cli.runShellCommand(`${this.cliBinary} ${command}`);
   }
 }

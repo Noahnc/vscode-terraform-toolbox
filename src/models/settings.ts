@@ -2,58 +2,58 @@ import * as vscode from "vscode";
 import { getLogger } from "../utils/logger";
 
 export class Settings {
-  private _settingsDict: { [key: string]: SettingsElement } = {};
+  private settingsDict: { [key: string]: SettingsElement } = {};
 
   constructor() {
-    this._settingsDict["spaceliftTenantID"] = new SettingsElement("tftoolbox.spacelift.tenantID", true, true);
-    this._settingsDict["spacectlProfileName"] = new SettingsElement("tftoolbox.spacelift.profileName", true, true);
-    this._settingsDict["autoselectVersion"] = new SettingsElement("tftoolbox.terraform.autoSelectVersion");
-    this._settingsDict["logLevel"] = new SettingsElement("tftoolbox.logLevel");
-    this._settingsDict["autoSelectWorkspace"] = new SettingsElement("tftoolbox.terraform.autoSelectWorkspace");
-    this._settingsDict["autoInitAllProjects"] = new SettingsElement("tftoolbox.terraform.autoInitAllProjects");
-    this._settingsDict["initArgs"] = new SettingsElement("tftoolbox.terraform.initArg");
-    this._settingsDict["spaceliftStatusBarItemRefreshIntervalSeconds"] = new SettingsElement("tftoolbox.spacelift.stackPendingConfirmationStatusItemUpdateTimeSeconds");
-    this._settingsDict["excludedGlobPatterns"] = new SettingsElement("tftoolbox.excludeGlobPatterns");
-    this._settingsDict["showSpacectlNotAuthenticatedWarningOnStartup"] = new SettingsElement("tftoolbox.spacelift.showLoginNotificationOnStartup");
-    this._settingsDict["iacProvider"] = new SettingsElement("tftoolbox.IacProvider", true);
+    this.settingsDict["spaceliftTenantID"] = new SettingsElement("tftoolbox.spacelift.tenantID", true, true);
+    this.settingsDict["spacectlProfileName"] = new SettingsElement("tftoolbox.spacelift.profileName", true, true);
+    this.settingsDict["autoselectVersion"] = new SettingsElement("tftoolbox.terraform.autoSelectVersion");
+    this.settingsDict["logLevel"] = new SettingsElement("tftoolbox.logLevel");
+    this.settingsDict["autoSelectWorkspace"] = new SettingsElement("tftoolbox.terraform.autoSelectWorkspace");
+    this.settingsDict["autoInitAllProjects"] = new SettingsElement("tftoolbox.terraform.autoInitAllProjects");
+    this.settingsDict["initArgs"] = new SettingsElement("tftoolbox.terraform.initArg");
+    this.settingsDict["spaceliftStatusBarItemRefreshIntervalSeconds"] = new SettingsElement("tftoolbox.spacelift.stackPendingConfirmationStatusItemUpdateTimeSeconds");
+    this.settingsDict["excludedGlobPatterns"] = new SettingsElement("tftoolbox.excludeGlobPatterns");
+    this.settingsDict["showSpacectlNotAuthenticatedWarningOnStartup"] = new SettingsElement("tftoolbox.spacelift.showLoginNotificationOnStartup");
+    this.settingsDict["iacProvider"] = new SettingsElement("tftoolbox.IacProvider", true);
 
     vscode.workspace.onDidChangeConfiguration(this.handleSettingChange.bind(this));
   }
 
   get spaceliftTenantID(): string | undefined {
-    return this._settingsDict["spaceliftTenantID"].value;
+    return this.settingsDict["spaceliftTenantID"].value;
   }
   get spacectlProfileName(): string | undefined {
-    return this._settingsDict["spacectlProfileName"].value;
+    return this.settingsDict["spacectlProfileName"].value;
   }
   get autoselectVersion(): boolean {
-    return this._settingsDict["autoselectVersion"].value;
+    return this.settingsDict["autoselectVersion"].value;
   }
   get logLevel(): string {
-    return this._settingsDict["logLevel"].value;
+    return this.settingsDict["logLevel"].value;
   }
   get autoSelectWorkspace(): boolean {
-    return this._settingsDict["autoSelectWorkspace"].value;
+    return this.settingsDict["autoSelectWorkspace"].value;
   }
   get autoInitAllProjects(): boolean {
-    return this._settingsDict["autoInitAllProjects"].value;
+    return this.settingsDict["autoInitAllProjects"].value;
   }
   get initArgs(): string {
-    return this._settingsDict["initArgs"].value;
+    return this.settingsDict["initArgs"].value;
   }
   get spaceliftStatusBarItemRefreshIntervalSeconds(): number {
-    return this._settingsDict["spaceliftStatusBarItemRefreshIntervalSeconds"].value;
+    return this.settingsDict["spaceliftStatusBarItemRefreshIntervalSeconds"].value;
   }
   get excludedGlobPatterns(): string[] {
-    return this._settingsDict["excludedGlobPatterns"].value;
+    return this.settingsDict["excludedGlobPatterns"].value;
   }
   get showSpacectlNotAuthenticatedWarningOnStartup(): boolean {
-    return this._settingsDict["showSpacectlNotAuthenticatedWarningOnStartup"].value;
+    return this.settingsDict["showSpacectlNotAuthenticatedWarningOnStartup"].value;
   }
   get iacProvider(): IacProvider {
-    const provider = this._settingsDict["iacProvider"].value;
+    const provider = this.settingsDict["iacProvider"].value;
     if (!(provider in IacProvider)) {
-      throw new Error("Unknown IacProvider: " + provider);
+      throw new Error(`Unknown IacProvider: ${provider}`);
     }
     return provider;
   }
@@ -62,7 +62,7 @@ export class Settings {
     if (!event.affectsConfiguration("tftoolbox")) {
       return;
     }
-    Object.values(this._settingsDict).forEach((element) => {
+    Object.values(this.settingsDict).forEach((element) => {
       element.handleSettingChange(event);
     });
   }
@@ -88,9 +88,9 @@ class SettingsElement {
       return;
     }
     if (event.affectsConfiguration(this.key)) {
-      getLogger().info("Setting " + this.key + " changed and requires restart of the extension.");
+      getLogger().info(`Setting ${this.key} changed and requires restart of the extension.`);
       // show a information with two buttons to restart the extension or skip
-      vscode.window.showInformationMessage("The setting " + this.key + " changed and requires a restart of the extension.", "Restart", "Skip").then((value) => {
+      vscode.window.showInformationMessage(`The setting ${this.key} changed and requires a restart of the extension.`, "Restart", "Skip").then((value) => {
         if (value === "Restart") {
           vscode.commands.executeCommand("workbench.action.reloadWindow");
         }
@@ -102,9 +102,9 @@ class SettingsElement {
   get value(): any {
     const setting = vscode.workspace.getConfiguration().get(this.key);
 
-    getLogger().trace("Got setting " + this.key + ": " + setting);
+    getLogger().trace(`Got setting ${this.key}: ${setting}`);
     if (setting === undefined && !this.allowUndefined) {
-      throw new Error("Setting " + this.key + " is undefined");
+      throw new Error(`Setting ${this.key} is undefined`);
     }
 
     return setting;
@@ -112,6 +112,6 @@ class SettingsElement {
 }
 
 export enum IacProvider {
-  terraform,
-  opentofu,
+  terraform = "terraform",
+  opentofu = "opentofu",
 }

@@ -1,4 +1,4 @@
-export interface versionProviderSettings {
+export interface IversionProviderSettings {
   softwareName: string;
   binaryName: string;
 }

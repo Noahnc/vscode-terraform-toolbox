@@ -2,27 +2,27 @@ import { Release } from "../../models/github/release";
 import { IIaCProvider } from "../IaC/IIaCProvider";
 
 export class TerraformProvider implements IIaCProvider {
-  get Name(): string {
+  get name(): string {
     return "Terraform";
   }
 
-  get BinaryName(): string {
+  get binaryName(): string {
     return "terraform";
   }
 
-  get GithubOrganization(): string {
+  get githubOrganization(): string {
     return "hashicorp";
   }
 
-  get GithubRepository(): string {
+  get githubRepository(): string {
     return "terraform";
   }
 
-  get BaseReleaseDownloadUrl(): string {
+  get baseReleaseDownloadUrl(): string {
     return "https://releases.hashicorp.com/terraform";
   }
 
   getReleaseDownloadUrl(release: Release, fileName: string): string {
-    return this.BaseReleaseDownloadUrl + "/" + release.versionNumber + "/" + fileName;
+    return `${this.baseReleaseDownloadUrl}/${release.versionNumber}/${fileName}`;
   }
 }

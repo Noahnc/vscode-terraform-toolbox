@@ -5,17 +5,17 @@ import { getLogger } from "../logger";
 import { ISpacectl } from "./spacectl";
 
 interface ViewerId {
-  viewer: id;
+  viewer: Id;
 }
 
-interface id {
+interface Id {
   id: string | undefined;
 }
 
 export interface ISpaceliftAuthenticationHandler {
-  get_token(): Promise<SpaceliftJwt | null>;
-  check_token_valid(): Promise<boolean>;
-  login_interactive(): Promise<boolean>;
+  getToken(): Promise<SpaceliftJwt | null>;
+  checkTokenValid(): Promise<boolean>;
+  loginInteractive(): Promise<boolean>;
 }
 
 export class SpaceliftAuthenticationHandler implements ISpaceliftAuthenticationHandler {
@@ -30,17 +30,17 @@ export class SpaceliftAuthenticationHandler implements ISpaceliftAuthenticationH
     this._graphQLClient = graphqlClient;
   }
 
-  async check_token_valid(): Promise<boolean> {
+  async checkTokenValid(): Promise<boolean> {
     if (this._spaceliftJwt === undefined) {
       this._spaceliftJwt = await this._cli.getExportedToken();
     }
     if (this._spaceliftJwt.isExpired()) {
       return false;
     }
-    return this.check_token_not_revoked();
+    return this.checkTokenNotRevoked();
   }
 
-  async check_token_not_revoked(): Promise<boolean> {
+  async checkTokenNotRevoked(): Promise<boolean> {
     if (this._spaceliftJwt === undefined) {
       return false;
     }
@@ -71,13 +71,13 @@ export class SpaceliftAuthenticationHandler implements ISpaceliftAuthenticationH
         return true;
       })
       .catch((error) => {
-        getLogger().debug("Failed to validate token: " + error);
+        getLogger().debug(`Failed to validate token: ${error}`);
         return false;
       });
     return valid;
   }
 
-  async login_interactive(): Promise<boolean> {
+  async loginInteractive(): Promise<boolean> {
     // aks the user if he wants to login with the web browser
     const result = await vscode.window.showWarningMessage("Spacectl not authenticated, do you want to login with the web browser?", "Yes", "No").then(async (selection) => {
       if (selection === "Yes") {
@@ -89,7 +89,7 @@ export class SpaceliftAuthenticationHandler implements ISpaceliftAuthenticationH
       return false;
     }
 
-    const login_result = await vscode.window.withProgress(
+    const loginResult = await vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
         title: "Waiting for spacectl login",
@@ -104,18 +104,18 @@ export class SpaceliftAuthenticationHandler implements ISpaceliftAuthenticationH
         return await this._cli.loginInteractive();
       }
     );
-    if (login_result === false) {
+    if (loginResult === false) {
       return false;
     }
     this._spaceliftJwt = await this._cli.getExportedToken();
     return true;
   }
 
-  async get_token(): Promise<SpaceliftJwt | null> {
+  async getToken(): Promise<SpaceliftJwt | null> {
     if (this._spaceliftJwt === undefined) {
       getLogger().debug("No spacelift token cached, trying export from spacectl");
       this._spaceliftJwt = await this._cli.getExportedToken();
-      if (await this.check_token_valid()) {
+      if (await this.checkTokenValid()) {
         getLogger().debug("Got valid spacelift token from spacectl");
         return this._spaceliftJwt;
       }
@@ -123,7 +123,7 @@ export class SpaceliftAuthenticationHandler implements ISpaceliftAuthenticationH
       return null;
     }
 
-    if (await this.check_token_valid()) {
+    if (await this.checkTokenValid()) {
       getLogger().debug("Cached spacelift token is valid, returning it");
       return this._spaceliftJwt;
     }
@@ -131,7 +131,7 @@ export class SpaceliftAuthenticationHandler implements ISpaceliftAuthenticationH
     getLogger().debug("Cached spacelift token is not valid, trying to get new token from spacectl");
     this._spaceliftJwt = await this._cli.getExportedToken();
 
-    if (await this.check_token_valid()) {
+    if (await this.checkTokenValid()) {
       getLogger().debug("Got valid spacelift token from spacectl");
       return this._spaceliftJwt;
     }

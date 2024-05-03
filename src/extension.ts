@@ -3,7 +3,7 @@ import * as hcl from "hcl2-parser";
 import fetch from "node-fetch";
 import { Octokit } from "octokit";
 import * as vscode from "vscode";
-import { TerraformFetchModulesCurrentProjectCommand, TerraformInitAllProjectsCommand, TerraformInitCurrentProjectCommand } from "./commands/IacInitCommand";
+import { IacFetchModulesCurrentProjectCommand, IacInitAllProjectsCommand, IacInitCurrentProjectCommand } from "./commands/IacInitCommand";
 import { AutoSetTerraformWorkspaceCommand, ChoseAndSetTerraformWorkspaceCommand } from "./commands/IacWorkspaceCommand";
 import { ChoseAndDeleteIacVersionsCommand, ChoseAndSetIacVersionCommand, SetIacVersionBasedOnProjectRequirementsCommand } from "./commands/ManageIacVersionCommand";
 import { RunSpacectlLocalPreviewCommand, RunSpacectlLocalPreviewCurrentStackCommand } from "./commands/SpaceliftLocalPreviewCommand";
@@ -46,14 +46,14 @@ export async function activate(context: vscode.ExtensionContext) {
   const opentofuVersionManager = new VersionManager(new IacVersionProvider(context, new Octokit({ request: { fetch } }), opentofuIacProvider), cst.EXTENSION_BINARY_FOLDER_NAME);
 
   switch (settings.iacProvider) {
-    case IacProvider.terraform:
+    case IacProvider.opentofu:
       getLogger().info("Extension is configured to use OpenTofu instead of Terraform");
       iacProvider = opentofuIacProvider;
       primaryVersionManager = opentofuVersionManager;
       setVersionCommand = cst.COMMAND_SET_OPEN_TOFU_VERSION;
       break;
 
-    case IacProvider.opentofu:
+    case IacProvider.terraform:
       getLogger().info("Extension is configured to use Terraform");
       iacProvider = terraformIacProvider;
       primaryVersionManager = terraformVersionManager;
@@ -63,7 +63,7 @@ export async function activate(context: vscode.ExtensionContext) {
       throw new Error("IaC provider not supported");
   }
 
-  const iacCli = new IacCli(new Cli(), iacProvider.BinaryName);
+  const iacCli = new IacCli(new Cli(), iacProvider.binaryName);
   const iacProjectHelper = new IacProjectHelper(hcl, iacCli, settings);
 
   const iacVersionItem = new IacActiveVersionItem(context, primaryVersionManager, {
@@ -71,7 +71,7 @@ export async function activate(context: vscode.ExtensionContext) {
     priority: 100,
     onClickCommand: setVersionCommand,
     updateOnDidChangeTextEditorSelection: true,
-    tooltip: iacProvider.Name + " version currently active",
+    tooltip: `${iacProvider.name} version currently active`,
   });
 
   const iacWorkspaceItem = new IacActiveWorkspaceItem(
@@ -81,7 +81,7 @@ export async function activate(context: vscode.ExtensionContext) {
       priority: 99,
       onClickCommand: cst.COMMAND_SET_WORKSPACE,
       updateOnDidChangeTextEditorSelection: true,
-      tooltip: iacProvider.Name + " workspace of the current folder",
+      tooltip: `${iacProvider.name} workspace of the current folder`,
     },
     iacCli,
     iacProjectHelper
@@ -94,7 +94,7 @@ export async function activate(context: vscode.ExtensionContext) {
     const openSpaceliftWebPortalCommand = "openSpaceliftWebPortal";
     context.subscriptions.push(
       vscode.commands.registerCommand(openSpaceliftWebPortalCommand, () => {
-        vscode.env.openExternal(vscode.Uri.parse("https://" + tenantID + cst.SPACELIFT_BASE_DOMAIN));
+        vscode.env.openExternal(vscode.Uri.parse(`https://${tenantID}${cst.SPACELIFT_BASE_DOMAIN}`));
       })
     );
     new SpaceliftPenStackConfCount(
@@ -124,13 +124,13 @@ export async function activate(context: vscode.ExtensionContext) {
     spaceliftAuthStatusItem.refresh();
     context.subscriptions.push(
       vscode.commands.registerCommand(cst.COMMAND_SPACELIFT_LOGIN, async () => {
-        if (await authenticationHandler.login_interactive()) {
+        if (await authenticationHandler.loginInteractive()) {
           await spaceliftAuthStatusItem.refresh();
         }
       })
     );
     authenticationHandler
-      .check_token_valid()
+      .checkTokenValid()
       .then((valid: boolean) => {
         if (!valid && settings.showSpacectlNotAuthenticatedWarningOnStartup) {
           getLogger().info("Spacectl token is not valid, showing notification to log-in to Spacelift");
@@ -138,7 +138,7 @@ export async function activate(context: vscode.ExtensionContext) {
         }
       })
       .catch((error) => {
-        getLogger().error("Failed to initialize spacectl: " + error);
+        getLogger().error(`Failed to initialize spacectl: ${error}`);
         helpers
           .showNotificationWithDecisions(
             "Failed to initialize spacectl. Some features will be disabled until spacectl is configured.",
@@ -187,17 +187,18 @@ export async function activate(context: vscode.ExtensionContext) {
   new ChoseAndDeleteIacVersionsCommand(context, { command: cst.COMMAND_DELETE_OPEN_TOFU_VERSIONS, checkInternetConnection: true }, opentofuVersionManager, opentofuIacProvider);
 
   // Terraform init commands
-  const tfInitAllProjectsCommand = new TerraformInitAllProjectsCommand(context, { command: cst.COMMAND_INIT_ALL_PROJECTS }, iacProjectHelper);
-  new TerraformInitCurrentProjectCommand(context, { command: cst.COMMAND_INIT_CURRENT_PROJECT }, iacProjectHelper, iacCli);
-  new TerraformFetchModulesCurrentProjectCommand(context, { command: cst.COMMAND_INIT_REFRESH_MODULES }, iacProjectHelper, iacCli);
+  const tfInitAllProjectsCommand = new IacInitAllProjectsCommand(context, { command: cst.COMMAND_INIT_ALL_PROJECTS }, iacProjectHelper, iacProvider);
+  new IacInitCurrentProjectCommand({ context, settings: { command: cst.COMMAND_INIT_CURRENT_PROJECT }, tfProjectHelper: iacProjectHelper, iacCli: iacCli, iacProvider: iacProvider });
+  new IacFetchModulesCurrentProjectCommand(context, { command: cst.COMMAND_INIT_REFRESH_MODULES }, iacProjectHelper, iacCli, iacProvider);
 
   // IaC workspace commands
-  new ChoseAndSetTerraformWorkspaceCommand(context, { command: cst.COMMAND_SET_WORKSPACE, successCallback: iacWorkspaceItem.refresh.bind(iacWorkspaceItem) }, iacCli);
+  new ChoseAndSetTerraformWorkspaceCommand(context, { command: cst.COMMAND_SET_WORKSPACE, successCallback: iacWorkspaceItem.refresh.bind(iacWorkspaceItem) }, iacCli, iacProvider);
   const autoSetWorkspaceCommand = new AutoSetTerraformWorkspaceCommand(
     context,
     { command: cst.COMMAND_AUTO_SET_WORKSPACE, successCallback: iacWorkspaceItem.refresh.bind(iacWorkspaceItem) },
     iacCli,
-    iacProjectHelper
+    iacProjectHelper,
+    iacProvider
   );
 
   // Check and install new terraform version if setting is enabled
@@ -222,7 +223,7 @@ export async function activate(context: vscode.ExtensionContext) {
   if (primaryVersionManager.getActiveVersion() === undefined) {
     if (
       await helpers.showNotificationWithDecisions(
-        "No " + iacProvider.Name + " version installed by this extension yet. Do you want to select a version to install now?",
+        `No ${iacProvider.name} version installed by this extension yet. Do you want to select a version to install now?`,
         "tftoolbox.spacelift.showNoTerraformVersionInstalledMsg",
         "Show versions",
         "information"
@@ -255,11 +256,11 @@ async function spacectlInit(settings: Settings): Promise<[IspaceliftClient, ISpa
   let spaceliftTenantID: string;
   if (settings.spaceliftTenantID === null || settings.spaceliftTenantID === undefined) {
     spaceliftTenantID = (await spacectlInstance.getExportedToken()).spaceliftTenantID;
-    getLogger().info("No spacelift tenant ID configured, using tenant ID from spacectl token: " + spaceliftTenantID);
+    getLogger().info(`No spacelift tenant ID configured, using tenant ID from spacectl token: ${spaceliftTenantID}`);
   } else {
     spaceliftTenantID = settings.spaceliftTenantID;
   }
-  const spaceliftEndpoint = "https://" + spaceliftTenantID + cst.SPACELIFT_BASE_DOMAIN + "/graphql";
+  const spaceliftEndpoint = `https://${spaceliftTenantID}${cst.SPACELIFT_BASE_DOMAIN}/graphql`;
   const authenticationHandler = new SpaceliftAuthenticationHandler(spacectlInstance, spacectlInstance, new GraphQLClient(spaceliftEndpoint));
   const spacelift = new SpaceliftClient(new GraphQLClient(spaceliftEndpoint), authenticationHandler);
   return [spacelift, spacectlInstance, spaceliftTenantID, authenticationHandler];

@@ -2,7 +2,7 @@ import path = require("path");
 import * as fs from "fs";
 import * as vscode from "vscode";
 import { UserShownError } from "../../custom_errors";
-import { iacResources } from "../../models/iac/iacResources";
+import { IacResources } from "../../models/iac/iacResources";
 import { Module } from "../../models/iac/module";
 import { Provider } from "../../models/iac/provider";
 import { Settings } from "../../models/settings";
@@ -15,31 +15,31 @@ export interface Ihcl2Parser {
   parseToObject: (hcl: string) => any;
 }
 
-export class terraformInitError extends UserShownError {
+export class IacInitError extends UserShownError {
   constructor(message: string) {
     super(message);
-    this.name = "terraformInitError";
+    this.name = "IacInitError";
   }
 }
 
-export class noValidTerraformFolder extends UserShownError {
+export class NoValidIacFolder extends UserShownError {
   constructor(message: string) {
     super(message);
-    this.name = "noValidTerraformFolder";
+    this.name = "NoValidIacFolder";
   }
 }
 
-export class terraformFolderNotInitialized extends UserShownError {
+export class IacFolderNotInitialized extends UserShownError {
   constructor(message: string) {
     super(message);
-    this.name = "terraformFolderNotInitialized";
+    this.name = "IacFolderNotInitialized";
   }
 }
 
-export class terraformGetError extends UserShownError {
+export class IacGetError extends UserShownError {
   constructor(message: string) {
     super(message);
-    this.name = "terraformGetError";
+    this.name = "IacGetError";
   }
 }
 
@@ -50,7 +50,7 @@ export interface IIacProjectHelper {
   checkFolderHasBeenInitialized: (folder: PathObject) => boolean;
   checkFolderContainsValidTerraformFiles: (folder: PathObject) => Promise<boolean>;
   getInstalledModulesForFolder: (folder: PathObject) => Promise<Module[]>;
-  getDeclaredResourcesForFolder: (folder: PathObject) => Promise<iacResources | undefined>;
+  getDeclaredResourcesForFolder: (folder: PathObject) => Promise<IacResources | undefined>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getProvidersFromParsedHcl: (hclObject: any) => Provider[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -60,19 +60,19 @@ export interface IIacProjectHelper {
 
 export class IacProjectHelper implements IIacProjectHelper {
   private readonly hclParser: Ihcl2Parser;
-  private readonly tfcli: IIacCli;
+  private readonly iacCli: IIacCli;
   private readonly terraformFolder = ".terraform";
   private readonly settings: Settings;
 
   constructor(hclParser: Ihcl2Parser, terraformCLI: IIacCli, settings: Settings) {
     this.hclParser = hclParser;
-    this.tfcli = terraformCLI;
+    this.iacCli = terraformCLI;
     this.settings = settings;
   }
 
   async findAllTerraformFoldersInOpenWorkspaces(): Promise<PathObject[]> {
-    const excludeGlobPatternString = "{" + this.settings.excludedGlobPatterns.join(",") + "}";
-    getLogger().trace("Searching for terraform folders with exclude pattern: " + excludeGlobPatternString);
+    const excludeGlobPatternString = `{${this.settings.excludedGlobPatterns.join(",")}}`;
+    getLogger().trace(`Searching for terraform folders with exclude pattern: ${excludeGlobPatternString}`);
     const terraformFiles = await vscode.workspace.findFiles("**/*.tf", excludeGlobPatternString, 2000);
     // get all unique folders of the collected files
     const terraformFolders: PathObject[] = [];
@@ -90,7 +90,7 @@ export class IacProjectHelper implements IIacProjectHelper {
   checkFolderHasBeenInitialized(folder: PathObject): boolean {
     const terraformFolder = folder.join(this.terraformFolder);
     if (!terraformFolder.exists()) {
-      getLogger().debug("Folder " + folder.path + " contains no .terraform folder and is therefore not initialized");
+      getLogger().debug(`Folder ${folder.path} contains no .terraform folder and is therefore not initialized`);
       return false;
     }
     return true;
@@ -102,7 +102,7 @@ export class IacProjectHelper implements IIacProjectHelper {
       return false;
     }
     if (resources.modules.length === 0 && resources.providers.length === 0) {
-      getLogger().debug("Folder " + folder.path + " contains no modules or providers, skipping terraform init");
+      getLogger().debug(`Folder ${folder.path} contains no modules or providers, skipping terraform init`);
       return false;
     }
     return true;
@@ -129,7 +129,7 @@ export class IacProjectHelper implements IIacProjectHelper {
     const terraformFolder = folder.join(this.terraformFolder);
     const terraformModulesFile = terraformFolder.join("modules", "modules.json");
     if (!terraformFolder.exists()) {
-      getLogger().debug("Folder " + folder.path + " contains no .terraform folder");
+      getLogger().debug(`Folder ${folder.path} contains no .terraform folder`);
       return [];
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -137,7 +137,7 @@ export class IacProjectHelper implements IIacProjectHelper {
     try {
       modulesJson = JSON.parse(fs.readFileSync(terraformModulesFile.path, "utf8")).Modules;
     } catch (error) {
-      getLogger().debug("Error reading modules file: " + terraformModulesFile.path);
+      getLogger().debug(`Error reading modules file: ${terraformModulesFile.path}`);
       return [];
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -160,11 +160,11 @@ export class IacProjectHelper implements IIacProjectHelper {
       })
     );
     const uniqueVersions = [...new Set(foundVersions)];
-    getLogger().debug("Found required terraform versions: " + uniqueVersions);
+    getLogger().debug(`Found required terraform versions: ${uniqueVersions}`);
     return uniqueVersions;
   }
 
-  async getDeclaredResourcesForFolder(folder: PathObject): Promise<iacResources | undefined> {
+  async getDeclaredResourcesForFolder(folder: PathObject): Promise<IacResources | undefined> {
     let foundModules: Module[] = [];
     let foundProviders: Provider[] = [];
     let requiredVersions: string[] = [];
@@ -176,11 +176,11 @@ export class IacProjectHelper implements IIacProjectHelper {
       try {
         hclObject = this.hclParser.parseToObject(fs.readFileSync(file.fsPath, "utf8"));
         if (hclObject === undefined) {
-          getLogger().debug("Error parsing file: " + file.fsPath);
+          getLogger().debug(`Error parsing file: ${file.fsPath}`);
           return;
         }
         if (hclObject[0] === undefined || hclObject[0] === null) {
-          getLogger().debug("File " + file.fsPath + " does not contain any hcl objects");
+          getLogger().debug(`File ${file.fsPath} does not contain any hcl objects`);
           return;
         }
       } catch (error) {
@@ -190,7 +190,7 @@ export class IacProjectHelper implements IIacProjectHelper {
       foundModules = foundModules.concat(this.getModulesFromParsedHcl(hclObject));
       foundProviders = foundProviders.concat(this.getProvidersFromParsedHcl(hclObject));
     });
-    return new iacResources(foundModules, foundProviders, [...new Set(requiredVersions)]);
+    return new IacResources(foundModules, foundProviders, [...new Set(requiredVersions)]);
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getProvidersFromParsedHcl(hclObject: any): Provider[] {
@@ -240,25 +240,25 @@ export class IacProjectHelper implements IIacProjectHelper {
 
   async refreshModulesInFolder(folder: PathObject): Promise<void> {
     if ((await this.checkFolderContainsValidTerraformFiles(folder)) === false) {
-      throw new noValidTerraformFolder("Folder " + folder + " does not contain any modules or providers and can therefore not be initialized");
+      throw new NoValidIacFolder(`Folder ${folder} does not contain any modules or providers and can therefore not be initialized`);
     }
     if (this.checkFolderHasBeenInitialized(folder) === false) {
-      throw new terraformFolderNotInitialized("Folder " + folder.path + " is not initialized");
+      throw new IacFolderNotInitialized(`Folder ${folder.path} is not initialized`);
     }
-    getLogger().debug("Refreshing modules in folder " + folder.path);
-    const [success, , stderr] = await this.tfcli.getModules(folder);
+    getLogger().debug(`Refreshing modules in folder ${folder.path}`);
+    const [success, , stderr] = await this.iacCli.getModules(folder);
     if (success === false) {
-      throw new terraformGetError("Error running terraform get for project " + folder.path + ": " + stderr);
+      throw new IacGetError(`Error running terraform get for project ${folder.path}: ${stderr}`);
     }
-    getLogger().debug("Successfully refreshed modules in folder " + folder.path);
+    getLogger().debug(`Successfully refreshed modules in folder ${folder.path}`);
     return;
   }
 
   async initTerraformFolder(folder: PathObject, withProgress = false): Promise<void> {
     if (!(await this.checkFolderContainsValidTerraformFiles(folder))) {
-      throw new noValidTerraformFolder("Folder " + folder.path + " does not contain any modules or providers and can therefore not be initialized");
+      throw new NoValidIacFolder(`Folder ${folder.path} does not contain any modules or providers and can therefore not be initialized`);
     }
-    getLogger().debug("Initializing terraform project " + folder.path);
+    getLogger().debug(`Initializing terraform project ${folder.path}`);
     if (withProgress) {
       await vscode.window.withProgress(
         {
@@ -267,19 +267,19 @@ export class IacProjectHelper implements IIacProjectHelper {
           cancellable: false,
         },
         async () => {
-          const [success, , stderr] = await this.tfcli.init(folder, this.settings.initArgs);
+          const [success, , stderr] = await this.iacCli.init(folder, this.settings.initArgs);
           if (success === false) {
-            throw new terraformInitError("Error running terraform init for Folder:" + folder.path + " error: " + stderr);
+            throw new IacInitError(`Error running terraform init for Folder:${folder.path} error: ${stderr}`);
           }
         }
       );
       return;
     }
-    const [success, , stderr] = await this.tfcli.init(folder, this.settings.initArgs);
+    const [success, , stderr] = await this.iacCli.init(folder, this.settings.initArgs);
     if (success === false) {
-      throw new terraformInitError("Error running terraform init for Folder:" + folder.path + " error: " + stderr);
+      throw new IacInitError(`Error running terraform init for Folder:${folder.path} error: ${stderr}`);
     }
-    getLogger().info("Successfully initialized terraform project " + folder.path);
+    getLogger().info(`Successfully initialized terraform project ${folder.path}`);
     return;
   }
 }

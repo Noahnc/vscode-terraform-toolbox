@@ -1,10 +1,10 @@
+import * as fs from "fs";
+import * as os from "os";
 import { Release, Releases } from "../models/github/release";
 import { getLogger } from "../utils/logger";
 import { PathObject } from "../utils/path";
-import * as fs from "fs";
-import * as os from "os";
 import { IversionProvider } from "../utils/VersionManager/IVersionProvider";
-import { versionProviderSettings } from "../utils/VersionManager/IVersionProviderSettings";
+import { IversionProviderSettings } from "../utils/VersionManager/IVersionProviderSettings";
 
 export class MockVersionProvider implements IversionProvider {
   async getReleasesFormSource(): Promise<Releases> {
@@ -18,7 +18,7 @@ export class MockVersionProvider implements IversionProvider {
     return new Releases(releasesData);
   }
 
-  getVersionProviderSettings(): versionProviderSettings {
+  getVersionProviderSettings(): IversionProviderSettings {
     return {
       softwareName: "test",
       binaryName: "testbinary",
@@ -26,7 +26,7 @@ export class MockVersionProvider implements IversionProvider {
   }
 
   async getBinaryPathForRelease(release: Release): Promise<PathObject> {
-    getLogger().debug("Getting binary path for release " + release.name);
+    getLogger().debug(`Getting binary path for release ${release.name}`);
     const tempFolder = new PathObject(os.tmpdir());
     let binaryName = "mockbinary";
     if (os.platform() === "win32") {

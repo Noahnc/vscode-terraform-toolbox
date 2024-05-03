@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { UserShownError } from "../custom_errors";
-import { getLogger } from "../utils/logger";
 import * as helper from "../utils/helperFunctions";
+import { getLogger } from "../utils/logger";
 
 export interface IvscodeCommandSettings {
   command: string;
@@ -11,32 +11,32 @@ export interface IvscodeCommandSettings {
 }
 
 export abstract class BaseCommand {
-  private readonly _settings: IvscodeCommandSettings;
-  readonly _context: vscode.ExtensionContext;
+  private readonly settings: IvscodeCommandSettings;
+  readonly context: vscode.ExtensionContext;
   constructor(context: vscode.ExtensionContext, settings: IvscodeCommandSettings) {
-    this._settings = settings;
-    this._context = context;
+    this.settings = settings;
+    this.context = context;
     this.registerCommand();
   }
 
   registerCommand() {
-    getLogger().trace("Registering command " + this._settings.command);
-    this._context.subscriptions.push(vscode.commands.registerCommand(this._settings.command, this.run.bind(this)));
+    getLogger().trace(`Registering command ${this.settings.command}`);
+    this.context.subscriptions.push(vscode.commands.registerCommand(this.settings.command, this.run.bind(this)));
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async run(...args: any[]): Promise<void> {
-    getLogger().debug("Running command " + this._settings.command);
-    if (this._settings.checkInternetConnection && (await helper.checkInternetConnection()) === false) {
-      helper.showWarning("No internet connection, command " + this._settings.command + " will not be executed");
+    getLogger().debug(`Running command ${this.settings.command}`);
+    if (this.settings.checkInternetConnection && (await helper.checkInternetConnection()) === false) {
+      helper.showWarning(`No internet connection, command ${this.settings.command} will not be executed`);
       return;
     }
     await this.init(...args)
       .then(() => {
-        getLogger().debug("Successfully ran command " + this._settings.command);
-        if (this._settings.successCallback !== undefined) {
-          getLogger().trace("Running success hook for command " + this._settings.command);
-          this._settings.successCallback(...args).catch((error) => {
+        getLogger().debug(`Successfully ran command ${this.settings.command}`);
+        if (this.settings.successCallback !== undefined) {
+          getLogger().trace(`Running success hook for command ${this.settings.command}`);
+          this.settings.successCallback(...args).catch((error) => {
             handleError(error);
           });
         }
@@ -49,7 +49,7 @@ export abstract class BaseCommand {
   protected abstract init(...args: any[]): Promise<void>;
 
   getCommandName(): string {
-    return this._settings.command;
+    return this.settings.command;
   }
 }
 
@@ -57,5 +57,5 @@ function handleError(error: Error) {
   if (error instanceof UserShownError) {
     vscode.window.showErrorMessage(error.message);
   }
-  getLogger().error("Error running command: " + error.toString());
+  getLogger().error(`Error running command: ${error.toString()}`);
 }

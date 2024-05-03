@@ -2,27 +2,27 @@ import { Release } from "../../models/github/release";
 import { IIaCProvider } from "../IaC/IIaCProvider";
 
 export class OpenTofuProvider implements IIaCProvider {
-  get Name(): string {
+  get name(): string {
     return "OpenTofu";
   }
 
-  get BinaryName(): string {
+  get binaryName(): string {
     return "tofu";
   }
 
-  get GithubOrganization(): string {
+  get githubOrganization(): string {
     return "opentofu";
   }
 
-  get GithubRepository(): string {
+  get githubRepository(): string {
     return "opentofu";
   }
 
-  get BaseReleaseDownloadUrl(): string {
+  get baseReleaseDownloadUrl(): string {
     return "https://github.com/opentofu/opentofu/releases/download";
   }
 
   getReleaseDownloadUrl(release: Release, fileName: string): string {
-    return this.BaseReleaseDownloadUrl + "/" + release.name + "/" + fileName;
+    return `${this.baseReleaseDownloadUrl}/${release.name}/${fileName}`;
   }
 }

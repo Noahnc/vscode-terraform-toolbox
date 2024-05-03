@@ -4,22 +4,22 @@ import { ISpaceliftAuthenticationHandler } from "../../utils/Spacelift/spacelift
 import { BaseStatusBarItem, IvscodeStatusBarItemSettings } from "./baseStatusBarItem";
 
 export class SpaceliftApiAuthenticationStatus extends BaseStatusBarItem {
-  private readonly _authHandler: ISpaceliftAuthenticationHandler;
+  private readonly authHandler: ISpaceliftAuthenticationHandler;
   constructor(context: vscode.ExtensionContext, settings: IvscodeStatusBarItemSettings, authHandler: ISpaceliftAuthenticationHandler) {
     super(context, settings);
-    this._authHandler = authHandler;
+    this.authHandler = authHandler;
   }
 
   protected async run() {
-    if ((await this._authHandler.get_token()) !== null) {
+    if ((await this.authHandler.getToken()) !== null) {
       getLogger().debug("Valid spacelift token, hiding status bar item");
-      this._statusBarItem.hide();
+      this.statusBarItem.hide();
       return;
     }
     getLogger().debug("No valid spacelift token, showing status bar item to show login required");
-    this._statusBarItem.text = "$(error) authenticate spacectl";
-    this._statusBarItem.color = "orange";
-    this._statusBarItem.show();
+    this.statusBarItem.text = "$(error) authenticate spacectl";
+    this.statusBarItem.color = "orange";
+    this.statusBarItem.show();
     return;
   }
 }

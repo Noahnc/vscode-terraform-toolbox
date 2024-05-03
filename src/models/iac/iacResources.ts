@@ -1,7 +1,7 @@
 import { Module } from "./module";
 import { Provider } from "./provider";
 
-export class iacResources {
+export class IacResources {
   private _modules: Module[];
   private _providers: Provider[];
   private _versionRequirements: string[];

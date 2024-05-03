@@ -1,27 +1,30 @@
 import * as vscode from "vscode";
 import * as helpers from "../utils/helperFunctions";
-import { getLogger } from "../utils/logger";
 import { IacCli } from "../utils/IaC/iacCli";
-import { IIacProjectHelper, noValidTerraformFolder, terraformFolderNotInitialized, terraformGetError, terraformInitError } from "../utils/IaC/iacProjectHelper";
-import { BaseCommand, IvscodeCommandSettings } from "./BaseCommand";
+import { IacFolderNotInitialized, IacGetError, IacInitError, IIacProjectHelper, NoValidIacFolder } from "../utils/IaC/iacProjectHelper";
+import { IIaCProvider } from "../utils/IaC/IIaCProvider";
+import { getLogger } from "../utils/logger";
 import { PathObject } from "../utils/path";
+import { BaseCommand, IvscodeCommandSettings } from "./BaseCommand";
 import path = require("path");
 
-export class TerraformInitAllProjectsCommand extends BaseCommand {
-  tfProjectHelper: IIacProjectHelper;
-  constructor(context: vscode.ExtensionContext, settings: IvscodeCommandSettings, tfProjectHelper: IIacProjectHelper) {
+export class IacInitAllProjectsCommand extends BaseCommand {
+  private iacProjectHelper: IIacProjectHelper;
+  private iacProvider: IIaCProvider;
+  constructor(context: vscode.ExtensionContext, settings: IvscodeCommandSettings, tfProjectHelper: IIacProjectHelper, iacProvider: IIaCProvider) {
     super(context, settings);
-    this.tfProjectHelper = tfProjectHelper;
+    this.iacProjectHelper = tfProjectHelper;
+    this.iacProvider = iacProvider;
   }
 
   protected async init(hideErrMsgs = false, hideInfoMsgs = false) {
-    getLogger().info("Running terraform init for all projects");
+    getLogger().info(`Running ${this.iacProvider.name} init for all projects`);
     const [, workspaces] = helpers.getCurrentProjectInformations();
     if (workspaces === undefined) {
       helpers.showWarning("No terraform project open. Please open a terraform project to use this command", hideInfoMsgs);
       return;
     }
-    const terraformProjectFolders = await this.tfProjectHelper.findAllTerraformFoldersInOpenWorkspaces();
+    const terraformProjectFolders = await this.iacProjectHelper.findAllTerraformFoldersInOpenWorkspaces();
     if (terraformProjectFolders.length === 0) {
       helpers.showWarning("No terraform projects found in the current workspace", hideInfoMsgs);
       return;
@@ -30,8 +33,8 @@ export class TerraformInitAllProjectsCommand extends BaseCommand {
     const validFolders: PathObject[] = [];
     await Promise.all(
       terraformProjectFolders.map(async (folder) => {
-        if (!(await this.tfProjectHelper.checkFolderContainsValidTerraformFiles(folder))) {
-          getLogger().info("Folder " + folder.path + " is does not contain any modules or providers, skipping this folder");
+        if (!(await this.iacProjectHelper.checkFolderContainsValidTerraformFiles(folder))) {
+          getLogger().info(`Folder ${folder.path} is does not contain any modules or providers, skipping this folder`);
           return;
         }
         validFolders.push(folder);
@@ -54,7 +57,7 @@ export class TerraformInitAllProjectsCommand extends BaseCommand {
         await Promise.all(
           validFolders.map(async (folder) => {
             try {
-              await this.tfProjectHelper.initTerraformFolder(folder, false);
+              await this.iacProjectHelper.initTerraformFolder(folder, false);
               progress.report({ increment: 100 / validFolders.length });
             } catch (error: unknown) {
               if (error instanceof Error) {
@@ -71,19 +74,33 @@ export class TerraformInitAllProjectsCommand extends BaseCommand {
       const failedFoldersRelative = unsuccessfulFolders.map((folder) => {
         return vscode.workspace.asRelativePath(folder.path);
       });
-      helpers.showError("Error encountered while initializing the following terraform projects: " + failedFoldersRelative.join(", "), hideErrMsgs);
+      helpers.showError(`Error encountered while initializing the following terraform projects: ${failedFoldersRelative.join(", ")}`, hideErrMsgs);
       return;
     }
   }
 }
 
-export class TerraformInitCurrentProjectCommand extends BaseCommand {
-  tfProjectHelper: IIacProjectHelper;
-  tfcli: IacCli;
-  constructor(context: vscode.ExtensionContext, settings: IvscodeCommandSettings, tfProjectHelper: IIacProjectHelper, tfcli: IacCli) {
+export class IacInitCurrentProjectCommand extends BaseCommand {
+  private iacProjectHelper: IIacProjectHelper;
+  private iacCli: IacCli;
+  private iacProvider: IIaCProvider;
+  constructor({
+    context,
+    settings,
+    tfProjectHelper,
+    iacCli,
+    iacProvider,
+  }: {
+    context: vscode.ExtensionContext;
+    settings: IvscodeCommandSettings;
+    tfProjectHelper: IIacProjectHelper;
+    iacCli: IacCli;
+    iacProvider: IIaCProvider;
+  }) {
     super(context, settings);
-    this.tfProjectHelper = tfProjectHelper;
-    this.tfcli = tfcli;
+    this.iacProjectHelper = tfProjectHelper;
+    this.iacCli = iacCli;
+    this.iacProvider = iacProvider;
   }
 
   async init(hideErrMsgs = false, hideInfoMsgs = false) {
@@ -94,13 +111,13 @@ export class TerraformInitCurrentProjectCommand extends BaseCommand {
     }
     const currentFolder = new PathObject(path.join(currentWorkspace.uri.fsPath, currentFolderRelative));
     try {
-      await this.tfProjectHelper.initTerraformFolder(currentFolder, true);
+      await this.iacProjectHelper.initTerraformFolder(currentFolder, true);
     } catch (error) {
-      if (error instanceof noValidTerraformFolder) {
+      if (error instanceof NoValidIacFolder) {
         hideInfoMsgs ? null : vscode.window.showWarningMessage(error.message);
         return;
       }
-      if (error instanceof terraformInitError) {
+      if (error instanceof IacInitError) {
         hideErrMsgs ? null : vscode.window.showErrorMessage(error.message);
         return;
       }
@@ -108,13 +125,15 @@ export class TerraformInitCurrentProjectCommand extends BaseCommand {
   }
 }
 
-export class TerraformFetchModulesCurrentProjectCommand extends BaseCommand {
-  tfProjectHelper: IIacProjectHelper;
-  tfcli: IacCli;
-  constructor(context: vscode.ExtensionContext, settings: IvscodeCommandSettings, tfProjectHelper: IIacProjectHelper, tfcli: IacCli) {
+export class IacFetchModulesCurrentProjectCommand extends BaseCommand {
+  private iacProjectHelper: IIacProjectHelper;
+  private iacCli: IacCli;
+  private iacProvider: IIaCProvider;
+  constructor(context: vscode.ExtensionContext, settings: IvscodeCommandSettings, tfProjectHelper: IIacProjectHelper, iacCli: IacCli, iacProvider: IIaCProvider) {
     super(context, settings);
-    this.tfProjectHelper = tfProjectHelper;
-    this.tfcli = tfcli;
+    this.iacProjectHelper = tfProjectHelper;
+    this.iacCli = iacCli;
+    this.iacProvider = iacProvider;
   }
 
   protected async init(hideErrMsgs = false, hideInfoMsgs = false) {
@@ -125,17 +144,17 @@ export class TerraformFetchModulesCurrentProjectCommand extends BaseCommand {
     }
     const currentFolder = new PathObject(path.join(currentWorkspace.uri.fsPath, currentFolderRelative));
     try {
-      await this.tfProjectHelper.refreshModulesInFolder(currentFolder);
+      await this.iacProjectHelper.refreshModulesInFolder(currentFolder);
     } catch (error) {
-      if (error instanceof noValidTerraformFolder) {
+      if (error instanceof NoValidIacFolder) {
         hideInfoMsgs ? null : vscode.window.showWarningMessage(error.message);
         return;
       }
-      if (error instanceof terraformFolderNotInitialized) {
+      if (error instanceof IacFolderNotInitialized) {
         hideInfoMsgs ? null : vscode.window.showWarningMessage(error.message);
         return;
       }
-      if (error instanceof terraformGetError) {
+      if (error instanceof IacGetError) {
         hideErrMsgs ? null : vscode.window.showErrorMessage(error.message);
         return;
       }
