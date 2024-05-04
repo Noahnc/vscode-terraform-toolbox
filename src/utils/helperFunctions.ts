@@ -2,6 +2,7 @@
 import * as dns from "dns";
 import * as path from "path";
 import * as vscode from "vscode";
+import { SettingsElement } from "../models/settings";
 import { getLogger } from "./logger";
 
 export function checkIfOpenTextEditorIsTerraform(): boolean {
@@ -60,10 +61,10 @@ export async function getUserDecision<T>(placeHolderMsg: string, values: T[], la
 }
 
 type MessageTypes = "information" | "warning" | "error";
-export async function showNotificationWithDecisions(message: string, settingKey: string, decision: string, type: MessageTypes): Promise<boolean> {
-  if (vscode.workspace.getConfiguration().get(settingKey) === false) {
-    getLogger().trace(`User has disabled notification: ${settingKey}`);
-    return false;
+export async function showNotificationWithDecisions(message: string, showSetting: SettingsElement<boolean>, decision: string[], type: MessageTypes): Promise<string | undefined> {
+  if (showSetting.value === false) {
+    getLogger().trace(`User has disabled notification: ${showSetting.settingsKey}`);
+    return undefined;
   }
   let messageFunction;
   if (type === "information") {
@@ -76,14 +77,23 @@ export async function showNotificationWithDecisions(message: string, settingKey:
     throw new Error(`Unknown notification type: ${type}`);
   }
 
-  const selection = await messageFunction(message, decision, "Don't show again");
-  if (selection === decision) {
-    return true;
-  } else if (selection === "Don't show again") {
-    vscode.workspace.getConfiguration().update(settingKey, false, vscode.ConfigurationTarget.Global);
-    return false;
+  const doNotShowAgain = "Don't show again";
+  const showLater = "Show later";
+
+  decision.push(doNotShowAgain, showLater);
+
+  const selection = await messageFunction(message, ...decision);
+
+  if (selection === doNotShowAgain) {
+    showSetting.value = false;
+    return undefined;
   }
-  return false;
+
+  if (selection === showLater) {
+    return undefined;
+  }
+
+  return selection;
 }
 
 export function showInformation(message: string, silent = false) {

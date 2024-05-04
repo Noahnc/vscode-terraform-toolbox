@@ -2,73 +2,111 @@ import * as vscode from "vscode";
 import { getLogger } from "../utils/logger";
 
 export class Settings {
-  private settingsDict: { [key: string]: SettingsElement } = {};
+  private static instance: Settings;
+  private static settingsUpdateFunctions = new Map<string, (event: vscode.ConfigurationChangeEvent) => void>();
+
+  private spaceliftTenantIdSetting: SettingsElement<string | undefined>;
+  private spacectlProfileNameSetting: SettingsElement<string | undefined>;
+  private autoselectVersionSetting: SettingsElement<boolean>;
+  private logLevelSetting: SettingsElement<string>;
+  private autoSelectWorkspaceSetting: SettingsElement<boolean>;
+  private autoInitAllProjectsSetting: SettingsElement<boolean>;
+  private initArgsSetting: SettingsElement<string>;
+  private spaceliftStatusBarItemRefreshIntervalSecondsSetting: SettingsElement<number>;
+  private excludedGlobPatternsSetting: SettingsElement<string[]>;
+  private showSpacectlLoginNotificationOnStartSetting: SettingsElement<boolean>;
+  private showSpaceliftInitErrorOnStartSetting: SettingsElement<boolean>;
+  private iacProviderSetting: SettingsElement<IacProvider>;
+  private showIacSelectionSetting: SettingsElement<boolean>;
+  private showNoIacVersionInstalledMsgSetting: SettingsElement<boolean>;
 
   constructor() {
-    this.settingsDict["spaceliftTenantID"] = new SettingsElement("tftoolbox.spacelift.tenantID", true, true);
-    this.settingsDict["spacectlProfileName"] = new SettingsElement("tftoolbox.spacelift.profileName", true, true);
-    this.settingsDict["autoselectVersion"] = new SettingsElement("tftoolbox.iac.autoSelectVersion");
-    this.settingsDict["logLevel"] = new SettingsElement("tftoolbox.logLevel");
-    this.settingsDict["autoSelectWorkspace"] = new SettingsElement("tftoolbox.iac.autoSelectWorkspace");
-    this.settingsDict["autoInitAllProjects"] = new SettingsElement("tftoolbox.iac.autoInitAllProjects");
-    this.settingsDict["initArgs"] = new SettingsElement("tftoolbox.iac.initArg");
-    this.settingsDict["spaceliftStatusBarItemRefreshIntervalSeconds"] = new SettingsElement("tftoolbox.spacelift.stackPendingConfirmationStatusItemUpdateTimeSeconds");
-    this.settingsDict["excludedGlobPatterns"] = new SettingsElement("tftoolbox.excludeGlobPatterns");
-    this.settingsDict["showSpacectlNotAuthenticatedWarningOnStartup"] = new SettingsElement("tftoolbox.spacelift.showLoginNotificationOnStartup");
-    this.settingsDict["iacProvider"] = new SettingsElement("tftoolbox.iac.provider", true);
+    if (Settings.instance !== undefined) {
+      throw new Error("Settings is a singleton class and can only be instantiated once.");
+    }
+
+    Settings.instance = this;
+
+    this.spaceliftTenantIdSetting = new SettingsElement<string | undefined>("tftoolbox.spacelift.tenantID", true);
+    this.spacectlProfileNameSetting = new SettingsElement<string | undefined>("tftoolbox.spacelift.profileName", true);
+    this.autoselectVersionSetting = new SettingsElement<boolean>("tftoolbox.iac.autoSelectVersion");
+    this.logLevelSetting = new SettingsElement<string>("tftoolbox.logLevel", true);
+    this.autoSelectWorkspaceSetting = new SettingsElement<boolean>("tftoolbox.iac.autoSelectWorkspace");
+    this.autoInitAllProjectsSetting = new SettingsElement<boolean>("tftoolbox.iac.autoInitAllProjects");
+    this.initArgsSetting = new SettingsElement<string>("tftoolbox.iac.initArg");
+    this.spaceliftStatusBarItemRefreshIntervalSecondsSetting = new SettingsElement<number>("tftoolbox.spacelift.stackPendingConfirmationStatusItemUpdateTimeSeconds");
+    this.excludedGlobPatternsSetting = new SettingsElement<string[]>("tftoolbox.excludeGlobPatterns");
+    this.showSpacectlLoginNotificationOnStartSetting = new SettingsElement<boolean>("tftoolbox.spacelift.showLoginNotificationOnStartup");
+    this.showSpaceliftInitErrorOnStartSetting = new SettingsElement<boolean>("tftoolbox.spacelift.showSpaceliftInitErrorOnStart");
+    this.iacProviderSetting = new SettingsElement<IacProvider>("tftoolbox.iac.provider", true);
+    this.showIacSelectionSetting = new SettingsElement<boolean>("tftoolbox.iac.showIacSelectionWelcomeMsg");
+    this.showNoIacVersionInstalledMsgSetting = new SettingsElement<boolean>("tftoolbox.iac.showNoVersionInstalledMsg");
 
     vscode.workspace.onDidChangeConfiguration(this.handleSettingChange.bind(this));
   }
 
-  get spaceliftTenantID(): string | undefined {
-    return this.settingsDict["spaceliftTenantID"].value;
+  get spaceliftTenantID(): SettingsElement<string | undefined> {
+    return this.spaceliftTenantIdSetting;
   }
-  get spacectlProfileName(): string | undefined {
-    return this.settingsDict["spacectlProfileName"].value;
+  get spacectlProfileName(): SettingsElement<string | undefined> {
+    return this.spacectlProfileNameSetting;
   }
-  get autoselectVersion(): boolean {
-    return this.settingsDict["autoselectVersion"].value;
+  get autoselectVersion(): SettingsElement<boolean> {
+    return this.autoselectVersionSetting;
   }
-  get logLevel(): string {
-    return this.settingsDict["logLevel"].value;
+  get logLevel(): SettingsElement<string> {
+    return this.logLevelSetting;
   }
-  get autoSelectWorkspace(): boolean {
-    return this.settingsDict["autoSelectWorkspace"].value;
+  get autoSelectWorkspace(): SettingsElement<boolean> {
+    return this.autoSelectWorkspaceSetting;
   }
-  get autoInitAllProjects(): boolean {
-    return this.settingsDict["autoInitAllProjects"].value;
+  get autoInitAllProjects(): SettingsElement<boolean> {
+    return this.autoInitAllProjectsSetting;
   }
-  get initArgs(): string {
-    return this.settingsDict["initArgs"].value;
+  get initArgs(): SettingsElement<string> {
+    return this.initArgsSetting;
   }
-  get spaceliftStatusBarItemRefreshIntervalSeconds(): number {
-    return this.settingsDict["spaceliftStatusBarItemRefreshIntervalSeconds"].value;
+  get spaceliftStatusBarItemRefreshIntervalSeconds(): SettingsElement<number> {
+    return this.spaceliftStatusBarItemRefreshIntervalSecondsSetting;
   }
-  get excludedGlobPatterns(): string[] {
-    return this.settingsDict["excludedGlobPatterns"].value;
+  get excludedGlobPatterns(): SettingsElement<string[]> {
+    return this.excludedGlobPatternsSetting;
   }
-  get showSpacectlNotAuthenticatedWarningOnStartup(): boolean {
-    return this.settingsDict["showSpacectlNotAuthenticatedWarningOnStartup"].value;
+  get showSpacectlNotAuthenticatedWarningOnStartup(): SettingsElement<boolean> {
+    return this.showSpacectlLoginNotificationOnStartSetting;
   }
-  get iacProvider(): IacProvider {
-    const provider = this.settingsDict["iacProvider"].value;
-    if (!(provider in IacProvider)) {
-      throw new Error(`Unknown IacProvider: ${provider}`);
+  get showSpaceliftInitErrorOnStart(): SettingsElement<boolean> {
+    return this.showSpaceliftInitErrorOnStartSetting;
+  }
+  get iacProvider(): SettingsElement<IacProvider> {
+    const setting = this.iacProviderSetting;
+    if (!(setting.value in IacProvider)) {
+      throw new Error(`Unknown IacProvider: ${setting.value}`);
     }
-    return provider;
+    return setting;
+  }
+  get showIacSelection(): SettingsElement<boolean> {
+    return this.showIacSelectionSetting;
+  }
+  get showNoIacVersionInstalledMsg(): SettingsElement<boolean> {
+    return this.showNoIacVersionInstalledMsgSetting;
   }
 
   handleSettingChange(event: vscode.ConfigurationChangeEvent): void {
     if (!event.affectsConfiguration("tftoolbox")) {
       return;
     }
-    Object.values(this.settingsDict).forEach((element) => {
-      element.handleSettingChange(event);
+    Settings.settingsUpdateFunctions.forEach((element) => {
+      element(event);
     });
+  }
+
+  static addSettingToUpdateHook(setting: SettingsElement<unknown>): void {
+    Settings.settingsUpdateFunctions.set(setting.settingsKey, setting.handleSettingChange.bind(setting));
   }
 }
 
-class SettingsElement {
+export class SettingsElement<T> {
   private key: string;
   private changeRequiresRestart: boolean;
   private allowUndefined;
@@ -77,6 +115,7 @@ class SettingsElement {
     this.key = settingsKey;
     this.changeRequiresRestart = changeRequiresRestart;
     this.allowUndefined = allowUndefined;
+    Settings.addSettingToUpdateHook(this);
   }
 
   get settingsKey(): string {
@@ -99,8 +138,8 @@ class SettingsElement {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  get value(): any {
-    const setting = vscode.workspace.getConfiguration().get(this.key);
+  get value(): T {
+    const setting = vscode.workspace.getConfiguration().get<T>(this.key) as T;
 
     getLogger().trace(`Got setting ${this.key}: ${setting}`);
     if (setting === undefined && !this.allowUndefined) {
@@ -108,6 +147,11 @@ class SettingsElement {
     }
 
     return setting;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  set value(value: any) {
+    vscode.workspace.getConfiguration().update(this.key, value, vscode.ConfigurationTarget.Global);
   }
 }
 

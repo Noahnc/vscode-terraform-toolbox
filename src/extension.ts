@@ -35,6 +35,26 @@ export async function activate(context: vscode.ExtensionContext) {
 
   getLogger().info("Activating extension");
 
+  const iacProviderSelection = await helpers.showNotificationWithDecisions(
+    `Welcome to Terraform Toolbox. Which IaC provider do you want to use with this extension?`,
+    settings.showIacSelection,
+    ["Terraform", "OpenTofu"],
+    "information"
+  );
+
+  switch (iacProviderSelection) {
+    case "Terraform":
+      vscode.workspace.getConfiguration().update(settings.iacProvider.settingsKey, IacProvider.terraform, vscode.ConfigurationTarget.Global);
+      settings.showIacSelection.value = false;
+      break;
+    case "OpenTofu":
+      vscode.workspace.getConfiguration().update(settings.iacProvider.settingsKey, IacProvider.opentofu, vscode.ConfigurationTarget.Global);
+      settings.showIacSelection.value = false;
+      break;
+    default:
+      break;
+  }
+
   // ToDO: Replace manual dependencie injection with a DI framework
   let iacProvider: IIaCProvider;
   let primaryVersionManager: IversionManager;
@@ -45,7 +65,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const terraformVersionManager = new VersionManager(new IacVersionProvider(context, new Octokit({ request: { fetch } }), terraformIacProvider), cst.EXTENSION_BINARY_FOLDER_NAME);
   const opentofuVersionManager = new VersionManager(new IacVersionProvider(context, new Octokit({ request: { fetch } }), opentofuIacProvider), cst.EXTENSION_BINARY_FOLDER_NAME);
 
-  switch (settings.iacProvider) {
+  switch (settings.iacProvider.value) {
     case IacProvider.opentofu:
       getLogger().info("Extension is configured to use OpenTofu instead of Terraform");
       iacProvider = opentofuIacProvider;
@@ -102,7 +122,7 @@ export async function activate(context: vscode.ExtensionContext) {
       {
         alignment: vscode.StatusBarAlignment.Left,
         priority: 99,
-        refreshIntervalSeconds: settings.spaceliftStatusBarItemRefreshIntervalSeconds,
+        refreshIntervalSetting: settings.spaceliftStatusBarItemRefreshIntervalSeconds,
         tooltip: "Count of Spacelift Stacks pending confirmation",
         onClickCommand: openSpaceliftWebPortalCommand,
         checkInternetConnection: true,
@@ -114,7 +134,7 @@ export async function activate(context: vscode.ExtensionContext) {
       {
         alignment: vscode.StatusBarAlignment.Left,
         priority: 100,
-        refreshIntervalSeconds: settings.spaceliftStatusBarItemRefreshIntervalSeconds,
+        refreshIntervalSetting: settings.spaceliftStatusBarItemRefreshIntervalSeconds,
         tooltip: "Log-in to Spacelift with spacectl and your Web browser",
         onClickCommand: cst.COMMAND_SPACELIFT_LOGIN,
         checkInternetConnection: true,
@@ -132,22 +152,23 @@ export async function activate(context: vscode.ExtensionContext) {
     authenticationHandler
       .checkTokenValid()
       .then((valid: boolean) => {
-        if (!valid && settings.showSpacectlNotAuthenticatedWarningOnStartup) {
+        if (!valid && settings.showSpacectlNotAuthenticatedWarningOnStartup.value) {
           getLogger().info("Spacectl token is not valid, showing notification to log-in to Spacelift");
           vscode.commands.executeCommand(cst.COMMAND_SPACELIFT_LOGIN);
         }
       })
       .catch((error) => {
         getLogger().error(`Failed to initialize spacectl: ${error}`);
+        const openSpaceliftDecisionsCommand = "Open spacectl documentation";
         helpers
           .showNotificationWithDecisions(
             "Failed to initialize spacectl. Some features will be disabled until spacectl is configured.",
-            "tftoolbox.spacelift.showSpaceliftInitErrorOnStart",
-            "Open spacectl documentation",
+            settings.showSpaceliftInitErrorOnStart,
+            [openSpaceliftDecisionsCommand],
             "warning"
           )
           .then((result) => {
-            if (result) {
+            if (result === openSpaceliftDecisionsCommand) {
               vscode.env.openExternal(vscode.Uri.parse("https://github.com/spacelift-io/spacectl"));
             }
           });
@@ -202,7 +223,7 @@ export async function activate(context: vscode.ExtensionContext) {
   );
 
   // Create version manager command aliases based on the selected IaC provider
-  switch (settings.iacProvider) {
+  switch (settings.iacProvider.value) {
     case IacProvider.opentofu:
       createCommandAlias(cst.COMMAND_SET_IAC_PROVIDER_VERSION, cst.COMMAND_SET_OPEN_TOFU_VERSION);
       createCommandAlias(cst.COMMAND_DELETE_IAC_PROVIDER_VERSION, cst.COMMAND_DELETE_OPEN_TOFU_VERSIONS);
@@ -219,8 +240,8 @@ export async function activate(context: vscode.ExtensionContext) {
   }
 
   // Check and install new terraform version if setting is enabled
-  if (settings.autoselectVersion) {
-    switch (settings.iacProvider) {
+  if (settings.autoselectVersion.value) {
+    switch (settings.iacProvider.value) {
       case IacProvider.opentofu:
         await setOpenTofuVersionBasedOnProjectCommand.run(true).then(() => {
           iacVersionItem.refresh();
@@ -238,19 +259,19 @@ export async function activate(context: vscode.ExtensionContext) {
   }
 
   if (primaryVersionManager.getActiveVersion() === undefined) {
-    if (
-      await helpers.showNotificationWithDecisions(
-        `No ${iacProvider.name} version installed by this extension yet. Do you want to select a version to install now?`,
-        "tftoolbox.iac.showNoIacProviderVersionInstalledMsgOnStart",
-        "Show versions",
-        "information"
-      )
-    ) {
+    const showVersionsSelection = "Show versions";
+    const decision = await helpers.showNotificationWithDecisions(
+      `No ${iacProvider.name} version installed by this extension yet. Do you want to select a version to install now?`,
+      settings.showNoIacVersionInstalledMsg,
+      [showVersionsSelection],
+      "information"
+    );
+    if (decision === showVersionsSelection) {
       await vscode.commands.executeCommand(cst.COMMAND_SET_TERRAFORM_VERSION);
     }
   }
   // Init all terraform projects if setting is enabled
-  if (settings.autoInitAllProjects) {
+  if (settings.autoInitAllProjects.value) {
     getLogger().info("Auto initializing all projects in the currently open workspaces");
     tfInitAllProjectsCommand.run(false, true).then(() => {
       settings.autoSelectWorkspace ? autoSetWorkspaceCommand.run(true) : null;
@@ -268,18 +289,18 @@ function createCommandAlias(alias: string, command: string) {
 }
 
 async function spacectlInit(settings: Settings): Promise<[IspaceliftClient, ISpacectl, string, SpaceliftAuthenticationHandler]> {
-  const spacectlProfileName = settings.spacectlProfileName;
+  const spacectlProfileName = settings.spacectlProfileName.value;
   const spacectlInstance = new Spacectl(new Cli());
   if (spacectlProfileName !== null && spacectlProfileName !== undefined) {
     spacectlInstance.setUserprofile(spacectlProfileName);
   }
   await spacectlInstance.ensureSpacectlIsInstalled();
   let spaceliftTenantID: string;
-  if (settings.spaceliftTenantID === null || settings.spaceliftTenantID === undefined) {
+  if (settings.spaceliftTenantID.value === null || settings.spaceliftTenantID.value === undefined) {
     spaceliftTenantID = (await spacectlInstance.getExportedToken()).spaceliftTenantID;
     getLogger().info(`No spacelift tenant ID configured, using tenant ID from spacectl token: ${spaceliftTenantID}`);
   } else {
-    spaceliftTenantID = settings.spaceliftTenantID;
+    spaceliftTenantID = settings.spaceliftTenantID.value;
   }
   const spaceliftEndpoint = `https://${spaceliftTenantID}${cst.SPACELIFT_BASE_DOMAIN}/graphql`;
   const authenticationHandler = new SpaceliftAuthenticationHandler(spacectlInstance, spacectlInstance, new GraphQLClient(spaceliftEndpoint));

@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { UserShownError } from "../../custom_errors";
+import { SettingsElement } from "../../models/settings";
 import * as helper from "../../utils/helperFunctions";
 import { getLogger } from "../../utils/logger";
 
@@ -8,7 +9,7 @@ export interface IvscodeStatusBarItemSettings {
   priority: number;
   onClickCommand?: string;
   updateOnDidChangeTextEditorSelection?: boolean;
-  refreshIntervalSeconds?: number;
+  refreshIntervalSetting?: SettingsElement<number>;
   tooltip: string;
   checkInternetConnection?: boolean;
 }
@@ -34,10 +35,10 @@ export abstract class BaseStatusBarItem {
         })
       );
     }
-    if (this.settings.refreshIntervalSeconds !== undefined) {
+    if (this.settings.refreshIntervalSetting !== undefined) {
       setInterval(() => {
         this.refresh();
-      }, this.settings.refreshIntervalSeconds * 1000);
+      }, this.settings.refreshIntervalSetting.value * 1000);
     }
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

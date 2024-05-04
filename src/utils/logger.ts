@@ -30,7 +30,7 @@ export async function initLogger(context: ExtensionContext, settings: Settings):
   const meta = JSON.parse(await readFile(resolve(context.extensionPath, "package.json"), "utf8"));
   const extLogger = getExtensionLogger({
     extName: meta.displayName,
-    level: settings.logLevel as LogLevel,
+    level: settings.logLevel.value as LogLevel,
     logPath: context.logUri.fsPath,
     logOutputChannel: window.createOutputChannel(meta.displayName),
     sourceLocationTracking: false,

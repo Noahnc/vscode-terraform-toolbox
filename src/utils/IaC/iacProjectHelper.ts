@@ -71,7 +71,7 @@ export class IacProjectHelper implements IIacProjectHelper {
   }
 
   async findAllIacFoldersInOpenWorkspace(): Promise<PathObject[]> {
-    const excludeGlobPatternString = `{${this.settings.excludedGlobPatterns.join(",")}}`;
+    const excludeGlobPatternString = `{${this.settings.excludedGlobPatterns.value.join(",")}}`;
     getLogger().trace(`Searching for project folders with exclude pattern: ${excludeGlobPatternString}`);
     const tfFiles = await vscode.workspace.findFiles("**/*.tf", excludeGlobPatternString, 2000);
     // get all unique folders of the collected files
@@ -267,7 +267,7 @@ export class IacProjectHelper implements IIacProjectHelper {
           cancellable: false,
         },
         async () => {
-          const [success, , stderr] = await this.iacCli.init(folder, this.settings.initArgs);
+          const [success, , stderr] = await this.iacCli.init(folder, this.settings.initArgs.value);
           if (success === false) {
             throw new IacInitError(`Error running initializing project:${folder.path} error: ${stderr}`);
           }
@@ -275,7 +275,7 @@ export class IacProjectHelper implements IIacProjectHelper {
       );
       return;
     }
-    const [success, , stderr] = await this.iacCli.init(folder, this.settings.initArgs);
+    const [success, , stderr] = await this.iacCli.init(folder, this.settings.initArgs.value);
     if (success === false) {
       throw new IacInitError(`Error initializing project:${folder.path} error: ${stderr}`);
     }

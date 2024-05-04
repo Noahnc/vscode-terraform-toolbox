@@ -140,6 +140,11 @@
           "default": true,
           "description": "Shows an informtion msg on startup if no version for the active IaC provider is installed by the extension."
         },
+        "tftoolbox.iac.showIacSelectionWelcomeMsg": {
+          "type": "boolean",
+          "default": true,
+          "description": "Shows a message on extension start to ask the user for the prefered IaC provider."
+        },
         "tftoolbox.iac.provider": {
           "type": "string",
           "default": "terraform",
