@@ -24,7 +24,7 @@ export class IacInitAllProjectsCommand extends BaseCommand {
       helpers.showWarning(`No ${this.iacProvider.name} project open. Please open a ${this.iacProvider.name} project to use this command`, hideInfoMsgs);
       return;
     }
-    const projectFolders = await this.iacProjectHelper.findAllTerraformFoldersInOpenWorkspaces();
+    const projectFolders = await this.iacProjectHelper.findAllIacFoldersInOpenWorkspace();
     if (projectFolders.length === 0) {
       helpers.showWarning(`No ${this.iacProvider.name} projects found in the current workspace`, hideInfoMsgs);
       return;
@@ -33,7 +33,7 @@ export class IacInitAllProjectsCommand extends BaseCommand {
     const validFolders: PathObject[] = [];
     await Promise.all(
       projectFolders.map(async (folder) => {
-        if (!(await this.iacProjectHelper.checkFolderContainsValidTerraformFiles(folder))) {
+        if (!(await this.iacProjectHelper.checkfolderContainsValidTfFiles(folder))) {
           getLogger().info(`Folder ${folder.path} is does not contain any modules or providers, skipping this folder`);
           return;
         }
@@ -57,7 +57,7 @@ export class IacInitAllProjectsCommand extends BaseCommand {
         await Promise.all(
           validFolders.map(async (folder) => {
             try {
-              await this.iacProjectHelper.initTerraformFolder(folder, false);
+              await this.iacProjectHelper.initFolder(folder, false);
               progress.report({ increment: 100 / validFolders.length });
             } catch (error: unknown) {
               if (error instanceof Error) {
@@ -111,7 +111,7 @@ export class IacInitCurrentProjectCommand extends BaseCommand {
     }
     const currentFolder = new PathObject(path.join(currentWorkspace.uri.fsPath, currentFolderRelative));
     try {
-      await this.iacProjectHelper.initTerraformFolder(currentFolder, true);
+      await this.iacProjectHelper.initFolder(currentFolder, true);
     } catch (error) {
       if (error instanceof NoValidIacFolder) {
         hideInfoMsgs ? null : vscode.window.showWarningMessage(error.message);

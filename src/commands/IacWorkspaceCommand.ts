@@ -83,7 +83,7 @@ export class AutoSetIacWorkspaceCommand extends BaseCommand {
       helpers.showWarning(`No workspace open. Open a ${this.iacProvider.name} project to use this command.`, silent);
       return;
     }
-    const iacFolders = await this.tfProjectHelper.findAllTerraformFoldersInOpenWorkspaces();
+    const iacFolders = await this.tfProjectHelper.findAllIacFoldersInOpenWorkspace();
     if (iacFolders.length === 0) {
       helpers.showWarning(`No ${this.iacProvider.name} folder found in the open workspaces.`, silent);
       return;
