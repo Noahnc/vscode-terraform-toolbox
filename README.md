@@ -81,7 +81,7 @@ This extension adds version managers for both Terraform and OpenTofu. They allow
 
 In case of Terraform, binaries are downloaded from `https://releases.hashicorp.com/terraform`. The active binary is stored in the following folder: `%USERPROFILE%\.terraform-toolbox/active` (Windows) or `$HOME/.terraform-toolbox/active` (Mac). Not active but installed versions are stored in `$HOME/.terraform-toolbox/terraform` (Mac) or `%USERPROFILE%\.terraform-toolbox\terraform` (Windows).
 
-For OpenTofu, binaries are downloaded from the official OpenTofu Github releases page. The active binary is stored in the following folder: `%USERPROFILE%\.terraform-toolbox/active` (Windows) or `$HOME/.terraform-toolbox/active` (Mac). Not active but installed versions are stored in `$HOME/.terraform-toolbox/opentofu` (Mac) or `%USERPROFILE%\.terraform-toolbox\opentofu` (Windows).
+For OpenTofu, binaries are downloaded from the official OpenTofu GitHub releases page. The active binary is stored in the following folder: `%USERPROFILE%\.terraform-toolbox/active` (Windows) or `$HOME/.terraform-toolbox/active` (Mac). Not active but installed versions are stored in `$HOME/.terraform-toolbox/opentofu` (Mac) or `%USERPROFILE%\.terraform-toolbox\opentofu` (Windows).
 
 - Command [`tftoolbox.setIacProviderVersion`]: Select and install a specific version for the active IaC Provider.
   ![terraform-version](Images/examples/terraform_version.gif)
@@ -99,11 +99,11 @@ The commands above manage versions for the configured IaC Provider. Additionally
 
 ### Terraform / OpenTofu workspace
 
-Tired of switching between workspaces in the terminal? This extension adds a status bar item showing the currently active Terraform / OpenTofu workspace. By clicking on the status bar item, you can select and switch to a different workspace. The extension adds the following features regarding terraform workspaces:
+Tired of switching between workspaces in the terminal? This extension adds a status bar item showing the currently active Terraform / OpenTofu workspace. By clicking on the status bar item, you can select and switch to a different workspace. The extension adds the following features regarding workspaces:
 
-- Command [`tftoolbox.setWorkspace`]: Select and switch to a terraform workspace in the current folder.
+- Command [`tftoolbox.setWorkspace`]: Select and switch to a workspace in the current folder.
   ![terraform-workspace](Images/examples/terraform_workspace.gif)
-- Command [`tftoolbox.iac.autoSelectWorkspace`] Auto set the terraform workspace for all folders when opening vscode. Uses the workspace name from the `.terraform-toolbox.json` file in the root of the workspace. More information can be found here: [Workspace settings](docs/workspaceSettings.md)
+- Command [`tftoolbox.iac.autoSelectWorkspace`] Auto set the workspace for all project folders when opening vscode. Uses the workspace name from the `.terraform-toolbox.json` file in the root of the workspace. More information can be found here: [Workspace settings](docs/workspaceSettings.md)
 - StatusBarItem [`IacActiveWorkspaceItem`]: Shows the currently selected workspace in the status bar if a Terraform / OpenTofu file is open. Clicking on the status bar item opens the workspace manager.
 
 ### Terraform / OpenTofu Init
@@ -117,7 +117,7 @@ Since the init command is required for many features of the official Hashicorp T
 
 ### Spacelift
 
-Spacelift is a Terraform CI/CD tool. They provide a cli-tool, called spacectl, that allows you to run proposed runs of your local terraform code on Spacelift. However, the cli requires you to specify the Spacelift stack-id and the working directory of the terraform-project, for which the proposed run should be created. To make this process easier, this extension adds two commands as wrapper around the spacectl:
+Spacelift is a IaC CI/CD tool. They provide a cli-tool, called spacectl, that allows you to run proposed runs of your local code on Spacelift. However, the cli requires you to specify the Spacelift stack-id and the working directory of the project, for which the proposed run should be created. To make this process easier, this extension adds two commands as wrapper around the spacectl:
 
 - Command [`tftoolbox.spaceliftLocalPreviewCurrentStack`]: Run a local preview for the current folder. The stack-id is automatically evaluated based on the current Repository and Subfolder.
   ![Spacelift local preview current stack](Images/examples/spacelift_local_preview_current_stack.gif)
