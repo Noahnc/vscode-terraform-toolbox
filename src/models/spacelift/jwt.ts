@@ -1,4 +1,4 @@
-import jwt_decode from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 import { getLogger } from "../../utils/logger";
 
 interface DecodedJwt {
@@ -15,7 +15,7 @@ export class SpaceliftJwt {
   private readonly expireAllowedDeltaSec: number;
 
   constructor(jwt: string, expireAllowedDeltaSec = 30) {
-    const decodedJwt: DecodedJwt = jwt_decode(jwt);
+    const decodedJwt: DecodedJwt = jwtDecode(jwt);
     if (decodedJwt === undefined || decodedJwt === null) {
       throw new Error("Failed to decode JWT");
     }
@@ -35,12 +35,12 @@ export class SpaceliftJwt {
     this.subdomain = decodedJwt.subdomain;
     this.expireAllowedDeltaSec = expireAllowedDeltaSec;
 
-    getLogger().debug("Created spaceliftJwt with exp: " + this.exp + ", aud: " + this.aud.join(", ") + ", raw: " + this.raw.substring(0, 5) + "...");
+    getLogger().debug(`Created spaceliftJwt with exp: ${this.exp}, aud: ${this.aud.join(", ")}, raw: ${this.raw.substring(0, 5)}...`);
   }
 
   isExpired(): boolean {
     const currentEpochTimeSeconds = Date.now() / 1000;
-    getLogger().trace("Checking fi token is expired. Expires at " + this.exp + ", allowed delta: " + this.expireAllowedDeltaSec + " sec, now: " + currentEpochTimeSeconds);
+    getLogger().trace(`Checking fi token is expired. Expires at ${this.exp}, allowed delta: ${this.expireAllowedDeltaSec} sec, now: ${currentEpochTimeSeconds}`);
     if (this.exp - this.expireAllowedDeltaSec < currentEpochTimeSeconds) {
       getLogger().trace("Token is expired");
       return true;

@@ -2,38 +2,41 @@
 
 <img src="Images/terraform_toolbox_icon.png" alt="drawing" width="200" title="Spacelift Stacks Status Bar item"/>
 
-VSCode extension adding a bunch of featurees regarding Terraform and Spacelift.
+VSCode extension adding a bunch of featurees regarding Terraform / OpenTofu and Spacelift.
 
 - [Terraform-Toolbox VSCode Extension](#terraform-toolbox-vscode-extension)
   - [Motivation](#motivation)
   - [Getting startet](#getting-startet)
-    - [Terraform version manager](#terraform-version-manager)
+    - [Terraform / OpenTofu version manager](#terraform--opentofu-version-manager)
     - [Spacelift](#spacelift)
+  - [Breaking changes](#breaking-changes)
+    - [0.4.0](#040)
   - [Supported platforms](#supported-platforms)
+  - [IaC Providers](#iac-providers)
   - [Features](#features)
-    - [Terraform version manager](#terraform-version-manager-1)
-    - [Terraform workspace](#terraform-workspace)
-    - [Terraform Init](#terraform-init)
+    - [Terraform / OpenTofu version manager](#terraform--opentofu-version-manager-1)
+    - [Terraform / OpenTofu workspace](#terraform--opentofu-workspace)
+    - [Terraform / OpenTofu Init](#terraform--opentofu-init)
     - [Spacelift](#spacelift-1)
   - [Important Notes](#important-notes)
 
 ## Motivation
 
-The main motivation behind building this extension was to improve the terraform workflow at my employer, [CMInformatik](https://www.cmiag.ch). The extension therefore contains some features that are specific to our workflow. However, I think that some of the features might be useful for other people as well. If you have any suggestions or ideas for improvements, feel free to open an issue or a pull request.
+The main motivation behind building this extension was to improve the IaC workflow at my employer, [CMInformatik](https://www.cmiag.ch). The extension therefore contains some features that are specific to our workflow. However, I think that some of the features might be useful for other people as well. If you have any suggestions or ideas for improvements, feel free to open an issue or a pull request.
 
 ## Getting startet
 
 The following features require manual configuration and installation steps:
 
-### Terraform version manager
+### Terraform / OpenTofu version manager
 
-The following requirements must be met for the terraform version manager to work:
+The following requirements must be met for the version manager to work:
 
-- The active terraform version is stored in the following folder:
+- Active Terraform or OpenTofu versions are stored in the following folder:
   - Windows: `%USERPROFILE%\.terraform-toolbox\active`
   - Mac: `$HOME/.terraform-toolbox/active`
 
-This folder must be added to your path. Also, make sure that you have no other terraform binaries in your path.
+This folder must be added to your path. Also, make sure that you have no other Terraform or OpenTofu binaries in your path.
 
 ### Spacelift
 
@@ -49,6 +52,14 @@ Regarding spacelift, no authentication is required in VSCode. The extension uses
 
 If you don't want to use any spacelift features, you can simply not install the spacectl, this will disable all spacelift features of the extension.
 
+## Breaking changes
+
+### 0.4.0
+
+- All settings with the pattern `tftoolbox.terraform.*` have been renamed to `tftoolbox.iac.*`.
+- The setting `tftoolbox.spacelift.showNoTerraformVersionInstalledMsg` has been renamed to `tftoolbox.iac.showNoIacProviderVersionInstalledMsgOnStart`.
+- All commands have been renamed to the following pattern: `tftoolbox.<group>.<action>` (e.g. `tftoolbox.iac.setVersion` or `tftoolbox.terraform.setVersion`).
+
 ## Supported platforms
 
 The extension supports all three major OS platforms:
@@ -59,43 +70,60 @@ The extension supports all three major OS platforms:
 
 MacOS and Windows are regularly used and tested. Linux is not tested, but should work.
 
+## IaC Providers
+
+The extension supports both Terraform and OpenTofu as IaC providers. Terraform will be used per default. To switch to OpenTofu, you can set the `tftoolbox.iac.provider` setting to `opentofu`, this will switch the extension to OpenTofu mode.
+
 ## Features
 
-### Terraform version manager
+### Terraform / OpenTofu version manager
 
-This extension adds a terraform version manager, that allows you to install and switch between any terraform version available on the hashicorp/terraform Github releases page (including betas, alphas and rc). The extension downloads the selected version from `https://releases.hashicorp.com/terraform`. The active binary is stored in the following folder: `%USERPROFILE%\.terraform-toolbox/active` (Windows) or `$HOME/.terraform-toolbox/active` (Mac). Not active but installed versions are stored in `$HOME/.terraform-toolbox/terraform` (Mac) or `%USERPROFILE%\.terraform-toolbox\terraform` (Windows).
+This extension adds version managers for both Terraform and OpenTofu. They allow you to install and switch between any terraform or OpenTofu version available, including betas, alphas, and rc.
 
-- Command [`tftoolbox.setTerraformVersion`]: Select and install a specific terraform version.
+In case of Terraform, binaries are downloaded from `https://releases.hashicorp.com/terraform`. The active binary is stored in the following folder: `%USERPROFILE%\.terraform-toolbox/active` (Windows) or `$HOME/.terraform-toolbox/active` (Mac). Not active but installed versions are stored in `$HOME/.terraform-toolbox/terraform` (Mac) or `%USERPROFILE%\.terraform-toolbox\terraform` (Windows).
+
+For OpenTofu, binaries are downloaded from the official OpenTofu GitHub releases page. The active binary is stored in the following folder: `%USERPROFILE%\.terraform-toolbox/active` (Windows) or `$HOME/.terraform-toolbox/active` (Mac). Not active but installed versions are stored in `$HOME/.terraform-toolbox/opentofu` (Mac) or `%USERPROFILE%\.terraform-toolbox\opentofu` (Windows).
+
+- Command [`tftoolbox.iac.setVersion`]: Select and install a specific version for the active IaC Provider.
   ![terraform-version](Images/examples/terraform_version.gif)
-- Command [`tftoolbox.autoSetTerraformVersion`]: Evaluates the required terraform version for all of your open projects and selects the latest version that matches all the requirements. With the setting `tftoolbox.terraform.autoSelectVersion` you can enable to auto-select a terraform version when opening VSCode. More information can be found here: [Auto set terraform version](docs/autoSetTerraformVersion.md)
-- Command [`tftoolbox.deleteTerraformVersions`]: Select and delete installed terraform versions.
-- StatusBarItem [`ActiveTerraformVersion`]: Shows the currently selected terraform version in the status bar if a terraform file is open. Clicking on the status bar item opens the version manager.
+- Command [`tftoolbox.iac.deleteVersion`]: Evaluates the required version for all of your open projects and selects the latest version that matches all the requirements. With the setting `tftoolbox.iac.autoSelectVersion` you can enable to auto-select a version when opening VSCode. More information can be found here: [Auto set IaC Provider version](docs/autoSetIacVersion.md)
+- Command [`tftoolbox.iac.autoSetVersion`]: Select and delete installed versions for the configured provider.
+- StatusBarItem [`IacActiveVersionItem`]: Shows the active version for the configured IaC Provider in the status bar. Clicking on the status bar item opens the version manager.
 
-### Terraform workspace
+The commands above manage versions for the configured IaC Provider. Additionally, the following commands are available to manage versions for Terraform and OpenTofu explicitly regardless of the current configuration:
 
-Tired of switching between terraform workspaces in the terminal? This extension adds a status bar item showing the currently active terraform workspace. By clicking on the status bar item, you can select and switch to a different workspace. The extension adds the following features regarding terraform workspaces:
+| Command                      | Terraform                            | OpenTofu                            |
+| ---------------------------- | ------------------------------------ | ----------------------------------- |
+| Select and install a version | `tftoolbox.terraform.setVersion`     | `tftoolbox.opentofu.setVersion`     |
+| Delete installed versions    | `tftoolbox.terraform.deleteVersions` | `tftoolbox.opentofu.deleteVersions` |
+| Auto select version          | `tftoolbox.terraform.autoSetVersion` | `tftoolbox.opentofu.autoSetVersion` |
 
-- Command [`tftoolbox.setWorkspace`]: Select and switch to a terraform workspace in the current folder.
+### Terraform / OpenTofu workspace
+
+Tired of switching between workspaces in the terminal? This extension adds a status bar item showing the currently active Terraform / OpenTofu workspace. By clicking on the status bar item, you can select and switch to a different workspace. The extension adds the following features regarding workspaces:
+
+- Command [`tftoolbox.iac.setWorkspace`]: Select and switch to a workspace in the current folder.
   ![terraform-workspace](Images/examples/terraform_workspace.gif)
-- Command [`tftoolbox.terraform.autoSelectWorkspace`] Auto set the terraform workspace for all folders when opening vscode. Uses the workspace name from the `.terraform-toolbox.json` file in the root of the workspace. More information can be found here: [Workspace settings](docs/workspaceSettings.md)
-- StatusBarItem [`ActiveTerraformWorkspace`]: Shows the currently selected terraform workspace in the status bar if a terraform file is open. Clicking on the status bar item opens the workspace manager.
+- Command [`tftoolbox.iac.autoSelectWorkspace`] Auto set the workspace for all project folders when opening vscode. Uses the workspace name from the `.terraform-toolbox.json` file in the root of the workspace. More information can be found here: [Workspace settings](docs/workspaceSettings.md)
+- StatusBarItem [`IacActiveWorkspaceItem`]: Shows the currently selected workspace in the status bar if a Terraform / OpenTofu file is open. Clicking on the status bar item opens the workspace manager.
 
-### Terraform Init
+### Terraform / OpenTofu Init
 
-Since terraform init is required for many features of the official Hashicorp Terraform extension to work, this extension adds some features to make the terraform init process easier:
+Since the init command is required for many features of the official Hashicorp Terraform extension to work, this extension adds some features to make the terraform init process easier:
 
-- Command [`tftoolbox.initCurrentProject`]: Run terraform init in the current folder. Similar to the init Command of the official Hashicorp Terraform extension, but it allows you to specify additional terraform init arguments with the setting `tftoolbox.terraform.initArg`.
-- Command [`tftoolbox.initAllProjects`]: Finds all terraform folders in your open workspaces and runs terraform init in each of them asynchronically. With the setting `tftoolbox.terraform.autoInitAllProjects` you can enable to auto init all folders when opening VSCode. More information can be found here: [Terraform init all projects](docs/terraformInitAllProjects.md)
+- Command [`tftoolbox.iac.initCurrentProject`]: Run terraform / tofu init in the current folder. Similar to the init Command of the official Hashicorp Terraform extension, but it allows you to specify additional init arguments with the setting `tftoolbox.iac.initArg`.
+- Command [`tftoolbox.iac.initAllProjects`]: Finds all terraform folders in your open workspaces and runs terraform init in each of them asynchronically. With the setting `tftoolbox.iac.autoInitAllProjects` you can enable to auto init all folders when opening VSCode. More information can be found here: [Terraform init all projects](docs/initAllProjects.md)
   ![terraform-init](Images/examples/terraform_init.gif)
-- Command [`tftoolbox.initRefreshModules`]: Installs missing modules for the current folder.
+- Command [`tftoolbox.iac.refreshModules`]: Installs missing modules for the current folder.
 
 ### Spacelift
 
-Spacelift is a Terraform CI/CD tool. They provide a cli-tool, called spacectl, that allows you to run proposed runs of your local terraform code on Spacelift. However, the cli requires you to specify the Spacelift stack-id and the working directory of the terraform-project, for which the proposed run should be created. To make this process easier, this extension adds two commands as wrapper around the spacectl:
+Spacelift is a IaC CI/CD tool. They provide a cli-tool, called spacectl, that allows you to run proposed runs of your local code on Spacelift. However, the cli requires you to specify the Spacelift stack-id and the working directory of the project, for which the proposed run should be created. To make this process easier, this extension adds two commands as wrapper around the spacectl:
 
-- Command [`tftoolbox.spaceliftLocalPreviewCurrentStack`]: Run a local preview for the current folder. The stack-id is automatically evaluated based on the current Repository and Subfolder.
+- Command [`tftoolbox.spacelift.localPreviewCurrentStack`]: Run a local preview for the current folder. The stack-id is automatically evaluated based on the current Repository and Subfolder.
   ![Spacelift local preview current stack](Images/examples/spacelift_local_preview_current_stack.gif)
-- Command [`tftoolbox.spaceliftLocalPreview`]: Run a local preview of a selected stack on Spacelift. You will be presented with a list of all stacks for the current workspace. The selected stack will be used to run the local preview.
+- Command [`tftoolbox.spacelift.localPreview`]: Run a local preview of a selected stack on Spacelift. You will be presented with a list of all stacks for the current workspace. The selected stack will be used to run the local preview.
+- Command [`tftoolbox.spacelift.login`]: Authenticate spacectl.
 - StatusBarItem [`StacksPendingConfirmationCount`]: Shows the number of stacks that have pending confirmation in the status bar. Clicking on the status bar item opens your Spacelift portal.
   ![Spacelift Stacks Status Bar item](Images/examples/pending_stack_confirmation.png)
 

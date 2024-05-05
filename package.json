@@ -6,8 +6,8 @@
     "type": "git",
     "url": "https://github.com/Noahnc/vscode-terraform-toolbox"
   },
-  "description": "VSCode extension adding a bunch of featurees regarding Terraform and Spacelift.",
-  "version": "0.3.2",
+  "description": "VSCode extension adding a bunch of featurees regarding Terraform / OpenTofu and Spacelift.",
+  "version": "0.4.0",
   "icon": "Images/terraform_toolbox_icon.png",
   "engines": {
     "vscode": "^1.83.0"
@@ -24,48 +24,72 @@
   "contributes": {
     "commands": [
       {
-        "command": "tftoolbox.spaceliftLocalPreview",
-        "title": "spacelift local-preview (select stack from open project)"
+        "command": "tftoolbox.spacelift.localPreview",
+        "title": "tftoolbox spacelift local-preview (select stack from open project)"
       },
       {
-        "command": "tftoolbox.spaceliftLocalPreviewCurrentStack",
-        "title": "spacelift local-preview (current stack)"
+        "command": "tftoolbox.spacelift.localPreviewCurrentStack",
+        "title": "tftoolbox spacelift local-preview (current stack)"
       },
       {
-        "command": "tftoolbox.spaceliftLogin",
-        "title": "spacelift login"
+        "command": "tftoolbox.spacelift.login",
+        "title": "tftoolbox spacelift login"
       },
       {
-        "command": "tftoolbox.setTerraformVersion",
-        "title": "terraform set version (select from list)"
+        "command": "tftoolbox.iac.setVersion",
+        "title": "tftoolbox set iac version (select from list)"
       },
       {
-        "command": "tftoolbox.deleteTerraformVersions",
-        "title": "terraform delete versions (select from list)"
+        "command": "tftoolbox.iac.deleteVersion",
+        "title": "tftoolbox delete iac versions (select from list)"
       },
       {
-        "command": "tftoolbox.autoSetTerraformVersion",
-        "title": "terraform set version (from current project requrements)"
+        "command": "tftoolbox.iac.autoSetVersion",
+        "title": "tftoolbox set iac version (from current project requrements)"
       },
       {
-        "command": "tftoolbox.initAllProjects",
-        "title": "terraform init (all projects)"
+        "command": "tftoolbox.terraform.setVersion",
+        "title": "tftoolbox terraform set version (select from list)"
       },
       {
-        "command": "tftoolbox.initCurrentProject",
-        "title": "terraform init (current project)"
+        "command": "tftoolbox.terraform.deleteVersions",
+        "title": "tftoolbox terraform delete versions (select from list)"
       },
       {
-        "command": "tftoolbox.initRefreshModules",
-        "title": "terraform install missing modules (current project)"
+        "command": "tftoolbox.terraform.autoSetVersion",
+        "title": "tftoolbox terraform set version (from current project requrements)"
       },
       {
-        "command": "tftoolbox.setWorkspace",
-        "title": "terraform set workspace (current project)"
+        "command": "tftoolbox.opentofu.setVersion",
+        "title": "tftoolbox opentofu set version (select from list)"
       },
       {
-        "command": "tftoolbox.autoSetWorkspace",
-        "title": "terraform auto set Workspace"
+        "command": "tftoolbox.opentofu.deleteVersions",
+        "title": "tftoolbox opentofu delete versions (select from list)"
+      },
+      {
+        "command": "tftoolbox.opentofu.autoSetVersion",
+        "title": "tftoolbox opentofu set version (from current project requrements)"
+      },
+      {
+        "command": "tftoolbox.iac.initAllProjects",
+        "title": "tftoolbox iac init (all projects)"
+      },
+      {
+        "command": "tftoolbox.iac.initCurrentProject",
+        "title": "tftoolbox iac init (current project)"
+      },
+      {
+        "command": "tftoolbox.iac.refreshModules",
+        "title": "tftoolbox iac install missing modules (current project)"
+      },
+      {
+        "command": "tftoolbox.iac.setWorkspace",
+        "title": "tftoolbox iac set workspace (current project)"
+      },
+      {
+        "command": "tftoolbox.iac.autoSetWorkspace",
+        "title": "tftoolbox iac auto set Workspace"
       }
     ],
     "configuration": {
@@ -86,22 +110,22 @@
           "default": false,
           "description": "If enabled, a notification will be shown regarding spacectl login if spacectl is not authenticated."
         },
-        "tftoolbox.terraform.autoSelectVersion": {
+        "tftoolbox.iac.autoSelectVersion": {
           "type": "boolean",
           "default": false,
           "description": "When enabled, the extension evaluates the required terraform version for all open projects and selects the latest version matching the requirements."
         },
-        "tftoolbox.terraform.autoSelectWorkspace": {
+        "tftoolbox.iac.autoSelectWorkspace": {
           "type": "boolean",
           "default": true,
           "description": "When true, the terraform workspace will be set for each folder based on the .terraform-toolbox configuration file in the workspace root."
         },
-        "tftoolbox.terraform.autoInitAllProjects": {
+        "tftoolbox.iac.autoInitAllProjects": {
           "type": "boolean",
           "default": false,
           "description": "If set to true, the extension will run terraform init for all folders in your workspace containing terraform files on startup."
         },
-        "tftoolbox.terraform.initArg": {
+        "tftoolbox.iac.initArg": {
           "type": "string",
           "default": "-upgrade",
           "description": "Additional args when running any of the terraform init commands. -input=false and -no-color are always added. Multiple args can be specified by separating them with a space."
@@ -111,10 +135,24 @@
           "default": true,
           "description": "Disable startup waring if spacectl is not installed and authenticated."
         },
-        "tftoolbox.spacelift.showNoTerraformVersionInstalledMsg": {
+        "tftoolbox.iac.showNoIacProviderVersionInstalledMsgOnStart": {
           "type": "boolean",
           "default": true,
-          "description": "Shows an informtion msg on startup if no terraform version is installed by the extension."
+          "description": "Shows an informtion msg on startup if no version for the active IaC provider is installed by the extension."
+        },
+        "tftoolbox.iac.showIacSelectionWelcomeMsg": {
+          "type": "boolean",
+          "default": true,
+          "description": "Shows a message on extension start to ask the user for the prefered IaC provider."
+        },
+        "tftoolbox.iac.provider": {
+          "type": "string",
+          "default": "Terraform",
+          "enum": [
+            "Terraform",
+            "OpenTofu"
+          ],
+          "description": "The IaC Provider to use for the extension."
         },
         "tftoolbox.spacelift.stackPendingConfirmationStatusItemUpdateTimeSeconds": {
           "type": "number",
@@ -172,8 +210,8 @@
     "@types/node": "20.x",
     "@types/node-fetch": "^2.6.9",
     "@types/vscode": "^1.83.0",
-    "@typescript-eslint/eslint-plugin": "^6.14.0",
-    "@typescript-eslint/parser": "^6.7.5",
+    "@typescript-eslint/eslint-plugin": "^7.8.0",
+    "@typescript-eslint/parser": "^7.8.0",
     "@vscode/test-electron": "^2.3.8",
     "depcheck": "^1.4.6",
     "esbuild": "^0.20.2",
@@ -190,7 +228,7 @@
     "graphql-request": "^6.1.0",
     "hcl2-parser": "^1.0.3",
     "jest": "^29.7.0",
-    "jwt-decode": "^3.1.2",
+    "jwt-decode": "^4.0.0",
     "octokit": "^3.1.2",
     "semver": "^7.5.3",
     "wget-improved": "^3.4.0"

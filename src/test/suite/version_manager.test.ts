@@ -1,13 +1,13 @@
-import { MockVersionProvider } from "../../mocks/version_provider";
-import { Releases } from "../../models/github/release";
-import { VersionManager } from "../../utils/version_manager";
 import { expect } from "chai";
+import { MockVersionProvider } from "../../mocks/VersionProviderMock";
+import { Releases } from "../../models/github/release";
+import { VersionManager } from "../../utils/VersionManager/versionManager";
 
 describe("Version Provider", () => {
-  const versionManager = new VersionManager({ baseFolderName: "version_manager_test", softwareName: "version_manager_test", binaryName: "testbinary" }, new MockVersionProvider());
+  const versionManager = new VersionManager(new MockVersionProvider(), "version_manager_test");
 
   afterEach(async () => {
-    versionManager._baseFolder.delete();
+    versionManager.baseFolder.delete();
   });
 
   it("should throw an error that no version is active", async () => {
@@ -26,7 +26,7 @@ describe("Version Provider", () => {
     const releases = await versionManager.getReleases();
     expect(releases).to.be.instanceOf(Releases);
     await versionManager.switchVersion(releases.latest);
-    expect(versionManager._metadataFile.exists()).to.be.true;
+    expect(versionManager.metadataFile.exists()).to.be.true;
   });
 
   it("should have one version installed and one active", async () => {

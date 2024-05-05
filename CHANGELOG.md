@@ -2,6 +2,12 @@
 
 All notable changes to the terraform-toolbox extension will be documented in this file.
 
+## [0.4.0]
+
+- (feat): This update adds OpenTofu support. You can now select OpenTofu as IaC provider in the settings.
+- (feat): Added a new Event-Hook that notifies the user if an extension restart is required after a settings change.
+- (break): Settings and commands have been renamed with a new naming convention to make them more consistent in regard to OpenTofu support.
+
 ## [0.3.2]
 
 - (fix): Fixed a bug where the spacelift token was not refreshed in the background from spacectl.
