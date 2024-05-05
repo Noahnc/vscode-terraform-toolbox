@@ -5,26 +5,26 @@ export const SPACELIFT_BASE_DOMAIN = ".app.spacelift.io";
 // commands
 
 // Spacelift
-export const COMMAND_LOCAL_PREVIEW = "tftoolbox.spaceliftLocalPreview";
-export const COMMAND_SPACELIFT_LOGIN = "tftoolbox.spaceliftLogin";
-export const COMMAND_LOCAL_PREVIEW_CURRENT_STACK = "tftoolbox.spaceliftLocalPreviewCurrentStack";
+export const COMMAND_LOCAL_PREVIEW = "tftoolbox.spacelift.localPreview";
+export const COMMAND_SPACELIFT_LOGIN = "tftoolbox.spacelift.login";
+export const COMMAND_LOCAL_PREVIEW_CURRENT_STACK = "tftoolbox.spacelift.localPreviewCurrentStack";
 
 // Version management
-export const COMMAND_SET_TERRAFORM_VERSION = "tftoolbox.setTerraformVersion";
-export const COMMAND_DELETE_TERRAFORM_VERSIONS = "tftoolbox.deleteTerraformVersions";
-export const COMMAND_AUTO_SET_TERRAFORM_VERSION = "tftoolbox.autoSetTerraformVersion";
+export const COMMAND_SET_TERRAFORM_VERSION = "tftoolbox.terraform.setVersion";
+export const COMMAND_DELETE_TERRAFORM_VERSIONS = "tftoolbox.terraform.deleteVersions";
+export const COMMAND_AUTO_SET_TERRAFORM_VERSION = "tftoolbox.terraform.autoSetVersion";
 
-export const COMMAND_SET_OPEN_TOFU_VERSION = "tftoolbox.setOpenTofuVersion";
-export const COMMAND_DELETE_OPEN_TOFU_VERSIONS = "tftoolbox.deleteOpenTofuVersions";
-export const COMMAND_AUTO_SET_OPEN_TOFU_VERSION = "tftoolbox.autoSetOpenTofuVersion";
+export const COMMAND_SET_OPEN_TOFU_VERSION = "tftoolbox.opentofu.setVersion";
+export const COMMAND_DELETE_OPEN_TOFU_VERSIONS = "tftoolbox.opentofu.deleteVersions";
+export const COMMAND_AUTO_SET_OPEN_TOFU_VERSION = "tftoolbox.opentofu.autoSetVersion";
 
-export const COMMAND_SET_IAC_PROVIDER_VERSION = "tftoolbox.setIacProviderVersion";
-export const COMMAND_DELETE_IAC_PROVIDER_VERSION = "tftoolbox.deleteIacProviderVersions";
-export const COMMAND_AUTO_SET_IAC_PROVIDER_VERSION = "tftoolbox.autoSetIacProviderVersion";
+export const COMMAND_SET_IAC_PROVIDER_VERSION = "tftoolbox.iac.setVersion";
+export const COMMAND_DELETE_IAC_PROVIDER_VERSION = "tftoolbox.iac.deleteVersion";
+export const COMMAND_AUTO_SET_IAC_PROVIDER_VERSION = "tftoolbox.iac.autoSetVersion";
 
 // Workspace management
-export const COMMAND_INIT_ALL_PROJECTS = "tftoolbox.initAllProjects";
-export const COMMAND_INIT_CURRENT_PROJECT = "tftoolbox.initCurrentProject";
-export const COMMAND_INIT_REFRESH_MODULES = "tftoolbox.initRefreshModules";
-export const COMMAND_SET_WORKSPACE = "tftoolbox.setWorkspace";
-export const COMMAND_AUTO_SET_WORKSPACE = "tftoolbox.autoSetWorkspace";
+export const COMMAND_INIT_ALL_PROJECTS = "tftoolbox.iac.initAllProjects";
+export const COMMAND_INIT_CURRENT_PROJECT = "tftoolbox.iac.initCurrentProject";
+export const COMMAND_INIT_REFRESH_MODULES = "tftoolbox.iac.refreshModules";
+export const COMMAND_SET_WORKSPACE = "tftoolbox.iac.setWorkspace";
+export const COMMAND_AUTO_SET_WORKSPACE = "tftoolbox.iac.autoSetWorkspace";

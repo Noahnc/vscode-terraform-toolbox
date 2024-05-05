@@ -58,6 +58,7 @@ If you don't want to use any spacelift features, you can simply not install the 
 
 - All settings with the pattern `tftoolbox.terraform.*` have been renamed to `tftoolbox.iac.*`.
 - The setting `tftoolbox.spacelift.showNoTerraformVersionInstalledMsg` has been renamed to `tftoolbox.iac.showNoIacProviderVersionInstalledMsgOnStart`.
+- All commands have been renamed to the following pattern: `tftoolbox.<group>.<action>` (e.g. `tftoolbox.iac.setVersion` or `tftoolbox.terraform.setVersion`).
 
 ## Supported platforms
 
@@ -83,25 +84,25 @@ In case of Terraform, binaries are downloaded from `https://releases.hashicorp.c
 
 For OpenTofu, binaries are downloaded from the official OpenTofu GitHub releases page. The active binary is stored in the following folder: `%USERPROFILE%\.terraform-toolbox/active` (Windows) or `$HOME/.terraform-toolbox/active` (Mac). Not active but installed versions are stored in `$HOME/.terraform-toolbox/opentofu` (Mac) or `%USERPROFILE%\.terraform-toolbox\opentofu` (Windows).
 
-- Command [`tftoolbox.setIacProviderVersion`]: Select and install a specific version for the active IaC Provider.
+- Command [`tftoolbox.iac.setVersion`]: Select and install a specific version for the active IaC Provider.
   ![terraform-version](Images/examples/terraform_version.gif)
-- Command [`tftoolbox.deleteIacProviderVersions`]: Evaluates the required version for all of your open projects and selects the latest version that matches all the requirements. With the setting `tftoolbox.iac.autoSelectVersion` you can enable to auto-select a version when opening VSCode. More information can be found here: [Auto set IaC Provider version](docs/autoSetIacVersion.md)
-- Command [`tftoolbox.autoSetIacProviderVersion`]: Select and delete installed versions for the configured provider.
+- Command [`tftoolbox.iac.deleteVersion`]: Evaluates the required version for all of your open projects and selects the latest version that matches all the requirements. With the setting `tftoolbox.iac.autoSelectVersion` you can enable to auto-select a version when opening VSCode. More information can be found here: [Auto set IaC Provider version](docs/autoSetIacVersion.md)
+- Command [`tftoolbox.iac.autoSetVersion`]: Select and delete installed versions for the configured provider.
 - StatusBarItem [`IacActiveVersionItem`]: Shows the active version for the configured IaC Provider in the status bar. Clicking on the status bar item opens the version manager.
 
 The commands above manage versions for the configured IaC Provider. Additionally, the following commands are available to manage versions for Terraform and OpenTofu explicitly regardless of the current configuration:
 
-| Command                    | Terraform                           | OpenTofu                           |
-| -------------------------- | ----------------------------------- | ---------------------------------- |
-| Select and install version | `tftoolbox.setTerraformVersion`     | `tftoolbox.setOpenTofuVersion`     |
-| Delete installed versions  | `tftoolbox.deleteTerraformVersions` | `tftoolbox.deleteOpenTofuVersions` |
-| Auto select version        | `tftoolbox.autoSetTerraformVersion` | `tftoolbox.autoSetOpenTofuVersion` |
+| Command                      | Terraform                            | OpenTofu                            |
+| ---------------------------- | ------------------------------------ | ----------------------------------- |
+| Select and install a version | `tftoolbox.terraform.setVersion`     | `tftoolbox.opentofu.setVersion`     |
+| Delete installed versions    | `tftoolbox.terraform.deleteVersions` | `tftoolbox.opentofu.deleteVersions` |
+| Auto select version          | `tftoolbox.terraform.autoSetVersion` | `tftoolbox.opentofu.autoSetVersion` |
 
 ### Terraform / OpenTofu workspace
 
 Tired of switching between workspaces in the terminal? This extension adds a status bar item showing the currently active Terraform / OpenTofu workspace. By clicking on the status bar item, you can select and switch to a different workspace. The extension adds the following features regarding workspaces:
 
-- Command [`tftoolbox.setWorkspace`]: Select and switch to a workspace in the current folder.
+- Command [`tftoolbox.iac.setWorkspace`]: Select and switch to a workspace in the current folder.
   ![terraform-workspace](Images/examples/terraform_workspace.gif)
 - Command [`tftoolbox.iac.autoSelectWorkspace`] Auto set the workspace for all project folders when opening vscode. Uses the workspace name from the `.terraform-toolbox.json` file in the root of the workspace. More information can be found here: [Workspace settings](docs/workspaceSettings.md)
 - StatusBarItem [`IacActiveWorkspaceItem`]: Shows the currently selected workspace in the status bar if a Terraform / OpenTofu file is open. Clicking on the status bar item opens the workspace manager.
@@ -110,18 +111,19 @@ Tired of switching between workspaces in the terminal? This extension adds a sta
 
 Since the init command is required for many features of the official Hashicorp Terraform extension to work, this extension adds some features to make the terraform init process easier:
 
-- Command [`tftoolbox.initCurrentProject`]: Run terraform / tofu init in the current folder. Similar to the init Command of the official Hashicorp Terraform extension, but it allows you to specify additional init arguments with the setting `tftoolbox.iac.initArg`.
-- Command [`tftoolbox.initAllProjects`]: Finds all terraform folders in your open workspaces and runs terraform init in each of them asynchronically. With the setting `tftoolbox.iac.autoInitAllProjects` you can enable to auto init all folders when opening VSCode. More information can be found here: [Terraform init all projects](docs/initAllProjects.md)
+- Command [`tftoolbox.iac.initCurrentProject`]: Run terraform / tofu init in the current folder. Similar to the init Command of the official Hashicorp Terraform extension, but it allows you to specify additional init arguments with the setting `tftoolbox.iac.initArg`.
+- Command [`tftoolbox.iac.initAllProjects`]: Finds all terraform folders in your open workspaces and runs terraform init in each of them asynchronically. With the setting `tftoolbox.iac.autoInitAllProjects` you can enable to auto init all folders when opening VSCode. More information can be found here: [Terraform init all projects](docs/initAllProjects.md)
   ![terraform-init](Images/examples/terraform_init.gif)
-- Command [`tftoolbox.initRefreshModules`]: Installs missing modules for the current folder.
+- Command [`tftoolbox.iac.refreshModules`]: Installs missing modules for the current folder.
 
 ### Spacelift
 
 Spacelift is a IaC CI/CD tool. They provide a cli-tool, called spacectl, that allows you to run proposed runs of your local code on Spacelift. However, the cli requires you to specify the Spacelift stack-id and the working directory of the project, for which the proposed run should be created. To make this process easier, this extension adds two commands as wrapper around the spacectl:
 
-- Command [`tftoolbox.spaceliftLocalPreviewCurrentStack`]: Run a local preview for the current folder. The stack-id is automatically evaluated based on the current Repository and Subfolder.
+- Command [`tftoolbox.spacelift.localPreviewCurrentStack`]: Run a local preview for the current folder. The stack-id is automatically evaluated based on the current Repository and Subfolder.
   ![Spacelift local preview current stack](Images/examples/spacelift_local_preview_current_stack.gif)
-- Command [`tftoolbox.spaceliftLocalPreview`]: Run a local preview of a selected stack on Spacelift. You will be presented with a list of all stacks for the current workspace. The selected stack will be used to run the local preview.
+- Command [`tftoolbox.spacelift.localPreview`]: Run a local preview of a selected stack on Spacelift. You will be presented with a list of all stacks for the current workspace. The selected stack will be used to run the local preview.
+- Command [`tftoolbox.spacelift.login`]: Authenticate spacectl.
 - StatusBarItem [`StacksPendingConfirmationCount`]: Shows the number of stacks that have pending confirmation in the status bar. Clicking on the status bar item opens your Spacelift portal.
   ![Spacelift Stacks Status Bar item](Images/examples/pending_stack_confirmation.png)
 

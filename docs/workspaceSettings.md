@@ -4,7 +4,7 @@ By creating a `.terraform-toolbox.json` file in the root of a workspace, you can
 
 ## 1.1. Auto set Terraform workspace
 
-With the root key `autoSetWorkspace` you can configure settings regarding the `tftoolbox.autoSetWorkspace` Command. The following settings are available:
+With the root key `autoSetWorkspace` you can configure settings regarding the `tftoolbox.iac.autoSetWorkspace` Command. The following settings are available:
 
 - `name`: (required): The name of the workspace that should be selected. If the workspace does not exist in a folder, the folder will be skipped.
 - `excludedFoldersRelativePaths`: (optional): A list of relative paths to folders that should be excluded from the workspace selection. The paths are relative to the root of the workspace.

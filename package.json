@@ -24,72 +24,72 @@
   "contributes": {
     "commands": [
       {
-        "command": "tftoolbox.spaceliftLocalPreview",
-        "title": "spacelift local-preview (select stack from open project)"
+        "command": "tftoolbox.spacelift.localPreview",
+        "title": "tftoolbox spacelift local-preview (select stack from open project)"
       },
       {
-        "command": "tftoolbox.spaceliftLocalPreviewCurrentStack",
-        "title": "spacelift local-preview (current stack)"
+        "command": "tftoolbox.spacelift.localPreviewCurrentStack",
+        "title": "tftoolbox spacelift local-preview (current stack)"
       },
       {
-        "command": "tftoolbox.spaceliftLogin",
-        "title": "spacelift login"
+        "command": "tftoolbox.spacelift.login",
+        "title": "tftoolbox spacelift login"
       },
       {
-        "command": "tftoolbox.setIacProviderVersion",
-        "title": "tftoolbox set version (select from list)"
+        "command": "tftoolbox.iac.setVersion",
+        "title": "tftoolbox set iac version (select from list)"
       },
       {
-        "command": "tftoolbox.deleteIacProviderVersions",
-        "title": "tftoolbox delete versions (select from list)"
+        "command": "tftoolbox.iac.deleteVersion",
+        "title": "tftoolbox delete iac versions (select from list)"
       },
       {
-        "command": "tftoolbox.autoSetIacProviderVersion",
-        "title": "tftoolbox set version (from current project requrements)"
+        "command": "tftoolbox.iac.autoSetVersion",
+        "title": "tftoolbox set iac version (from current project requrements)"
       },
       {
-        "command": "tftoolbox.setTerraformVersion",
-        "title": "terraform set version (select from list)"
+        "command": "tftoolbox.terraform.setVersion",
+        "title": "tftoolbox terraform set version (select from list)"
       },
       {
-        "command": "tftoolbox.deleteTerraformVersions",
-        "title": "terraform delete versions (select from list)"
+        "command": "tftoolbox.terraform.deleteVersions",
+        "title": "tftoolbox terraform delete versions (select from list)"
       },
       {
-        "command": "tftoolbox.autoSetTerraformVersion",
-        "title": "terraform set version (from current project requrements)"
+        "command": "tftoolbox.terraform.autoSetVersion",
+        "title": "tftoolbox terraform set version (from current project requrements)"
       },
       {
-        "command": "tftoolbox.setOpenTofuVersion",
-        "title": "opentofu set version (select from list)"
+        "command": "tftoolbox.opentofu.setVersion",
+        "title": "tftoolbox opentofu set version (select from list)"
       },
       {
-        "command": "tftoolbox.deleteOpenTofuVersions",
-        "title": "opentofu delete versions (select from list)"
+        "command": "tftoolbox.opentofu.deleteVersions",
+        "title": "tftoolbox opentofu delete versions (select from list)"
       },
       {
-        "command": "tftoolbox.autoSetOpenTofuVersion",
-        "title": "opentofu set version (from current project requrements)"
+        "command": "tftoolbox.opentofu.autoSetVersion",
+        "title": "tftoolbox opentofu set version (from current project requrements)"
       },
       {
-        "command": "tftoolbox.initAllProjects",
-        "title": "tftoolbox init (all projects)"
+        "command": "tftoolbox.iac.initAllProjects",
+        "title": "tftoolbox iac init (all projects)"
       },
       {
-        "command": "tftoolbox.initCurrentProject",
-        "title": "tftoolbox init (current project)"
+        "command": "tftoolbox.iac.initCurrentProject",
+        "title": "tftoolbox iac init (current project)"
       },
       {
-        "command": "tftoolbox.initRefreshModules",
-        "title": "tftoolbox install missing modules (current project)"
+        "command": "tftoolbox.iac.refreshModules",
+        "title": "tftoolbox iac install missing modules (current project)"
       },
       {
-        "command": "tftoolbox.setWorkspace",
-        "title": "tftoolbox set workspace (current project)"
+        "command": "tftoolbox.iac.setWorkspace",
+        "title": "tftoolbox iac set workspace (current project)"
       },
       {
-        "command": "tftoolbox.autoSetWorkspace",
-        "title": "tftoolbox auto set Workspace"
+        "command": "tftoolbox.iac.autoSetWorkspace",
+        "title": "tftoolbox iac auto set Workspace"
       }
     ],
     "configuration": {

@@ -1,6 +1,6 @@
 # Init all projects
 
-With the command `tftoolbox.initAllProjects` you can run `terraform init` / `tofu init` in all folders present in your open workspaces. A folder has to meet the following requirements to be considered as Terraform / OpenTofu project folder:
+With the command `tftoolbox.iac.initAllProjects` you can run `terraform init` / `tofu init` in all folders present in your open workspaces. A folder has to meet the following requirements to be considered as Terraform / OpenTofu project folder:
 
 1. The folder must contain at least one .tf file.
 2. At least one of the terraform files must contain a `module` block or a `terraform.required_providers` block.
