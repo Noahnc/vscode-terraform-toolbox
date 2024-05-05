@@ -85,7 +85,7 @@ export async function showNotificationWithDecisions(message: string, showSetting
   const selection = await messageFunction(message, ...decision);
 
   if (selection === doNotShowAgain) {
-    showSetting.value = false;
+    await showSetting.setValueAsync(false);
     return undefined;
   }
 

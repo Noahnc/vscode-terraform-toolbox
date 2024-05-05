@@ -38,22 +38,28 @@ export async function activate(context: vscode.ExtensionContext) {
   const iacProviderSelection = await helpers.showNotificationWithDecisions(
     `Welcome to Terraform Toolbox. Which IaC provider do you want to use with this extension?`,
     settings.showIacSelection,
-    ["Terraform", "OpenTofu"],
+    [IacProvider.terraform, IacProvider.opentofu],
     "information"
   );
 
   switch (iacProviderSelection) {
-    case "Terraform":
-      vscode.workspace.getConfiguration().update(settings.iacProvider.settingsKey, IacProvider.terraform, vscode.ConfigurationTarget.Global);
-      settings.showIacSelection.value = false;
+    case IacProvider.terraform:
+      await settings.iacProvider.setValueAsync(IacProvider.terraform);
+      await settings.showIacSelection.setValueAsync(false);
       break;
-    case "OpenTofu":
-      vscode.workspace.getConfiguration().update(settings.iacProvider.settingsKey, IacProvider.opentofu, vscode.ConfigurationTarget.Global);
-      settings.showIacSelection.value = false;
+    case IacProvider.opentofu:
+      await settings.iacProvider.setValueAsync(IacProvider.opentofu);
+      await settings.showIacSelection.setValueAsync(false);
       break;
     default:
       break;
   }
+
+  // We need to wait a few seconds before enabling the restart notification for changed settings in order
+  // to avoid showing a change notification for the iac provider change performed above
+  setTimeout(() => {
+    settings.enableSettingUpdateRestartNotification();
+  }, 4000);
 
   // ToDO: Replace manual dependencie injection with a DI framework
   let iacProvider: IIaCProvider;

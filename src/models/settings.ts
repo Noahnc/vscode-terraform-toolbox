@@ -41,8 +41,6 @@ export class Settings {
     this.iacProviderSetting = new SettingsElement<IacProvider>("tftoolbox.iac.provider", true);
     this.showIacSelectionSetting = new SettingsElement<boolean>("tftoolbox.iac.showIacSelectionWelcomeMsg");
     this.showNoIacVersionInstalledMsgSetting = new SettingsElement<boolean>("tftoolbox.iac.showNoVersionInstalledMsg");
-
-    vscode.workspace.onDidChangeConfiguration(this.handleSettingChange.bind(this));
   }
 
   get spaceliftTenantID(): SettingsElement<string | undefined> {
@@ -80,7 +78,8 @@ export class Settings {
   }
   get iacProvider(): SettingsElement<IacProvider> {
     const setting = this.iacProviderSetting;
-    if (!(setting.value in IacProvider)) {
+    const enumValues = Object.values(IacProvider);
+    if (!enumValues.includes(setting.value)) {
       throw new Error(`Unknown IacProvider: ${setting.value}`);
     }
     return setting;
@@ -92,13 +91,17 @@ export class Settings {
     return this.showNoIacVersionInstalledMsgSetting;
   }
 
-  handleSettingChange(event: vscode.ConfigurationChangeEvent): void {
+  private handleSettingChange(event: vscode.ConfigurationChangeEvent): void {
     if (!event.affectsConfiguration("tftoolbox")) {
       return;
     }
     Settings.settingsUpdateFunctions.forEach((element) => {
       element(event);
     });
+  }
+
+  enableSettingUpdateRestartNotification(): void {
+    vscode.workspace.onDidChangeConfiguration(this.handleSettingChange.bind(this));
   }
 
   static addSettingToUpdateHook(setting: SettingsElement<unknown>): void {
@@ -150,12 +153,12 @@ export class SettingsElement<T> {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  set value(value: any) {
-    vscode.workspace.getConfiguration().update(this.key, value, vscode.ConfigurationTarget.Global);
+  async setValueAsync(value: any) {
+    await vscode.workspace.getConfiguration().update(this.key, value, vscode.ConfigurationTarget.Global);
   }
 }
 
 export enum IacProvider {
-  terraform = "terraform",
-  opentofu = "opentofu",
+  terraform = "Terraform",
+  opentofu = "OpenTofu",
 }

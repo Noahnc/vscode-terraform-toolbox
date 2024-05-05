@@ -147,10 +147,10 @@
         },
         "tftoolbox.iac.provider": {
           "type": "string",
-          "default": "terraform",
+          "default": "Terraform",
           "enum": [
-            "terraform",
-            "opentofu"
+            "Terraform",
+            "OpenTofu"
           ],
           "description": "The IaC Provider to use for the extension."
         },
