@@ -222,7 +222,7 @@
   },
   "dependencies": {
     "@vscode-logging/wrapper": "^2.0.0",
-    "axios": "1.6.2",
+    "axios": "1.6.8",
     "chai": "^4.3.10",
     "decompress": "^4.2.1",
     "graphql-request": "^6.1.0",
