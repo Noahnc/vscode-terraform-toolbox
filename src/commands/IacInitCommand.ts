@@ -17,29 +17,15 @@ export class IacInitAllProjectsCommand extends BaseCommand {
     this.iacProvider = iacProvider;
   }
 
-  protected async init(hideErrMsgs = false, hideInfoMsgs = false) {
-    getLogger().info(`Running ${this.iacProvider.name} init for all projects`);
-    const [, workspaces] = helpers.getCurrentProjectInformations();
-    if (workspaces === undefined) {
-      helpers.showWarning(`No ${this.iacProvider.name} project open. Please open a ${this.iacProvider.name} project to use this command`, hideInfoMsgs);
-      return;
+  protected async init(hideErrMsgs = false, hideInfoMsgs = false, onlyThisProjects: PathObject[] = []) {
+    let validFolders: PathObject[] = [];
+    if (onlyThisProjects.length === 0) {
+      getLogger().info(`Running ${this.iacProvider.name} init for all projects`);
+      validFolders = await this.findValidIacFoldersInOpenWorkspace(hideInfoMsgs);
+    } else {
+      getLogger().info(`Running ${this.iacProvider.name} init for the following projects: ${onlyThisProjects.map((folder) => folder.path).join(", ")}`);
+      validFolders = onlyThisProjects;
     }
-    const projectFolders = await this.iacProjectHelper.findAllIacFoldersInOpenWorkspace();
-    if (projectFolders.length === 0) {
-      helpers.showWarning(`No ${this.iacProvider.name} projects found in the current workspace`, hideInfoMsgs);
-      return;
-    }
-
-    const validFolders: PathObject[] = [];
-    await Promise.all(
-      projectFolders.map(async (folder) => {
-        if (!(await this.iacProjectHelper.checkfolderContainsValidTfFiles(folder))) {
-          getLogger().info(`Folder ${folder.path} is does not contain any modules or providers, skipping this folder`);
-          return;
-        }
-        validFolders.push(folder);
-      })
-    );
     if (validFolders.length === 0) {
       helpers.showInformation(`No ${this.iacProvider.name} project found that could be initialized`, hideInfoMsgs);
       return;
@@ -77,6 +63,31 @@ export class IacInitAllProjectsCommand extends BaseCommand {
       helpers.showError(`Error encountered while initializing the following ${this.iacProvider.name} projects: ${failedFoldersRelative.join(", ")}`, hideErrMsgs);
       return;
     }
+  }
+
+  private async findValidIacFoldersInOpenWorkspace(hideInfoMsgs: boolean): Promise<PathObject[]> {
+    const [, workspaces] = helpers.getCurrentProjectInformations();
+    if (workspaces === undefined) {
+      helpers.showWarning(`No ${this.iacProvider.name} project open. Please open a ${this.iacProvider.name} project to use this command`, hideInfoMsgs);
+      return [];
+    }
+    const projectFolders = await this.iacProjectHelper.findAllIacFoldersInOpenWorkspace();
+    if (projectFolders.length === 0) {
+      helpers.showWarning(`No ${this.iacProvider.name} projects found in the current workspace`, hideInfoMsgs);
+      return [];
+    }
+
+    const validFolders: PathObject[] = [];
+    await Promise.all(
+      projectFolders.map(async (folder) => {
+        if (!(await this.iacProjectHelper.checkfolderContainsValidTfFiles(folder))) {
+          getLogger().info(`Folder ${folder.path} is does not contain any modules or providers, skipping this folder`);
+          return;
+        }
+        validFolders.push(folder);
+      })
+    );
+    return validFolders;
   }
 }
 
