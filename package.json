@@ -135,6 +135,12 @@
           "default": true,
           "description": "Disable startup waring if spacectl is not installed and authenticated."
         },
+        "tftoolbox.iac.enableIacFileWatcher": {
+          "type": "boolean",
+          "title": "Enable IaC FileWatcher (experimental)",
+          "default": true,
+          "description": "Enables a file watcher to automatically init projects when a terraform / opentofu file is changed."
+        },
         "tftoolbox.iac.showNoIacProviderVersionInstalledMsgOnStart": {
           "type": "boolean",
           "default": true,
