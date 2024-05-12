@@ -112,7 +112,7 @@ export class IacInitService {
     if (this.pendingIacInitProjects.size === 0) {
       return;
     }
-    const projectPaths = this.pendingIacInitProjects.keys();
+    const projectPaths = new Set(this.pendingIacInitProjects.keys());
     const semaphores = Array.from(projectPaths).map((p) => this.directoryLocks.get(p));
     semaphores.forEach((s) => s?.acquire());
     const projects = Array.from(projectPaths).map((p) => new PathObject(p));
