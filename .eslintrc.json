@@ -1,7 +1,7 @@
 {
   "env": {
     "browser": true,
-    "es2021": true
+    "es2022": true
   },
   "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
   "parser": "@typescript-eslint/parser",
@@ -11,6 +11,14 @@
   "plugins": ["@typescript-eslint"],
   "rules": {
     "prefer-template": "error",
+    "@typescript-eslint/prefer-for-of": "error",
+    "id-match": "error",
+    "no-debugger": "error",
+    "no-multiple-empty-lines": "warn",
+    "no-trailing-spaces": "warn",
+    "no-underscore-dangle": "warn",
+    "no-var": "error",
+    "prefer-const": "error",
     "@typescript-eslint/naming-convention": [
       "error",
       {
