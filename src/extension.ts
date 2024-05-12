@@ -19,6 +19,7 @@ import { IspaceliftClient, SpaceliftClient } from "./utils/Spacelift/spaceliftCl
 
 import { IversionManager, VersionManager } from "./utils/VersionManager/versionManager";
 
+import { IacInitService } from "./services/iacInitService";
 import { IacCli } from "./utils/IaC/iacCli";
 import { IIaCProvider } from "./utils/IaC/IIaCProvider";
 import { OpenTofuProvider } from "./utils/OpenTofu/opentofuIacProvider";
@@ -284,6 +285,11 @@ export async function activate(context: vscode.ExtensionContext) {
     });
   } else {
     settings.autoSelectWorkspace ? autoSetWorkspaceCommand.run(true) : null;
+  }
+
+  if (settings.enableIacFileWatcher.value) {
+    getLogger().info("IaC file watcher is enabled");
+    new IacInitService(iacProjectHelper, iacCli, iacProvider, settings, tfInitAllProjectsCommand);
   }
 
   // update status bar item once at start
