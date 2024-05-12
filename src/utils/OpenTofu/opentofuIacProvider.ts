@@ -2,6 +2,9 @@ import { Release } from "../../models/github/release";
 import { IIaCProvider } from "../IaC/IIaCProvider";
 
 export class OpenTofuProvider implements IIaCProvider {
+  get registryBaseDomain(): string {
+    return "registry.opentofu.com";
+  }
   get name(): string {
     return "OpenTofu";
   }
