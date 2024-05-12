@@ -2,7 +2,6 @@ import * as vscode from "vscode";
 import { IacInitAllProjectsCommand } from "../commands/IacInitCommand";
 import { InstalledIacProvider } from "../models/iac/installedIacProvider";
 import { IacProvider } from "../models/iac/provider";
-import { Settings } from "../models/settings";
 import { IIacCli } from "../utils/IaC/iacCli";
 import { IIacProjectHelper } from "../utils/IaC/iacProjectHelper";
 import { IIaCProvider } from "../utils/IaC/IIaCProvider";
@@ -14,18 +13,16 @@ export class IacInitService {
   private iacHelper: IIacProjectHelper;
   private iacCli: IIacCli;
   private iacProvider: IIaCProvider;
-  private settings: Settings;
   private iacInitCommand: IacInitAllProjectsCommand;
   private tfFileDetectionPattern = "{**/*.tf}";
   private pendingIacInitProjects: Set<string> = new Set();
   private directoryLocks: Map<string, AsyncSemaphore> = new Map();
   private processQueueLocked: boolean = false;
 
-  constructor(iacHelper: IIacProjectHelper, iacCli: IIacCli, iacProvider: IIaCProvider, settings: Settings, iacInitCommand: IacInitAllProjectsCommand) {
+  constructor(iacHelper: IIacProjectHelper, iacCli: IIacCli, iacProvider: IIaCProvider, iacInitCommand: IacInitAllProjectsCommand) {
     this.iacHelper = iacHelper;
     this.iacCli = iacCli;
     this.iacProvider = iacProvider;
-    this.settings = settings;
     this.iacInitCommand = iacInitCommand;
     vscode.workspace.createFileSystemWatcher(this.tfFileDetectionPattern).onDidChange(this.run.bind(this));
     vscode.workspace.createFileSystemWatcher(this.tfFileDetectionPattern).onDidCreate(this.run.bind(this));
@@ -115,12 +112,14 @@ export class IacInitService {
     if (this.pendingIacInitProjects.size === 0) {
       return;
     }
-    const projectPaths: Set<string> = new Set(this.pendingIacInitProjects.keys());
+    const projectPaths = this.pendingIacInitProjects.keys();
     const semaphores = Array.from(projectPaths).map((p) => this.directoryLocks.get(p));
     semaphores.forEach((s) => s?.acquire());
     const projects = Array.from(projectPaths).map((p) => new PathObject(p));
     await this.iacInitCommand.run(false, false, projects);
-    projectPaths.forEach((p) => this.pendingIacInitProjects.delete(p));
+    for (const projectPath of projectPaths) {
+      this.pendingIacInitProjects.delete(projectPath);
+    }
     semaphores.forEach((s) => s?.release());
   }
 }

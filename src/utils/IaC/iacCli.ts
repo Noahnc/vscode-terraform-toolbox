@@ -68,7 +68,6 @@ export class IacCli implements IIacCli {
   }
 
   private getChdirString(folderPath: PathObject): string {
-    // return "-chdir=" + "'" + folderPath.path + "'";
     return `-chdir=` + `"${folderPath.path}"`;
   }
 

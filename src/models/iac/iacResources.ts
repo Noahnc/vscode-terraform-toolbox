@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import { IacModule } from "./module";
 import { IacProvider } from "./provider";
 

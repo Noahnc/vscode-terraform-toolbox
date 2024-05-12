@@ -61,7 +61,6 @@ export class IacInitAllProjectsCommand extends BaseCommand {
         return vscode.workspace.asRelativePath(folder.path);
       });
       helpers.showError(`Error encountered while initializing the following ${this.iacProvider.name} projects: ${failedFoldersRelative.join(", ")}`, hideErrMsgs);
-      return;
     }
   }
 
@@ -93,13 +92,11 @@ export class IacInitAllProjectsCommand extends BaseCommand {
 
 export class IacInitCurrentProjectCommand extends BaseCommand {
   private iacProjectHelper: IIacProjectHelper;
-  private iacCli: IacCli;
   private iacProvider: IIaCProvider;
   constructor({
     context,
     settings,
     tfProjectHelper,
-    iacCli,
     iacProvider,
   }: {
     context: vscode.ExtensionContext;
@@ -110,14 +107,13 @@ export class IacInitCurrentProjectCommand extends BaseCommand {
   }) {
     super(context, settings);
     this.iacProjectHelper = tfProjectHelper;
-    this.iacCli = iacCli;
     this.iacProvider = iacProvider;
   }
 
   async init(hideErrMsgs = false, hideInfoMsgs = false) {
     const [currentWorkspace, workspaces, currentFolderRelative] = helpers.getCurrentProjectInformations();
     if (workspaces === undefined || currentFolderRelative === undefined || currentWorkspace === undefined) {
-      hideInfoMsgs ? null : vscode.window.showWarningMessage(`No ${this.iacProvider.name} project open. Please open a ${this.iacProvider.name} project to use this command`);
+      helpers.showWarning(`No ${this.iacProvider.name} project open. Please open a ${this.iacProvider.name} project to use this command`, hideInfoMsgs);
       return;
     }
     const currentFolder = new PathObject(path.join(currentWorkspace.uri.fsPath, currentFolderRelative));
@@ -125,11 +121,11 @@ export class IacInitCurrentProjectCommand extends BaseCommand {
       await this.iacProjectHelper.initFolder(currentFolder, true);
     } catch (error) {
       if (error instanceof NoValidIacFolder) {
-        hideInfoMsgs ? null : vscode.window.showWarningMessage(error.message);
+        helpers.showWarning(error.message, hideInfoMsgs);
         return;
       }
       if (error instanceof IacInitError) {
-        hideErrMsgs ? null : vscode.window.showErrorMessage(error.message);
+        helpers.showError(error.message, hideErrMsgs);
         return;
       }
     }
@@ -138,19 +134,17 @@ export class IacInitCurrentProjectCommand extends BaseCommand {
 
 export class IacFetchModulesCurrentProjectCommand extends BaseCommand {
   private iacProjectHelper: IIacProjectHelper;
-  private iacCli: IacCli;
   private iacProvider: IIaCProvider;
-  constructor(context: vscode.ExtensionContext, settings: IvscodeCommandSettings, tfProjectHelper: IIacProjectHelper, iacCli: IacCli, iacProvider: IIaCProvider) {
+  constructor(context: vscode.ExtensionContext, settings: IvscodeCommandSettings, tfProjectHelper: IIacProjectHelper, iacProvider: IIaCProvider) {
     super(context, settings);
     this.iacProjectHelper = tfProjectHelper;
-    this.iacCli = iacCli;
     this.iacProvider = iacProvider;
   }
 
   protected async init(hideErrMsgs = false, hideInfoMsgs = false) {
     const [currentWorkspace, workspaces, currentFolderRelative] = helpers.getCurrentProjectInformations();
     if (workspaces === undefined || currentFolderRelative === undefined || currentWorkspace === undefined) {
-      hideInfoMsgs ? null : vscode.window.showWarningMessage(`No ${this.iacProvider.name} project open. Please open a ${this.iacProvider.name} project to use this command`);
+      helpers.showWarning(`No ${this.iacProvider.name} project open. Please open a ${this.iacProvider.name} project to use this command`, hideInfoMsgs);
       return;
     }
     const currentFolder = new PathObject(path.join(currentWorkspace.uri.fsPath, currentFolderRelative));
@@ -158,15 +152,15 @@ export class IacFetchModulesCurrentProjectCommand extends BaseCommand {
       await this.iacProjectHelper.refreshModulesInFolder(currentFolder);
     } catch (error) {
       if (error instanceof NoValidIacFolder) {
-        hideInfoMsgs ? null : vscode.window.showWarningMessage(error.message);
+        helpers.showWarning(error.message, hideInfoMsgs);
         return;
       }
       if (error instanceof IacFolderNotInitialized) {
-        hideInfoMsgs ? null : vscode.window.showWarningMessage(error.message);
+        helpers.showWarning(error.message, hideInfoMsgs);
         return;
       }
       if (error instanceof IacGetError) {
-        hideErrMsgs ? null : vscode.window.showErrorMessage(error.message);
+        helpers.showError(error.message, hideErrMsgs);
         return;
       }
     }

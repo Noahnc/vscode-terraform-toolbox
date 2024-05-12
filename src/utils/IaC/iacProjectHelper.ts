@@ -238,11 +238,11 @@ export class IacProjectHelper implements IIacProjectHelper {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getProvidersFromParsedHcl(hclObject: any): IacProvider[] {
     const foundProviders: IacProvider[] = [];
-    if (!Object.prototype.hasOwnProperty.call(hclObject[0], "terraform")) {
+    if (!Object.hasOwn(hclObject[0], "terraform")) {
       getLogger().trace("File does not contain a terraform block");
       return [];
     }
-    if (!Object.prototype.hasOwnProperty.call(hclObject[0]["terraform"][0], "required_providers")) {
+    if (!Object.hasOwn(hclObject[0]["terraform"][0], "required_providers")) {
       getLogger().trace("File does not contain any required providers");
       return [];
     }
@@ -256,7 +256,7 @@ export class IacProjectHelper implements IIacProjectHelper {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getModulesFromParsedHcl(hclObject: any): IacModule[] {
     const foundModules: IacModule[] = [];
-    if (!Object.prototype.hasOwnProperty.call(hclObject[0], "module")) {
+    if (!Object.hasOwn(hclObject[0], "module")) {
       getLogger().trace("File does not contain any modules");
       return [];
     }
@@ -270,11 +270,11 @@ export class IacProjectHelper implements IIacProjectHelper {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getRequiredVersionFromParsedHcl(hclObject: any): string[] {
-    if (!Object.prototype.hasOwnProperty.call(hclObject[0], "terraform")) {
+    if (!Object.hasOwn(hclObject[0], "terraform")) {
       getLogger().trace("File does not contain a terraform block");
       return [];
     }
-    if (!Object.prototype.hasOwnProperty.call(hclObject[0]["terraform"][0], "required_version")) {
+    if (!Object.hasOwn(hclObject[0]["terraform"][0], "required_version")) {
       getLogger().trace("File does not contain a required_version");
       return [];
     }
@@ -283,7 +283,7 @@ export class IacProjectHelper implements IIacProjectHelper {
 
   async refreshModulesInFolder(folder: PathObject): Promise<void> {
     if ((await this.checkfolderContainsValidTfFiles(folder)) === false) {
-      throw new NoValidIacFolder(`Folder ${folder} does not contain any modules or providers and can therefore not be initialized`);
+      throw new NoValidIacFolder(`Folder ${folder.path} does not contain any modules or providers and can therefore not be initialized`);
     }
     if (this.checkFolderHasBeenInitialized(folder) === false) {
       throw new IacFolderNotInitialized(`Folder ${folder.path} is not initialized`);
@@ -294,7 +294,6 @@ export class IacProjectHelper implements IIacProjectHelper {
       throw new IacGetError(`Error running refreshing modules for project ${folder.path}: ${stderr}`);
     }
     getLogger().debug(`Successfully refreshed modules in folder ${folder.path}`);
-    return;
   }
 
   async initFolder(folder: PathObject, withProgress = false): Promise<void> {
@@ -323,6 +322,5 @@ export class IacProjectHelper implements IIacProjectHelper {
       throw new IacInitError(`Error initializing project:${folder.path} error: ${stderr}`);
     }
     getLogger().info(`Successfully initialized project ${folder.path}`);
-    return;
   }
 }

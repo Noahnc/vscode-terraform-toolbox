@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 /* eslint-disable @typescript-eslint/ban-types */
 export class AsyncSemaphore {
   private _available: number;

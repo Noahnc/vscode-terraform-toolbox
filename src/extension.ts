@@ -217,7 +217,7 @@ export async function activate(context: vscode.ExtensionContext) {
   // Terraform init commands
   const tfInitAllProjectsCommand = new IacInitAllProjectsCommand(context, { command: cst.COMMAND_INIT_ALL_PROJECTS }, iacProjectHelper, iacProvider);
   new IacInitCurrentProjectCommand({ context, settings: { command: cst.COMMAND_INIT_CURRENT_PROJECT }, tfProjectHelper: iacProjectHelper, iacCli: iacCli, iacProvider: iacProvider });
-  new IacFetchModulesCurrentProjectCommand(context, { command: cst.COMMAND_INIT_REFRESH_MODULES }, iacProjectHelper, iacCli, iacProvider);
+  new IacFetchModulesCurrentProjectCommand(context, { command: cst.COMMAND_INIT_REFRESH_MODULES }, iacProjectHelper, iacProvider);
 
   // IaC workspace commands
   new ChoseAndSetIacWorkspaceCommand(context, { command: cst.COMMAND_SET_WORKSPACE, successCallback: iacWorkspaceItem.refresh.bind(iacWorkspaceItem) }, iacCli, iacProvider);
@@ -281,15 +281,19 @@ export async function activate(context: vscode.ExtensionContext) {
   if (settings.autoInitAllProjects.value) {
     getLogger().info("Auto initializing all projects in the currently open workspaces");
     tfInitAllProjectsCommand.run(false, true).then(() => {
-      settings.autoSelectWorkspace ? autoSetWorkspaceCommand.run(true) : null;
+      if (settings.autoSelectWorkspace.value) {
+        autoSetWorkspaceCommand.run(true);
+      }
     });
-  } else {
-    settings.autoSelectWorkspace ? autoSetWorkspaceCommand.run(true) : null;
+  }
+
+  if (settings.autoInitAllProjects.value === false && settings.autoSelectWorkspace.value === true) {
+    autoSetWorkspaceCommand.run(true);
   }
 
   if (settings.enableIacFileWatcher.value) {
     getLogger().info("IaC file watcher is enabled");
-    new IacInitService(iacProjectHelper, iacCli, iacProvider, settings, tfInitAllProjectsCommand);
+    new IacInitService(iacProjectHelper, iacCli, iacProvider, tfInitAllProjectsCommand);
   }
 
   // update status bar item once at start
