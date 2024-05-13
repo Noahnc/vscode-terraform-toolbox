@@ -135,11 +135,17 @@
           "default": true,
           "description": "Disable startup waring if spacectl is not installed and authenticated."
         },
-        "tftoolbox.iac.enableIacFileWatcher": {
+        "tftoolbox.iac.enableAutoProviderInitialization": {
           "type": "boolean",
-          "title": "Enable IaC FileWatcher (experimental)",
+          "title": "Enable Provider auto init (experimental)",
           "default": false,
-          "description": "Enables a file watcher to automatically init projects when a terraform / opentofu file is changed. This feature is experimental and can degrade performance."
+          "description": "Automatically initializes a terraform / opentofu project if a declared provider is not installed when a terraform / opentofu file is saved. This feature is experimental and may degrade performance."
+        },
+        "tftoolbox.iac.enableAutoModuleFetch": {
+          "type": "boolean",
+          "title": "Enable auto Module fetch",
+          "default": false,
+          "description": "If enabled, the extension will automatically fetch missing modules when a terraform / opentofu file is saved."
         },
         "tftoolbox.iac.showNoIacProviderVersionInstalledMsgOnStart": {
           "type": "boolean",

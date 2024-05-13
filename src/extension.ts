@@ -291,10 +291,7 @@ export async function activate(context: vscode.ExtensionContext) {
     autoSetWorkspaceCommand.run(true);
   }
 
-  if (settings.enableIacFileWatcher.value) {
-    getLogger().info("IaC file watcher is enabled");
-    new IacInitService(iacProjectHelper, iacCli, iacProvider, tfInitAllProjectsCommand);
-  }
+  new IacInitService(iacProjectHelper, iacCli, iacProvider, tfInitAllProjectsCommand, settings);
 
   // update status bar item once at start
   iacVersionItem.refresh();

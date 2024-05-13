@@ -19,7 +19,8 @@ export class Settings {
   private iacProviderSetting: SettingsElement<IacProvider>;
   private showIacSelectionSetting: SettingsElement<boolean>;
   private showNoIacVersionInstalledMsgSetting: SettingsElement<boolean>;
-  private enableIacFileWatcherSetting: SettingsElement<boolean>;
+  private enableIacAutoInitSetting: SettingsElement<boolean>;
+  private enableIacModuleAutoFetchSetting: SettingsElement<boolean>;
 
   constructor() {
     if (Settings.instance !== undefined) {
@@ -42,7 +43,8 @@ export class Settings {
     this.iacProviderSetting = new SettingsElement<IacProvider>("tftoolbox.iac.provider", true);
     this.showIacSelectionSetting = new SettingsElement<boolean>("tftoolbox.iac.showIacSelectionWelcomeMsg");
     this.showNoIacVersionInstalledMsgSetting = new SettingsElement<boolean>("tftoolbox.iac.showNoVersionInstalledMsg");
-    this.enableIacFileWatcherSetting = new SettingsElement<boolean>("tftoolbox.iac.enableIacFileWatcher", true);
+    this.enableIacAutoInitSetting = new SettingsElement<boolean>("tftoolbox.iac.enableAutoProviderInitialization");
+    this.enableIacModuleAutoFetchSetting = new SettingsElement<boolean>("tftoolbox.iac.enableAutoModuleFetch");
   }
 
   get spaceliftTenantID(): SettingsElement<string | undefined> {
@@ -92,8 +94,11 @@ export class Settings {
   get showNoIacVersionInstalledMsg(): SettingsElement<boolean> {
     return this.showNoIacVersionInstalledMsgSetting;
   }
-  get enableIacFileWatcher(): SettingsElement<boolean> {
-    return this.enableIacFileWatcherSetting;
+  get enableIacAutoInit(): SettingsElement<boolean> {
+    return this.enableIacAutoInitSetting;
+  }
+  get enableIacModuleAutoFetch(): SettingsElement<boolean> {
+    return this.enableIacModuleAutoFetchSetting;
   }
 
   private handleSettingChange(event: vscode.ConfigurationChangeEvent): void {
