@@ -138,8 +138,8 @@
         "tftoolbox.iac.enableIacFileWatcher": {
           "type": "boolean",
           "title": "Enable IaC FileWatcher (experimental)",
-          "default": true,
-          "description": "Enables a file watcher to automatically init projects when a terraform / opentofu file is changed."
+          "default": false,
+          "description": "Enables a file watcher to automatically init projects when a terraform / opentofu file is changed. This feature is experimental and can degrade performance."
         },
         "tftoolbox.iac.showNoIacProviderVersionInstalledMsgOnStart": {
           "type": "boolean",
