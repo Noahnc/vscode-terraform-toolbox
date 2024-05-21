@@ -17,9 +17,11 @@ export class IacInitService {
   private iacProvider: IIaCProvider;
   private iacInitCommand: IacInitAllProjectsCommand;
   private tfFileDetectionPattern = "{**/*.tf}";
+  private pendingIacInitQueueDelayMs = 4000;
+  private pendingIacModuleFetchQueueDelayMs = 1000;
   private pendingIacInitProjects: Set<string> = new Set();
+  private pendingIacModuleFetchProjects: Set<string> = new Set();
   private directoryLocks: Map<string, AsyncSemaphore> = new Map();
-  private processQueueLocked: boolean = false;
 
   constructor(iacHelper: IIacProjectHelper, iacCli: IIacCli, iacProvider: IIaCProvider, iacInitCommand: IacInitAllProjectsCommand, settings: Settings) {
     this.iacHelper = iacHelper;
@@ -29,8 +31,6 @@ export class IacInitService {
     this.iacInitCommand = iacInitCommand;
     vscode.workspace.createFileSystemWatcher(this.tfFileDetectionPattern).onDidChange(this.run.bind(this));
     vscode.workspace.createFileSystemWatcher(this.tfFileDetectionPattern).onDidCreate(this.run.bind(this));
-
-    setInterval(this.processQueue.bind(this), 2000);
   }
 
   private async run(uri: vscode.Uri) {
@@ -70,36 +70,21 @@ export class IacInitService {
         const installed = await this.checkAllProvidersInstalled(installedProviders, resources.providers);
         if (!installed) {
           getLogger().debug(`Adding project ${file.directory.path} to pending iac init queue since some providers are not installed`);
-          this.pendingIacInitProjects.add(file.directory.path);
+          await semaphore.withLock(async () => this.pendingIacInitProjects.add(file.directory.path));
+          setTimeout(this.processProviders.bind(this), this.pendingIacInitQueueDelayMs);
           return;
         }
       }
     }
     if (enableModuleAutoFetch) {
       if (resources.modules.length > 0) {
-        getLogger().trace(`Refreshing modules in ${file.path}`);
-        semaphore.withLock(async () => await this.iacCli.getModules(file.directory));
+        getLogger().debug(`Adding project ${file.directory.path} to pending module fetch queue`);
+        await semaphore.withLock(async () => this.pendingIacModuleFetchProjects.add(file.directory.path));
+        setTimeout(this.processModules.bind(this), this.pendingIacModuleFetchQueueDelayMs);
       }
     }
   }
 
-  private async processQueue() {
-    if (this.processQueueLocked) {
-      return;
-    }
-    if (this.pendingIacInitProjects.size === 0) {
-      return;
-    }
-    this.processQueueLocked = true;
-    try {
-      await this.processProviders();
-    } catch (error) {
-      getLogger().error(`Error while processing queue: ${error}`);
-    } finally {
-      getLogger().trace(`Finished processing queue`);
-      this.processQueueLocked = false;
-    }
-  }
   private async checkAllProvidersInstalled(installedProviders: InstalledIacProvider[], definedProviders: IacProvider[]): Promise<boolean> {
     if (installedProviders.length === 0) {
       return false;
@@ -122,13 +107,38 @@ export class IacInitService {
     return true;
   }
 
+  private async processModules() {
+    if (this.pendingIacModuleFetchProjects.size === 0) {
+      return;
+    }
+
+    for (const project of this.pendingIacModuleFetchProjects) {
+      const semaphore = this.directoryLocks.get(project);
+      if (semaphore !== undefined) {
+        semaphore.acquire();
+      }
+      try {
+        getLogger().trace(`Fetching modules for project ${project}`);
+        this.iacCli.getModules(new PathObject(project));
+      } catch (error) {
+        getLogger().error(`Error while fetching modules for project ${project}: ${error}`);
+      } finally {
+        this.pendingIacModuleFetchProjects.delete(project);
+        if (semaphore !== undefined) {
+          semaphore.release();
+        }
+      }
+    }
+  }
+
   private async processProviders() {
     if (this.pendingIacInitProjects.size === 0) {
       return;
     }
+    getLogger().trace(`Processing pending iac init projects`);
     const projectPaths = new Set(this.pendingIacInitProjects.keys());
     const semaphores = Array.from(projectPaths).map((p) => this.directoryLocks.get(p));
-    semaphores.forEach((s) => s?.acquire());
+    semaphores.forEach(async (s) => await s?.acquire());
     const projects = Array.from(projectPaths).map((p) => new PathObject(p));
     await this.iacInitCommand.run(false, false, projects);
     for (const projectPath of projectPaths) {
