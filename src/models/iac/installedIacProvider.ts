@@ -1,3 +1,5 @@
+import * as semver from "semver";
+
 export class InstalledIacProvider {
   key: string;
   versionConstrains?: string[];
@@ -7,5 +9,9 @@ export class InstalledIacProvider {
     this.key = key;
     this.versionConstrains = versionConstrains;
     this.version = version;
+  }
+
+  checkInstalledVersionSatifiesConstraint(constraint: string): boolean {
+    return semver.satisfies(this.version, constraint);
   }
 }

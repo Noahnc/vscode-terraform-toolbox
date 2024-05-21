@@ -89,18 +89,16 @@ export class IacInitService {
     if (installedProviders.length === 0) {
       return false;
     }
-    for (const provider of definedProviders) {
-      const key = provider.getFullProviderSource(this.iacProvider.registryBaseDomain);
+    for (const definedProvider of definedProviders) {
+      const key = definedProvider.getFullProviderSource(this.iacProvider.registryBaseDomain);
       const installedProvider = installedProviders.find((p) => p.key === key);
       if (installedProvider === undefined) {
         return false;
       }
-      if (installedProvider.versionConstrains === undefined) {
+      if (installedProvider.version === undefined) {
         return false;
       }
-      const constraintsLowerWithoutSpaces = installedProvider.versionConstrains.map((c) => c.replace(/\s/g, "").toLowerCase());
-      const providerVersionLowerWithoutSpaces = provider.version.replace(/\s/g, "").toLowerCase();
-      if (!constraintsLowerWithoutSpaces.includes(providerVersionLowerWithoutSpaces)) {
+      if (!installedProvider.checkInstalledVersionSatifiesConstraint(definedProvider.version)) {
         return false;
       }
     }
