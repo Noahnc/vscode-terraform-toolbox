@@ -21,6 +21,7 @@ import { IversionManager, VersionManager } from "./utils/VersionManager/versionM
 
 import { IacInitService } from "./services/iacInitService";
 import { IacCli } from "./utils/IaC/iacCli";
+import { IacParser } from "./utils/IaC/iacParser";
 import { IIaCProvider } from "./utils/IaC/IIaCProvider";
 import { OpenTofuProvider } from "./utils/OpenTofu/opentofuIacProvider";
 import { SpaceliftAuthenticationHandler } from "./utils/Spacelift/spaceliftAuthenticationHandler";
@@ -91,7 +92,8 @@ export async function activate(context: vscode.ExtensionContext) {
   }
 
   const iacCli = new IacCli(new Cli(), iacProvider.binaryName);
-  const iacProjectHelper = new IacProjectHelper(hcl, iacCli, settings);
+  const iacParser = new IacParser(hcl);
+  const iacProjectHelper = new IacProjectHelper(iacParser, iacCli, settings);
 
   const iacVersionItem = new IacActiveVersionItem(context, primaryVersionManager, {
     alignment: vscode.StatusBarAlignment.Right,
@@ -291,7 +293,7 @@ export async function activate(context: vscode.ExtensionContext) {
     autoSetWorkspaceCommand.run(true);
   }
 
-  new IacInitService(iacProjectHelper, iacCli, iacProvider, tfInitAllProjectsCommand, settings);
+  new IacInitService(iacProjectHelper, iacCli, iacParser, iacProvider, tfInitAllProjectsCommand, settings);
 
   // update status bar item once at start
   iacVersionItem.refresh();

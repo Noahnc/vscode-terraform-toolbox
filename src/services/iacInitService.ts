@@ -4,6 +4,7 @@ import { InstalledIacProvider } from "../models/iac/installedIacProvider";
 import { IacProvider } from "../models/iac/provider";
 import { Settings } from "../models/settings";
 import { IIacCli } from "../utils/IaC/iacCli";
+import { IIacParser } from "../utils/IaC/iacParser";
 import { IIacProjectHelper } from "../utils/IaC/iacProjectHelper";
 import { IIaCProvider } from "../utils/IaC/IIaCProvider";
 import { getLogger } from "../utils/logger";
@@ -13,6 +14,7 @@ import { AsyncSemaphore } from "../utils/semaphore";
 export class IacInitService {
   private iacHelper: IIacProjectHelper;
   private iacCli: IIacCli;
+  private iacParser: IIacParser;
   private settings: Settings;
   private iacProvider: IIaCProvider;
   private iacInitCommand: IacInitAllProjectsCommand;
@@ -23,8 +25,9 @@ export class IacInitService {
   private pendingIacModuleFetchProjects: Set<string> = new Set();
   private directoryLocks: Map<string, AsyncSemaphore> = new Map();
 
-  constructor(iacHelper: IIacProjectHelper, iacCli: IIacCli, iacProvider: IIaCProvider, iacInitCommand: IacInitAllProjectsCommand, settings: Settings) {
+  constructor(iacHelper: IIacProjectHelper, iacCli: IIacCli, iacParser: IIacParser, iacProvider: IIaCProvider, iacInitCommand: IacInitAllProjectsCommand, settings: Settings) {
     this.iacHelper = iacHelper;
+    this.iacParser = iacParser;
     this.iacCli = iacCli;
     this.iacProvider = iacProvider;
     this.settings = settings;
@@ -55,7 +58,7 @@ export class IacInitService {
     }
 
     getLogger().trace(`Detected terraform file change for file ${file.path}`);
-    const resources = await this.iacHelper.getDeclaredResourcesForFile(file);
+    const resources = await this.iacParser.getDeclaredResourcesForFile(file);
     if (resources === undefined) {
       getLogger().trace(`No resources found in ${file.path}`);
       return;
