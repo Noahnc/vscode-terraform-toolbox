@@ -2,8 +2,8 @@ import path = require("path");
 import * as fs from "fs";
 import * as vscode from "vscode";
 import { UserShownError } from "../../custom_errors";
+import { IacLockFileProvider } from "../../models/iac/iacLockFileProvider";
 import { IacResources } from "../../models/iac/iacResources";
-import { InstalledIacProvider } from "../../models/iac/installedIacProvider";
 import { IacModule } from "../../models/iac/module";
 import { IacProvider } from "../../models/iac/provider";
 import { Settings } from "../../models/settings";
@@ -46,9 +46,10 @@ export interface IIacProjectHelper {
   findAllIacFoldersInOpenWorkspace: () => Promise<PathObject[]>;
   checkFolderHasBeenInitialized: (folder: PathObject) => boolean;
   checkfolderContainsValidTfFiles: (folder: PathObject) => Promise<boolean>;
-  getInstalledProvidersForFolder: (folder: PathObject) => Promise<InstalledIacProvider[]>;
+  getProvidersInLockFile: (folder: PathObject) => Promise<IacLockFileProvider[]>;
   getInstalledModulesForFolder: (folder: PathObject) => Promise<IacModule[]>;
   getCurrentWorkspaceFromEnvFile(folderPath: PathObject): Promise<string | undefined>;
+  checkProviderFromLockFileIsInstalled: (provider: IacLockFileProvider, folder: PathObject) => boolean;
 }
 
 export class IacProjectHelper implements IIacProjectHelper {
@@ -62,6 +63,16 @@ export class IacProjectHelper implements IIacProjectHelper {
     this.iacParser = iacParser;
     this.iacCli = iacCli;
     this.settings = settings;
+  }
+
+  checkProviderFromLockFileIsInstalled(provider: IacLockFileProvider, folder: PathObject) {
+    const providersFolder = folder.join(this.tfrcFolder, "providers", provider.registryDomain, provider.vendor, provider.name, provider.version);
+    if (providersFolder.exists()) {
+      getLogger().trace(`Provider ${provider.name} is installed in folder ${providersFolder.path}`);
+      return true;
+    }
+    getLogger().debug(`Provider ${provider.name} is not installed in folder ${providersFolder.path}`);
+    return false;
   }
 
   async findAllIacFoldersInOpenWorkspace(): Promise<PathObject[]> {
@@ -141,8 +152,8 @@ export class IacProjectHelper implements IIacProjectHelper {
     return installedModules;
   }
 
-  async getInstalledProvidersForFolder(folder: PathObject): Promise<InstalledIacProvider[]> {
-    const installedProviders: InstalledIacProvider[] = [];
+  async getProvidersInLockFile(folder: PathObject): Promise<IacLockFileProvider[]> {
+    const installedProviders: IacLockFileProvider[] = [];
     const tfLockFile = folder.join(this.tflockFileName);
     if (!tfLockFile.exists()) {
       getLogger().debug(`Folder ${folder.path} has no terraform lock file and is therefore not initialized`);
@@ -165,7 +176,7 @@ export class IacProjectHelper implements IIacProjectHelper {
         versionConstrainString = providers[key][0].constraints;
       }
       const constraints = versionConstrainString.split(",");
-      installedProviders.push(new InstalledIacProvider(key, version, constraints));
+      installedProviders.push(new IacLockFileProvider(key, version, constraints));
     }
     return installedProviders;
   }

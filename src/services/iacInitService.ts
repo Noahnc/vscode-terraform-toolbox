@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { IacInitAllProjectsCommand } from "../commands/IacInitCommand";
-import { InstalledIacProvider } from "../models/iac/installedIacProvider";
+import { IacLockFileProvider } from "../models/iac/iacLockFileProvider";
 import { IacProvider } from "../models/iac/provider";
 import { Settings } from "../models/settings";
 import { IIacCli } from "../utils/IaC/iacCli";
@@ -50,6 +50,7 @@ export class IacInitService {
     }
 
     const file = new PathObject(uri.fsPath);
+    const directory = file.directory;
     let semaphore: AsyncSemaphore | undefined;
     semaphore = this.directoryLocks.get(file.directory.path);
     if (semaphore === undefined) {
@@ -69,11 +70,11 @@ export class IacInitService {
     }
     if (enableProviderAutoInit) {
       if (resources.providers.length > 0) {
-        const installedProviders = await this.iacHelper.getInstalledProvidersForFolder(file.directory);
-        const installed = await this.checkAllProvidersInstalled(installedProviders, resources.providers);
+        const installedProviders = await this.iacHelper.getProvidersInLockFile(directory);
+        const installed = await this.checkAllProvidersInstalled(installedProviders, resources.providers, directory);
         if (!installed) {
-          getLogger().debug(`Adding project ${file.directory.path} to pending iac init queue since some providers are not installed`);
-          await semaphore.withLock(async () => this.pendingIacInitProjects.add(file.directory.path));
+          getLogger().debug(`Adding project ${directory.path} to pending iac init queue since some providers are not installed`);
+          await semaphore.withLock(async () => this.pendingIacInitProjects.add(directory.path));
           setTimeout(this.processProviders.bind(this), this.pendingIacInitQueueDelayMs);
           return;
         }
@@ -81,14 +82,14 @@ export class IacInitService {
     }
     if (enableModuleAutoFetch) {
       if (resources.modules.length > 0) {
-        getLogger().debug(`Adding project ${file.directory.path} to pending module fetch queue`);
-        await semaphore.withLock(async () => this.pendingIacModuleFetchProjects.add(file.directory.path));
+        getLogger().debug(`Adding project ${directory.path} to pending module fetch queue`);
+        await semaphore.withLock(async () => this.pendingIacModuleFetchProjects.add(directory.path));
         setTimeout(this.processModules.bind(this), this.pendingIacModuleFetchQueueDelayMs);
       }
     }
   }
 
-  private async checkAllProvidersInstalled(installedProviders: InstalledIacProvider[], definedProviders: IacProvider[]): Promise<boolean> {
+  private async checkAllProvidersInstalled(installedProviders: IacLockFileProvider[], definedProviders: IacProvider[], folder: PathObject): Promise<boolean> {
     if (installedProviders.length === 0) {
       return false;
     }
@@ -102,6 +103,9 @@ export class IacInitService {
         return false;
       }
       if (!installedProvider.checkInstalledVersionSatifiesConstraint(definedProvider.version)) {
+        return false;
+      }
+      if (!this.iacHelper.checkProviderFromLockFileIsInstalled(installedProvider, folder)) {
         return false;
       }
     }
