@@ -17,6 +17,8 @@ VSCode extension adding a bunch of featurees regarding Terraform / OpenTofu and 
     - [Terraform / OpenTofu version manager](#terraform--opentofu-version-manager-1)
     - [Terraform / OpenTofu workspace](#terraform--opentofu-workspace)
     - [Terraform / OpenTofu Init](#terraform--opentofu-init)
+      - [Auto-install providers](#auto-install-providers)
+      - [Auto-fetch modules](#auto-fetch-modules)
     - [Spacelift](#spacelift-1)
   - [Important Notes](#important-notes)
 
@@ -115,6 +117,18 @@ Since the init command is required for many features of the official Hashicorp T
 - Command [`tftoolbox.iac.initAllProjects`]: Finds all terraform folders in your open workspaces and runs terraform init in each of them asynchronically. With the setting `tftoolbox.iac.autoInitAllProjects` you can enable to auto init all folders when opening VSCode. More information can be found here: [Terraform init all projects](docs/initAllProjects.md)
   ![terraform-init](Images/examples/terraform_init.gif)
 - Command [`tftoolbox.iac.refreshModules`]: Installs missing modules for the current folder.
+
+#### Auto-install providers
+
+By enabling the setting `tftoolbox.iac.enableAutoProviderInitialization`, the extension will automatically initialize a terraform / opentofu project when a changed .tf file contains a provider version constraint for which no provider is currently installed. The extension will then run terraform / opentofu init in that folder.
+
+
+> [!IMPORTANT]  
+> This feature is experimental and might use lots of system resources when switching branches in git with many provider version changes.
+
+#### Auto-fetch modules
+
+With the setting `tftoolbox.iac.enableAutoModuleFetch`, the extension will automatically fetch modules for a terraform / opentofu project when a .tf file with declared modules changes.
 
 ### Spacelift
 
