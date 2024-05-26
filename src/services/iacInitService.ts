@@ -122,32 +122,70 @@ export class IacInitService {
     if (this.pendingIacInitProjects.size === 0 && this.pendingIacModuleFetchProjects.size === 0) {
       return;
     }
+
     const moduleProjectPaths = new Set(this.pendingIacModuleFetchProjects.keys());
     const initProjectPaths = new Set(this.pendingIacInitProjects.keys());
     const allProjectPaths = new Set([...moduleProjectPaths, ...initProjectPaths]);
 
-    for (const projectPath of allProjectPaths) {
-      const semaphore = this.directoryLocks.get(projectPath);
-      try {
+    getLogger().info(`Start processing ${moduleProjectPaths.size} projects for module updates and ${initProjectPaths.size} projects for provider init with sequence number ${sequenceNumber}`);
+
+    await Promise.all(
+      [...allProjectPaths].map(async (projectPath) => {
+        const semaphore = this.directoryLocks.get(projectPath);
+
         await semaphore?.acquire();
-        const project = new PathObject(projectPath);
+
         if (this.pendingIacInitProjects.has(projectPath)) {
-          getLogger().trace(`Processing pending iac init project ${projectPath}`);
-          await this.iacInitCommand.run(false, false, [project]);
           this.pendingIacInitProjects.delete(projectPath);
-          if (this.pendingIacModuleFetchProjects.has(projectPath)) {
-            this.pendingIacModuleFetchProjects.delete(projectPath);
-          }
-          continue;
         }
-        getLogger().trace(`Updating modules for project ${projectPath}`);
-        await this.iacCli.getModules(project);
-        this.pendingIacModuleFetchProjects.delete(projectPath);
+
+        if (this.pendingIacModuleFetchProjects.has(projectPath)) {
+          this.pendingIacModuleFetchProjects.delete(projectPath);
+        }
+
+        if (initProjectPaths.size === 0) {
+          return;
+        }
+
+        if (initProjectPaths.has(projectPath) && moduleProjectPaths.has(projectPath)) {
+          getLogger().trace(`Removing project ${projectPath} from pending module fetch que since it is also in the init queue`);
+          moduleProjectPaths.delete(projectPath);
+        }
+      })
+    );
+
+    if (initProjectPaths.size > 0) {
+      try {
+        getLogger().trace(`Initializing the following projects: ${[...initProjectPaths].join(", ")}`);
+        await this.iacInitCommand.run(
+          false,
+          false,
+          [...initProjectPaths].map((p) => new PathObject(p))
+        );
       } catch (error) {
-        getLogger().error(`Error while processing resources for project ${projectPath}: ${error}`);
-      } finally {
-        semaphore?.release();
+        getLogger().error(`Error while initializing projects: ${error}`);
       }
     }
+
+    await Promise.all(
+      [...moduleProjectPaths].map(async (projectPath) => {
+        const project = new PathObject(projectPath);
+        try {
+          getLogger().trace(`Updating modules for project ${projectPath}`);
+          await this.iacCli.getModules(project);
+        } catch (error) {
+          getLogger().error(`Error while updating modules for project ${projectPath}: ${error}`);
+        }
+      })
+    );
+
+    await Promise.all(
+      [...allProjectPaths].map(async (projectPath) => {
+        const semaphore = this.directoryLocks.get(projectPath);
+        semaphore?.release();
+      })
+    );
+
+    getLogger().info(`Finished processing for sequence number ${sequenceNumber}`);
   }
 }
