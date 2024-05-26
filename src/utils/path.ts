@@ -1,4 +1,6 @@
+/* eslint-disable no-underscore-dangle */
 import * as fs from "fs";
+import { promises as fsAsync } from "fs";
 import * as path from "path";
 import { getLogger } from "./logger";
 
@@ -14,20 +16,22 @@ export class PathObject {
     return this._path;
   }
 
-  public exists(): boolean {
-    const result = fs.existsSync(this._path);
+  public async exists(): Promise<boolean> {
+    const result = await fs.existsSync(this._path);
     getLogger().trace(`Path: ${this._path} exists: ${result}`);
     return result;
   }
 
-  public isFile(): boolean {
-    const result = fs.statSync(this._path).isFile();
+  public async isFile(): Promise<boolean> {
+    const stat = await fsAsync.stat(this._path);
+    const result = stat.isFile();
     getLogger().trace(`Path: ${this._path} is file: ${result}`);
     return result;
   }
 
-  public isDirectory(): boolean {
-    const result = fs.statSync(this._path).isDirectory();
+  public async isDirectory(): Promise<boolean> {
+    const stat = await fsAsync.stat(this._path);
+    const result = stat.isDirectory();
     getLogger().trace(`Path: ${this._path} is directory: ${result}`);
     return result;
   }
@@ -36,11 +40,11 @@ export class PathObject {
     return new PathObject(this._pathMeta.dir);
   }
 
-  public isLocked(): boolean {
-    if (!this.exists()) {
+  public async isLocked(): Promise<boolean> {
+    if (!(await this.exists())) {
       throw new Error(`File: ${this._path} does not exist`);
     }
-    if (this.isDirectory()) {
+    if (await this.isDirectory()) {
       throw new Error(`Path: ${this._path} is a directory and cannot be locked`);
     }
     let locked = false;
@@ -54,15 +58,15 @@ export class PathObject {
     return locked;
   }
 
-  delete(): void {
-    if (!this.exists()) {
+  async delete(): Promise<void> {
+    if (!(await this.exists())) {
       getLogger().trace(`${this._path} does not exist, nothing to delete`);
       return;
     }
-    if (this.isDirectory()) {
-      fs.rmdirSync(this._path, { recursive: true });
+    if (await this.isDirectory()) {
+      await fsAsync.rmdir(this._path, { recursive: true });
     } else {
-      fs.unlinkSync(this._path);
+      await fsAsync.unlink(this._path);
     }
     getLogger().trace(`${this._path} has been deleted`);
   }

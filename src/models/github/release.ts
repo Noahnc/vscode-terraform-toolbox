@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import * as semver from "semver";
 import { UserShownError } from "../../custom_errors";
 import { getLogger } from "../../utils/logger";
@@ -69,11 +70,11 @@ export class Releases {
       throw new Error("No releases found");
     }
     releases.forEach((release) => {
-      if (!Object.prototype.hasOwnProperty.call(release, "name") || !Object.prototype.hasOwnProperty.call(release, "prerelease")) {
+      if (!Object.hasOwn(release, "name") || !Object.hasOwn(release, "prerelease")) {
         throw new Error("Invalid release object");
       }
       let isInstalled = false;
-      if (Object.prototype.hasOwnProperty.call(release, "isInstalled")) {
+      if (Object.hasOwn(release, "isInstalled")) {
         isInstalled = release.isInstalled;
       }
       const newRelease = new Release(release.name, release.prerelease, isInstalled, false);
@@ -157,7 +158,7 @@ export class Releases {
         break;
       }
     }
-    // const matchingReleases = releases.filter((release) => semver.satisfies(release.name, versionConstraint));
+
     if (matchingReleases.length === 0) {
       throw new UserShownError(`No terraform version matching the following constraints found: ${versionConstraints.join(", ")}`);
     }

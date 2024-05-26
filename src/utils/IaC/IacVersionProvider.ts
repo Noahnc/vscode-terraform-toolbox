@@ -46,7 +46,7 @@ export class IacVersionProvider implements IversionProvider {
   private async unzip(zipPath: PathObject): Promise<PathObject> {
     const folderName = `${this.iacProvider.name.toLowerCase()}-extracted`;
     const extractedFolder = new PathObject(path.join(os.tmpdir(), folderName));
-    extractedFolder.delete();
+    await extractedFolder.delete();
     getLogger().debug(`Unzipping ${this.iacProvider.name} from ${zipPath.path} to ${extractedFolder.path}`);
     try {
       await decompress(zipPath.path, extractedFolder.path);
@@ -59,7 +59,7 @@ export class IacVersionProvider implements IversionProvider {
     }
     const binaryFile = extractedFolder.join(binaryName);
 
-    if (!binaryFile.exists()) {
+    if (!(await binaryFile.exists())) {
       throw new ReleaseError(`Failed to find ${this.iacProvider.name} binary in zip file ${zipPath.path}`);
     }
     return binaryFile;
@@ -69,7 +69,7 @@ export class IacVersionProvider implements IversionProvider {
     const downloadZipPath = new PathObject(path.join(os.tmpdir(), zipName));
     const downloadUrl = this.iacProvider.getReleaseDownloadUrl(release, zipName);
     getLogger().debug(`Downloading ${this.iacProvider.name} from ${downloadUrl}`);
-    downloadZipPath.delete();
+    await downloadZipPath.delete();
     await new Promise<void>((resolve, reject) => {
       const request = wget.download(downloadUrl, downloadZipPath.path);
       request.on("error", (err) => {
@@ -124,7 +124,7 @@ export class IacVersionProvider implements IversionProvider {
         const zipName = this.getAssetName(release);
         const downloadZipPath = await this.downloadRelease(zipName, release);
         binPath = await this.unzip(downloadZipPath);
-        downloadZipPath.delete();
+        await downloadZipPath.delete();
       }
     );
     if (!binPath) {

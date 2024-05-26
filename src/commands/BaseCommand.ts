@@ -55,6 +55,7 @@ export abstract class BaseCommand {
 
 function handleError(error: Error) {
   if (error instanceof UserShownError) {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     vscode.window.showErrorMessage(error.message);
   }
   getLogger().error(`Error running command: ${error.toString()}`);

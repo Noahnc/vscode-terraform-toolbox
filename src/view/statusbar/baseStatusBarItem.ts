@@ -31,12 +31,14 @@ export abstract class BaseStatusBarItem {
     if (this.settings.updateOnDidChangeTextEditorSelection) {
       this.context.subscriptions.push(
         vscode.window.onDidChangeTextEditorSelection(() => {
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
           this.refresh();
         })
       );
     }
     if (this.settings.refreshIntervalSetting !== undefined) {
       setInterval(() => {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this.refresh();
       }, this.settings.refreshIntervalSetting.value * 1000);
     }
@@ -60,6 +62,7 @@ export abstract class BaseStatusBarItem {
 
 function handleError(error: Error) {
   if (error instanceof UserShownError) {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     vscode.window.showErrorMessage(error.message);
   }
   getLogger().error(`Error running command: ${error.toString()}`);

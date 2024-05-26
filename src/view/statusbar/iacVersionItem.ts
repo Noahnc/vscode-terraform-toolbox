@@ -16,7 +16,7 @@ export class IacActiveVersionItem extends BaseStatusBarItem {
       this.statusBarItem.hide();
       return;
     }
-    const activeVersion = this.versionManager.getActiveVersion();
+    const activeVersion = await this.versionManager.getActiveVersion();
     if (activeVersion === undefined) {
       getLogger().debug("No terraform version installed, hiding status bar item");
       this.statusBarItem.hide();

@@ -10,7 +10,6 @@ export class Settings {
   private autoselectVersionSetting: SettingsElement<boolean>;
   private logLevelSetting: SettingsElement<string>;
   private autoSelectWorkspaceSetting: SettingsElement<boolean>;
-  private autoInitAllProjectsSetting: SettingsElement<boolean>;
   private initArgsSetting: SettingsElement<string>;
   private spaceliftStatusBarItemRefreshIntervalSecondsSetting: SettingsElement<number>;
   private excludedGlobPatternsSetting: SettingsElement<string[]>;
@@ -19,6 +18,9 @@ export class Settings {
   private iacProviderSetting: SettingsElement<IacProvider>;
   private showIacSelectionSetting: SettingsElement<boolean>;
   private showNoIacVersionInstalledMsgSetting: SettingsElement<boolean>;
+  private enableIacAutoInitSetting: SettingsElement<boolean>;
+  private enableIacModuleAutoFetchSetting: SettingsElement<boolean>;
+  private resourceProcessingQueDelayMsSetting: SettingsElement<number>;
 
   constructor() {
     if (Settings.instance !== undefined) {
@@ -32,7 +34,6 @@ export class Settings {
     this.autoselectVersionSetting = new SettingsElement<boolean>("tftoolbox.iac.autoSelectVersion");
     this.logLevelSetting = new SettingsElement<string>("tftoolbox.logLevel", true);
     this.autoSelectWorkspaceSetting = new SettingsElement<boolean>("tftoolbox.iac.autoSelectWorkspace");
-    this.autoInitAllProjectsSetting = new SettingsElement<boolean>("tftoolbox.iac.autoInitAllProjects");
     this.initArgsSetting = new SettingsElement<string>("tftoolbox.iac.initArg");
     this.spaceliftStatusBarItemRefreshIntervalSecondsSetting = new SettingsElement<number>("tftoolbox.spacelift.stackPendingConfirmationStatusItemUpdateTimeSeconds");
     this.excludedGlobPatternsSetting = new SettingsElement<string[]>("tftoolbox.excludeGlobPatterns");
@@ -41,6 +42,9 @@ export class Settings {
     this.iacProviderSetting = new SettingsElement<IacProvider>("tftoolbox.iac.provider", true);
     this.showIacSelectionSetting = new SettingsElement<boolean>("tftoolbox.iac.showIacSelectionWelcomeMsg");
     this.showNoIacVersionInstalledMsgSetting = new SettingsElement<boolean>("tftoolbox.iac.showNoVersionInstalledMsg");
+    this.enableIacAutoInitSetting = new SettingsElement<boolean>("tftoolbox.iac.enableAutoProviderInitialization");
+    this.enableIacModuleAutoFetchSetting = new SettingsElement<boolean>("tftoolbox.iac.enableAutoModuleFetch");
+    this.resourceProcessingQueDelayMsSetting = new SettingsElement<number>("tftoolbox.iac.resourceProcessingQueDelayMs");
   }
 
   get spaceliftTenantID(): SettingsElement<string | undefined> {
@@ -57,9 +61,6 @@ export class Settings {
   }
   get autoSelectWorkspace(): SettingsElement<boolean> {
     return this.autoSelectWorkspaceSetting;
-  }
-  get autoInitAllProjects(): SettingsElement<boolean> {
-    return this.autoInitAllProjectsSetting;
   }
   get initArgs(): SettingsElement<string> {
     return this.initArgsSetting;
@@ -89,6 +90,15 @@ export class Settings {
   }
   get showNoIacVersionInstalledMsg(): SettingsElement<boolean> {
     return this.showNoIacVersionInstalledMsgSetting;
+  }
+  get enableIacAutoInit(): SettingsElement<boolean> {
+    return this.enableIacAutoInitSetting;
+  }
+  get enableIacModuleAutoFetch(): SettingsElement<boolean> {
+    return this.enableIacModuleAutoFetchSetting;
+  }
+  get resourceProcessingQueDelayMs(): SettingsElement<number> {
+    return this.resourceProcessingQueDelayMsSetting;
   }
 
   private handleSettingChange(event: vscode.ConfigurationChangeEvent): void {
@@ -132,8 +142,10 @@ export class SettingsElement<T> {
     if (event.affectsConfiguration(this.key)) {
       getLogger().info(`Setting ${this.key} changed and requires restart of the extension.`);
       // show a information with two buttons to restart the extension or skip
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       vscode.window.showInformationMessage(`The setting ${this.key} changed and requires a restart of the extension.`, "Restart", "Skip").then((value) => {
         if (value === "Restart") {
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
           vscode.commands.executeCommand("workbench.action.reloadWindow");
         }
       });

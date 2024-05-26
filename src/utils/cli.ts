@@ -21,7 +21,6 @@ export class Cli implements ICli {
         }
         getLogger().debug(`Shell command: ${command} exited with zero exit code`);
         resolve([true, stdout, stderr]);
-        return;
       });
     });
   }

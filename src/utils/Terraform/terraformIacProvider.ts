@@ -2,6 +2,9 @@ import { Release } from "../../models/github/release";
 import { IIaCProvider } from "../IaC/IIaCProvider";
 
 export class TerraformProvider implements IIaCProvider {
+  get registryBaseDomain(): string {
+    return "registry.terraform.io";
+  }
   get name(): string {
     return "Terraform";
   }

@@ -7,7 +7,7 @@ describe("Version Provider", () => {
   const versionManager = new VersionManager(new MockVersionProvider(), "version_manager_test");
 
   afterEach(async () => {
-    versionManager.baseFolder.delete();
+    await versionManager.baseFolder.delete();
   });
 
   it("should throw an error that no version is active", async () => {
@@ -26,7 +26,7 @@ describe("Version Provider", () => {
     const releases = await versionManager.getReleases();
     expect(releases).to.be.instanceOf(Releases);
     await versionManager.switchVersion(releases.latest);
-    expect(versionManager.metadataFile.exists()).to.be.true;
+    expect(await versionManager.metadataFile.exists()).to.be.true;
   });
 
   it("should have one version installed and one active", async () => {

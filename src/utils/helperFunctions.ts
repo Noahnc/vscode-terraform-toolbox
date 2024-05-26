@@ -98,17 +98,26 @@ export async function showNotificationWithDecisions(message: string, showSetting
 
 export function showInformation(message: string, silent = false) {
   getLogger().info(message);
-  silent == false ? vscode.window.showInformationMessage(message) : null;
+  if (silent === false) {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    vscode.window.showInformationMessage(message);
+  }
 }
 
 export function showWarning(message: string, silent = false) {
   getLogger().warn(message);
-  silent == false ? vscode.window.showWarningMessage(message) : null;
+  if (silent === false) {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    vscode.window.showWarningMessage(message);
+  }
 }
 
 export function showError(message: string, silent = false) {
   getLogger().error(message);
-  silent == false ? vscode.window.showErrorMessage(message) : null;
+  if (silent === false) {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    vscode.window.showErrorMessage(message);
+  }
 }
 
 export function delay(ms: number) {

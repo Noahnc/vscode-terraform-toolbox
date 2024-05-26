@@ -1,6 +1,6 @@
 import { IIacBaseresource } from "./baseResource";
 
-export class Module implements IIacBaseresource {
+export class IacModule implements IIacBaseresource {
   key: string;
   source: string;
   version?: string;

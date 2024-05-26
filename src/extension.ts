@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-floating-promises */
 import { GraphQLClient } from "graphql-request";
 import * as hcl from "hcl2-parser";
 import fetch from "node-fetch";
@@ -19,7 +20,9 @@ import { IspaceliftClient, SpaceliftClient } from "./utils/Spacelift/spaceliftCl
 
 import { IversionManager, VersionManager } from "./utils/VersionManager/versionManager";
 
+import { IacInitService } from "./services/iacInitService";
 import { IacCli } from "./utils/IaC/iacCli";
+import { IacParser } from "./utils/IaC/iacParser";
 import { IIaCProvider } from "./utils/IaC/IIaCProvider";
 import { OpenTofuProvider } from "./utils/OpenTofu/opentofuIacProvider";
 import { SpaceliftAuthenticationHandler } from "./utils/Spacelift/spaceliftAuthenticationHandler";
@@ -90,7 +93,8 @@ export async function activate(context: vscode.ExtensionContext) {
   }
 
   const iacCli = new IacCli(new Cli(), iacProvider.binaryName);
-  const iacProjectHelper = new IacProjectHelper(hcl, iacCli, settings);
+  const iacParser = new IacParser(hcl);
+  const iacProjectHelper = new IacProjectHelper(iacParser, iacCli, settings);
 
   const iacVersionItem = new IacActiveVersionItem(context, primaryVersionManager, {
     alignment: vscode.StatusBarAlignment.Right,
@@ -216,7 +220,7 @@ export async function activate(context: vscode.ExtensionContext) {
   // Terraform init commands
   const tfInitAllProjectsCommand = new IacInitAllProjectsCommand(context, { command: cst.COMMAND_INIT_ALL_PROJECTS }, iacProjectHelper, iacProvider);
   new IacInitCurrentProjectCommand({ context, settings: { command: cst.COMMAND_INIT_CURRENT_PROJECT }, tfProjectHelper: iacProjectHelper, iacCli: iacCli, iacProvider: iacProvider });
-  new IacFetchModulesCurrentProjectCommand(context, { command: cst.COMMAND_INIT_REFRESH_MODULES }, iacProjectHelper, iacCli, iacProvider);
+  new IacFetchModulesCurrentProjectCommand(context, { command: cst.COMMAND_INIT_REFRESH_MODULES }, iacProjectHelper, iacProvider);
 
   // IaC workspace commands
   new ChoseAndSetIacWorkspaceCommand(context, { command: cst.COMMAND_SET_WORKSPACE, successCallback: iacWorkspaceItem.refresh.bind(iacWorkspaceItem) }, iacCli, iacProvider);
@@ -264,7 +268,7 @@ export async function activate(context: vscode.ExtensionContext) {
     }
   }
 
-  if (primaryVersionManager.getActiveVersion() === undefined) {
+  if ((await primaryVersionManager.getActiveVersion()) === undefined) {
     const showVersionsSelection = "Show versions";
     const decision = await helpers.showNotificationWithDecisions(
       `No ${iacProvider.name} version installed by this extension yet. Do you want to select a version to install now?`,
@@ -276,17 +280,13 @@ export async function activate(context: vscode.ExtensionContext) {
       await vscode.commands.executeCommand(cst.COMMAND_SET_TERRAFORM_VERSION);
     }
   }
-  // Init all terraform projects if setting is enabled
-  if (settings.autoInitAllProjects.value) {
-    getLogger().info("Auto initializing all projects in the currently open workspaces");
-    tfInitAllProjectsCommand.run(false, true).then(() => {
-      settings.autoSelectWorkspace ? autoSetWorkspaceCommand.run(true) : null;
-    });
-  } else {
-    settings.autoSelectWorkspace ? autoSetWorkspaceCommand.run(true) : null;
+
+  if (settings.autoSelectWorkspace.value === true) {
+    autoSetWorkspaceCommand.run(true);
   }
 
-  // update status bar item once at start
+  new IacInitService(iacProjectHelper, iacCli, iacParser, iacProvider, tfInitAllProjectsCommand, settings);
+
   iacVersionItem.refresh();
 }
 
@@ -298,7 +298,7 @@ async function spacectlInit(settings: Settings): Promise<[IspaceliftClient, ISpa
   const spacectlProfileName = settings.spacectlProfileName.value;
   const spacectlInstance = new Spacectl(new Cli());
   if (spacectlProfileName !== null && spacectlProfileName !== undefined) {
-    spacectlInstance.setUserprofile(spacectlProfileName);
+    await spacectlInstance.setUserprofile(spacectlProfileName);
   }
   await spacectlInstance.ensureSpacectlIsInstalled();
   let spaceliftTenantID: string;

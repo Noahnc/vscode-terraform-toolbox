@@ -120,11 +120,6 @@
           "default": true,
           "description": "When true, the terraform workspace will be set for each folder based on the .terraform-toolbox configuration file in the workspace root."
         },
-        "tftoolbox.iac.autoInitAllProjects": {
-          "type": "boolean",
-          "default": false,
-          "description": "If set to true, the extension will run terraform init for all folders in your workspace containing terraform files on startup."
-        },
         "tftoolbox.iac.initArg": {
           "type": "string",
           "default": "-upgrade",
@@ -134,6 +129,26 @@
           "type": "boolean",
           "default": true,
           "description": "Disable startup waring if spacectl is not installed and authenticated."
+        },
+        "tftoolbox.iac.enableAutoProviderInitialization": {
+          "type": "boolean",
+          "title": "Enable Provider auto init (experimental)",
+          "default": false,
+          "description": "Automatically initializes a terraform / opentofu project if a declared provider is not installed when a terraform / opentofu file is saved. This feature is experimental and may degrade performance."
+        },
+        "tftoolbox.iac.enableAutoModuleFetch": {
+          "type": "boolean",
+          "title": "Enable auto Module fetch",
+          "default": false,
+          "description": "If enabled, the extension will automatically fetch missing modules when a terraform / opentofu file is saved."
+        },
+        "tftoolbox.iac.resourceProcessingQueDelayMs": {
+          "type": "number",
+          "title": "Time in ms to delay the processing of projects",
+          "default": 600,
+          "minimum": 300,
+          "maximum": 5000,
+          "description": "Time in ms to wait before start processing .tf files added by the tftoolbox.iac.enableAutoModuleFetch or tftoolbox.iac.enableAutoProviderInitialization feature. This works as buffer when multiple files in the same folder change shortly after each other (e.g by a git pull or branch switch)."
         },
         "tftoolbox.iac.showNoIacProviderVersionInstalledMsgOnStart": {
           "type": "boolean",
@@ -204,6 +219,7 @@
   },
   "devDependencies": {
     "@types/chai": "^4.3.11",
+    "@types/chai-as-promised": "^7.1.8",
     "@types/decompress": "^4.2.7",
     "@types/glob": "^8.1.0",
     "@types/mocha": "^10.0.6",
@@ -213,6 +229,8 @@
     "@typescript-eslint/eslint-plugin": "^7.8.0",
     "@typescript-eslint/parser": "^7.10.0",
     "@vscode/test-electron": "^2.3.10",
+    "chai": "^4.3.10",
+    "chai-as-promised": "^7.1.2",
     "depcheck": "^1.4.6",
     "esbuild": "^0.20.2",
     "eslint": "^8.57.0",
@@ -223,7 +241,6 @@
   "dependencies": {
     "@vscode-logging/wrapper": "^2.0.0",
     "axios": "1.6.8",
-    "chai": "^4.3.10",
     "decompress": "^4.2.1",
     "graphql-request": "^6.1.0",
     "hcl2-parser": "^1.0.3",

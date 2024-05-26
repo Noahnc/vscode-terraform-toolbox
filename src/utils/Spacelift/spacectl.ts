@@ -15,10 +15,10 @@ export interface ISpacectl {
 }
 
 export class Spacectl implements ISpacectl {
-  private _cli: ICli;
+  private cli: ICli;
 
   constructor(cli: ICli) {
-    this._cli = cli;
+    this.cli = cli;
   }
 
   async executeLocalPreview(stack: Stack, projectPath: string) {
@@ -45,7 +45,7 @@ export class Spacectl implements ISpacectl {
   }
 
   async ensureSpacectlIsInstalled() {
-    if (await this._cli.checkIfBinaryIsInPath(constants.SPACECTL_COMMAND_NAME)) {
+    if (await this.cli.checkIfBinaryIsInPath(constants.SPACECTL_COMMAND_NAME)) {
       getLogger().debug("spacectl is installed and in path");
       return;
     }
@@ -70,6 +70,6 @@ export class Spacectl implements ISpacectl {
   }
 
   private async runSpacectlCommand(subcommand: string): Promise<[boolean, string, string]> {
-    return await this._cli.runShellCommand(`${constants.SPACECTL_COMMAND_NAME} ${subcommand}`);
+    return await this.cli.runShellCommand(`${constants.SPACECTL_COMMAND_NAME} ${subcommand}`);
   }
 }

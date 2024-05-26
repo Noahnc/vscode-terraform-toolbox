@@ -1,20 +1,21 @@
-import { Module } from "./module";
-import { Provider } from "./provider";
+/* eslint-disable no-underscore-dangle */
+import { IacModule } from "./module";
+import { IacProvider } from "./provider";
 
 export class IacResources {
-  private _modules: Module[];
-  private _providers: Provider[];
+  private _modules: IacModule[];
+  private _providers: IacProvider[];
   private _versionRequirements: string[];
 
-  constructor(modules: Module[], providers: Provider[], versionRequirements: string[]) {
+  constructor(modules: IacModule[], providers: IacProvider[], versionRequirements: string[]) {
     this._modules = modules;
     this._providers = providers;
     this._versionRequirements = versionRequirements;
   }
-  get modules(): Module[] {
+  get modules(): IacModule[] {
     return this._modules;
   }
-  get providers(): Provider[] {
+  get providers(): IacProvider[] {
     return this._providers;
   }
   get versionRequirements(): string[] {
