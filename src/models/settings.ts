@@ -21,6 +21,7 @@ export class Settings {
   private showNoIacVersionInstalledMsgSetting: SettingsElement<boolean>;
   private enableIacAutoInitSetting: SettingsElement<boolean>;
   private enableIacModuleAutoFetchSetting: SettingsElement<boolean>;
+  private resourceProcessingQueDelayMsSetting: SettingsElement<number>;
 
   constructor() {
     if (Settings.instance !== undefined) {
@@ -45,6 +46,7 @@ export class Settings {
     this.showNoIacVersionInstalledMsgSetting = new SettingsElement<boolean>("tftoolbox.iac.showNoVersionInstalledMsg");
     this.enableIacAutoInitSetting = new SettingsElement<boolean>("tftoolbox.iac.enableAutoProviderInitialization");
     this.enableIacModuleAutoFetchSetting = new SettingsElement<boolean>("tftoolbox.iac.enableAutoModuleFetch");
+    this.resourceProcessingQueDelayMsSetting = new SettingsElement<number>("tftoolbox.iac.resourceProcessingQueDelayMs");
   }
 
   get spaceliftTenantID(): SettingsElement<string | undefined> {
@@ -99,6 +101,9 @@ export class Settings {
   }
   get enableIacModuleAutoFetch(): SettingsElement<boolean> {
     return this.enableIacModuleAutoFetchSetting;
+  }
+  get resourceProcessingQueDelayMs(): SettingsElement<number> {
+    return this.resourceProcessingQueDelayMsSetting;
   }
 
   private handleSettingChange(event: vscode.ConfigurationChangeEvent): void {

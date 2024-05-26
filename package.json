@@ -147,6 +147,14 @@
           "default": false,
           "description": "If enabled, the extension will automatically fetch missing modules when a terraform / opentofu file is saved."
         },
+        "tftoolbox.iac.resourceProcessingQueDelayMs": {
+          "type": "number",
+          "title": "Time in ms to delay the processing of projects",
+          "default": 600,
+          "minimum": 300,
+          "maximum": 5000,
+          "description": "Time in ms to wait before start processing .tf files added by the tftoolbox.iac.enableAutoModuleFetch or tftoolbox.iac.enableAutoProviderInitialization feature. This works as buffer when multiple files in the same folder change shortly after each other (e.g by a git pull or branch switch)."
+        },
         "tftoolbox.iac.showNoIacProviderVersionInstalledMsgOnStart": {
           "type": "boolean",
           "default": true,
