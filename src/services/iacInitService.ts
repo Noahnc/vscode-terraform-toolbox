@@ -19,7 +19,6 @@ export class IacInitService {
   private iacProvider: IIaCProvider;
   private iacInitCommand: IacInitAllProjectsCommand;
   private tfFileDetectionPattern = "{**/*.tf}";
-  private queueExecutionDelayMs = 600;
   private currentSequenceNumber = 0;
   private pendingIacInitProjects: Set<string> = new Set();
   private pendingIacModuleFetchProjects: Set<string> = new Set();
@@ -69,7 +68,7 @@ export class IacInitService {
       getLogger().trace(`No modules or providers found in ${file.path}`);
       return;
     }
-
+    const currentProcessDelayMs = this.settings.resourceProcessingQueDelayMs.value;
     this.currentSequenceNumber++;
     const sequenceNumber = this.currentSequenceNumber.valueOf();
 
@@ -79,14 +78,14 @@ export class IacInitService {
       if (!installed) {
         getLogger().debug(`Adding project ${directory.path} to pending iac init queue since some providers are not installed`);
         await semaphore.withLock(async () => this.pendingIacInitProjects.add(directory.path));
-        setTimeout(() => this.processResources(sequenceNumber), this.queueExecutionDelayMs);
+        setTimeout(() => this.processResources(sequenceNumber), currentProcessDelayMs);
         return;
       }
     }
     if (enableModuleAutoFetch && resources.modules.length > 0) {
       getLogger().debug(`Adding project ${directory.path} to pending module fetch queue`);
       await semaphore.withLock(async () => this.pendingIacModuleFetchProjects.add(directory.path));
-      setTimeout(() => this.processResources(sequenceNumber), this.queueExecutionDelayMs);
+      setTimeout(() => this.processResources(sequenceNumber), currentProcessDelayMs);
     }
   }
 
@@ -113,6 +112,14 @@ export class IacInitService {
     return true;
   }
 
+  private async updateModulesForProject(project: PathObject) {
+    getLogger().debug(`Updating modules for project ${project.path}`);
+    const [result, stdout, stderr] = await this.iacCli.getModules(project);
+    if (!result) {
+      getLogger().error(`Error while updating modules for project ${project.path}: stderr: ${stderr}, stdout: ${stdout}`);
+    }
+  }
+
   private async processResources(sequenceNumber: number) {
     // If the current sequence number does not match the sequence number of the current run, we skip it because a new run has been triggered
     if (sequenceNumber !== this.currentSequenceNumber) {
@@ -127,9 +134,7 @@ export class IacInitService {
     const initProjectPaths = new Set(this.pendingIacInitProjects.keys());
     const allProjectPaths = new Set([...moduleProjectPaths, ...initProjectPaths]);
 
-    getLogger().info(`Start processing ${moduleProjectPaths.size} projects for module updates and ${initProjectPaths.size} projects for provider init with sequence number ${sequenceNumber}`);
-
-    await Promise.all(
+    await Promise.allSettled(
       [...allProjectPaths].map(async (projectPath) => {
         const semaphore = this.directoryLocks.get(projectPath);
 
@@ -154,37 +159,31 @@ export class IacInitService {
       })
     );
 
+    getLogger().info(`Start processing ${moduleProjectPaths.size} projects for module updates and ${initProjectPaths.size} projects to initialize. Current run sequence number ${sequenceNumber}`);
+
+    const allTasks: Promise<void>[] = [];
+
     if (initProjectPaths.size > 0) {
-      try {
-        getLogger().trace(`Initializing the following projects: ${[...initProjectPaths].join(", ")}`);
-        await this.iacInitCommand.run(
+      allTasks.push(
+        this.iacInitCommand.run(
           false,
           false,
           [...initProjectPaths].map((p) => new PathObject(p))
-        );
-      } catch (error) {
-        getLogger().error(`Error while initializing projects: ${error}`);
-      }
+        )
+      );
     }
 
-    await Promise.all(
-      [...moduleProjectPaths].map(async (projectPath) => {
-        const project = new PathObject(projectPath);
-        try {
-          getLogger().trace(`Updating modules for project ${projectPath}`);
-          await this.iacCli.getModules(project);
-        } catch (error) {
-          getLogger().error(`Error while updating modules for project ${projectPath}: ${error}`);
-        }
-      })
-    );
+    for (const projectPath of moduleProjectPaths) {
+      const project = new PathObject(projectPath);
+      allTasks.push(this.updateModulesForProject(project));
+    }
 
-    await Promise.all(
-      [...allProjectPaths].map(async (projectPath) => {
-        const semaphore = this.directoryLocks.get(projectPath);
-        semaphore?.release();
-      })
-    );
+    await Promise.allSettled(allTasks);
+
+    for (const projectPath of allProjectPaths) {
+      const semaphore = this.directoryLocks.get(projectPath);
+      semaphore?.release();
+    }
 
     getLogger().info(`Finished processing for sequence number ${sequenceNumber}`);
   }
