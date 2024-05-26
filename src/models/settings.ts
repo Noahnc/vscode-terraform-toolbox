@@ -10,7 +10,6 @@ export class Settings {
   private autoselectVersionSetting: SettingsElement<boolean>;
   private logLevelSetting: SettingsElement<string>;
   private autoSelectWorkspaceSetting: SettingsElement<boolean>;
-  private autoInitAllProjectsSetting: SettingsElement<boolean>;
   private initArgsSetting: SettingsElement<string>;
   private spaceliftStatusBarItemRefreshIntervalSecondsSetting: SettingsElement<number>;
   private excludedGlobPatternsSetting: SettingsElement<string[]>;
@@ -35,7 +34,6 @@ export class Settings {
     this.autoselectVersionSetting = new SettingsElement<boolean>("tftoolbox.iac.autoSelectVersion");
     this.logLevelSetting = new SettingsElement<string>("tftoolbox.logLevel", true);
     this.autoSelectWorkspaceSetting = new SettingsElement<boolean>("tftoolbox.iac.autoSelectWorkspace");
-    this.autoInitAllProjectsSetting = new SettingsElement<boolean>("tftoolbox.iac.autoInitAllProjects");
     this.initArgsSetting = new SettingsElement<string>("tftoolbox.iac.initArg");
     this.spaceliftStatusBarItemRefreshIntervalSecondsSetting = new SettingsElement<number>("tftoolbox.spacelift.stackPendingConfirmationStatusItemUpdateTimeSeconds");
     this.excludedGlobPatternsSetting = new SettingsElement<string[]>("tftoolbox.excludeGlobPatterns");
@@ -63,9 +61,6 @@ export class Settings {
   }
   get autoSelectWorkspace(): SettingsElement<boolean> {
     return this.autoSelectWorkspaceSetting;
-  }
-  get autoInitAllProjects(): SettingsElement<boolean> {
-    return this.autoInitAllProjectsSetting;
   }
   get initArgs(): SettingsElement<string> {
     return this.initArgsSetting;

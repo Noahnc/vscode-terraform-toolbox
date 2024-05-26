@@ -120,11 +120,6 @@
           "default": true,
           "description": "When true, the terraform workspace will be set for each folder based on the .terraform-toolbox configuration file in the workspace root."
         },
-        "tftoolbox.iac.autoInitAllProjects": {
-          "type": "boolean",
-          "default": false,
-          "description": "If set to true, the extension will run terraform init for all folders in your workspace containing terraform files on startup."
-        },
         "tftoolbox.iac.initArg": {
           "type": "string",
           "default": "-upgrade",

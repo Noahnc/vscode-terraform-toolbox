@@ -280,17 +280,8 @@ export async function activate(context: vscode.ExtensionContext) {
       await vscode.commands.executeCommand(cst.COMMAND_SET_TERRAFORM_VERSION);
     }
   }
-  // Init all terraform projects if setting is enabled
-  if (settings.autoInitAllProjects.value) {
-    getLogger().info("Auto initializing all projects in the currently open workspaces");
-    tfInitAllProjectsCommand.run(false, true).then(() => {
-      if (settings.autoSelectWorkspace.value) {
-        autoSetWorkspaceCommand.run(true);
-      }
-    });
-  }
 
-  if (settings.autoInitAllProjects.value === false && settings.autoSelectWorkspace.value === true) {
+  if (settings.autoSelectWorkspace.value === true) {
     autoSetWorkspaceCommand.run(true);
   }
 

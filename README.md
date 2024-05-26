@@ -114,13 +114,13 @@ Tired of switching between workspaces in the terminal? This extension adds a sta
 Since the init command is required for many features of the official Hashicorp Terraform extension to work, this extension adds some features to make the terraform init process easier:
 
 - Command [`tftoolbox.iac.initCurrentProject`]: Run terraform / tofu init in the current folder. Similar to the init Command of the official Hashicorp Terraform extension, but it allows you to specify additional init arguments with the setting `tftoolbox.iac.initArg`.
-- Command [`tftoolbox.iac.initAllProjects`]: Finds all terraform folders in your open workspaces and runs terraform init in each of them asynchronically. With the setting `tftoolbox.iac.autoInitAllProjects` you can enable to auto init all folders when opening VSCode. More information can be found here: [Terraform init all projects](docs/initAllProjects.md)
+- Command [`tftoolbox.iac.initAllProjects`]: Finds all terraform folders in your open workspaces and runs terraform init in each of them asynchronically. More information can be found here: [Terraform init all projects](docs/initAllProjects.md)
   ![terraform-init](Images/examples/terraform_init.gif)
 - Command [`tftoolbox.iac.refreshModules`]: Installs missing modules for the current folder.
 
 #### Auto-install providers
 
-By enabling the setting `tftoolbox.iac.enableAutoProviderInitialization`, the extension will automatically initialize a terraform / opentofu project when a changed .tf file contains a provider version constraint for which no provider is currently installed. The extension will then run terraform / opentofu init in that folder.
+By enabling the setting `tftoolbox.iac.enableAutoInit`, the extension will automatically initialize a terraform / opentofu project when a changed .tf file contains a provider version constraint for which no provider is currently installed. The extension will then run terraform / opentofu init in that folder.
 
 > [!IMPORTANT]  
 > This feature is experimental and might use lots of system resources when switching branches in git with many provider version changes. It is also not recommended to use in combination with the vscode setting `Auto Save: afterDelay`. Instead, use the setting `Auto Save: onFocusChange` or `Auto Save: onWindowChange`.
