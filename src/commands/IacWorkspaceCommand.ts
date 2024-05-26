@@ -1,4 +1,4 @@
-import * as fs from "fs";
+import { promises as fs } from "fs";
 import * as vscode from "vscode";
 import { UserShownError } from "../custom_errors";
 import * as helpers from "../utils/helperFunctions";
@@ -93,14 +93,14 @@ export class AutoSetIacWorkspaceCommand extends BaseCommand {
     await Promise.all(
       workspaces.map(async (workspace) => {
         const terraformToolboxJsonFile = new PathObject(path.join(workspace.uri.fsPath, ".terraform-toolbox.json"));
-        if (!terraformToolboxJsonFile.exists()) {
+        if (!(await terraformToolboxJsonFile.exists())) {
           getLogger().debug(`Skipping workspace ${workspace.name} because it does not contain a .terraform-toolbox.json file.`);
           return;
         }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let workspaceJson: any;
         try {
-          workspaceJson = JSON.parse(fs.readFileSync(terraformToolboxJsonFile.path, "utf8"));
+          workspaceJson = JSON.parse(await fs.readFile(terraformToolboxJsonFile.path, "utf8"));
         } catch (error) {
           getLogger().error(`Error parsing .terraform-toolbox.json file in workspace ${workspace.name}, error: ${error}`);
           return;
@@ -130,7 +130,7 @@ export class AutoSetIacWorkspaceCommand extends BaseCommand {
         }
         await Promise.all(
           filteredFolders.map(async (folder: PathObject) => {
-            if (!this.tfProjectHelper.checkFolderHasBeenInitialized(folder)) {
+            if (!(await this.tfProjectHelper.checkFolderHasBeenInitialized(folder))) {
               getLogger().debug(`Skipping folder ${folder.path} because it has not been initialized.`);
               return;
             }

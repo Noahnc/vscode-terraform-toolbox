@@ -1,4 +1,4 @@
-import * as fs from "fs";
+import { promises as fs } from "fs";
 import * as os from "os";
 import { Release, Releases } from "../models/github/release";
 import { getLogger } from "../utils/logger";
@@ -33,7 +33,7 @@ export class MockVersionProvider implements IversionProvider {
       binaryName += ".exe";
     }
     const testBinary = tempFolder.join(binaryName);
-    fs.writeFileSync(testBinary.path, "test");
+    await fs.writeFile(testBinary.path, "test");
     return testBinary;
   }
 }

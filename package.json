@@ -216,6 +216,7 @@
   },
   "devDependencies": {
     "@types/chai": "^4.3.11",
+    "@types/chai-as-promised": "^7.1.8",
     "@types/decompress": "^4.2.7",
     "@types/glob": "^8.1.0",
     "@types/mocha": "^10.0.6",
@@ -225,6 +226,8 @@
     "@typescript-eslint/eslint-plugin": "^7.8.0",
     "@typescript-eslint/parser": "^7.8.0",
     "@vscode/test-electron": "^2.3.8",
+    "chai": "^4.3.10",
+    "chai-as-promised": "^7.1.2",
     "depcheck": "^1.4.6",
     "esbuild": "^0.20.2",
     "eslint": "^8.56.0",
@@ -235,7 +238,6 @@
   "dependencies": {
     "@vscode-logging/wrapper": "^2.0.0",
     "axios": "1.6.8",
-    "chai": "^4.3.10",
     "decompress": "^4.2.1",
     "graphql-request": "^6.1.0",
     "hcl2-parser": "^1.0.3",

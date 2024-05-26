@@ -1,5 +1,4 @@
-import path = require("path");
-import * as fs from "fs";
+import { promises as fs } from "fs";
 import * as vscode from "vscode";
 import { UserShownError } from "../../custom_errors";
 import { IacLockFileProvider } from "../../models/iac/iacLockFileProvider";
@@ -44,12 +43,12 @@ export interface IIacProjectHelper {
   initFolder: (folder: PathObject, withProgress: boolean) => Promise<void>;
   refreshModulesInFolder: (folder: PathObject) => Promise<void>;
   findAllIacFoldersInOpenWorkspace: () => Promise<PathObject[]>;
-  checkFolderHasBeenInitialized: (folder: PathObject) => boolean;
+  checkFolderHasBeenInitialized: (folder: PathObject) => Promise<boolean>;
   checkfolderContainsValidTfFiles: (folder: PathObject) => Promise<boolean>;
   getProvidersInLockFile: (folder: PathObject) => Promise<IacLockFileProvider[]>;
   getInstalledModulesForFolder: (folder: PathObject) => Promise<IacModule[]>;
   getCurrentWorkspaceFromEnvFile(folderPath: PathObject): Promise<string | undefined>;
-  checkProviderFromLockFileIsInstalled: (provider: IacLockFileProvider, folder: PathObject) => boolean;
+  checkProviderFromLockFileIsInstalled: (provider: IacLockFileProvider, folder: PathObject) => Promise<boolean>;
 }
 
 export class IacProjectHelper implements IIacProjectHelper {
@@ -65,9 +64,9 @@ export class IacProjectHelper implements IIacProjectHelper {
     this.settings = settings;
   }
 
-  checkProviderFromLockFileIsInstalled(provider: IacLockFileProvider, folder: PathObject) {
+  async checkProviderFromLockFileIsInstalled(provider: IacLockFileProvider, folder: PathObject): Promise<boolean> {
     const providersFolder = folder.join(this.tfrcFolder, "providers", provider.registryDomain, provider.vendor, provider.name, provider.version);
-    if (providersFolder.exists()) {
+    if (await providersFolder.exists()) {
       getLogger().trace(`Provider ${provider.name} is installed in folder ${providersFolder.path}`);
       return true;
     }
@@ -81,8 +80,9 @@ export class IacProjectHelper implements IIacProjectHelper {
     const tfFiles = await vscode.workspace.findFiles("**/*.tf", excludeGlobPatternString, 2000);
     // get all unique folders of the collected files
     const tfFolders: PathObject[] = [];
-    tfFiles.forEach((file) => {
-      const folder = new PathObject(path.dirname(file.fsPath));
+    tfFiles.forEach((filePath) => {
+      const file = new PathObject(filePath.fsPath);
+      const folder = file.directory;
 
       // check if tfFolders includes a element with the same path
       if (tfFolders.some((element) => element.path === folder.path) === false) {
@@ -92,9 +92,9 @@ export class IacProjectHelper implements IIacProjectHelper {
     return tfFolders;
   }
 
-  checkFolderHasBeenInitialized(folder: PathObject): boolean {
+  async checkFolderHasBeenInitialized(folder: PathObject): Promise<boolean> {
     const tfFolder = folder.join(this.tfrcFolder);
-    if (!tfFolder.exists()) {
+    if (!(await tfFolder.exists())) {
       getLogger().debug(`Folder ${folder.path} contains no .terraform folder and is therefore not initialized`);
       return false;
     }
@@ -114,14 +114,14 @@ export class IacProjectHelper implements IIacProjectHelper {
   }
 
   async getCurrentWorkspaceFromEnvFile(folder: PathObject): Promise<string | undefined> {
-    if (this.checkFolderHasBeenInitialized(folder) === false) {
+    if ((await this.checkFolderHasBeenInitialized(folder)) === false) {
       return undefined;
     }
     const envFilePath = folder.join(this.tfrcFolder, "environment");
-    if (!envFilePath.exists()) {
+    if (!(await envFilePath.exists())) {
       return "default";
     }
-    const envFileContent = fs.readFileSync(envFilePath.path, "utf8");
+    const envFileContent = await fs.readFile(envFilePath.path, "utf8");
     const envFileLines = envFileContent.split("\n");
     if (envFileLines.length === 0) {
       return "default";
@@ -133,14 +133,14 @@ export class IacProjectHelper implements IIacProjectHelper {
     const installedModules: IacModule[] = [];
     const terraformFolder = folder.join(this.tfrcFolder);
     const terraformModulesFile = terraformFolder.join("modules", "modules.json");
-    if (!terraformFolder.exists()) {
+    if (!(await terraformFolder.exists())) {
       getLogger().debug(`Folder ${folder.path} contains no .terraform folder`);
       return [];
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let modulesJson: any;
     try {
-      modulesJson = JSON.parse(fs.readFileSync(terraformModulesFile.path, "utf8")).Modules;
+      modulesJson = JSON.parse(await fs.readFile(terraformModulesFile.path, "utf8")).Modules;
     } catch (error) {
       getLogger().debug(`Error reading modules file: ${terraformModulesFile.path}`);
       return [];
@@ -155,7 +155,7 @@ export class IacProjectHelper implements IIacProjectHelper {
   async getProvidersInLockFile(folder: PathObject): Promise<IacLockFileProvider[]> {
     const installedProviders: IacLockFileProvider[] = [];
     const tfLockFile = folder.join(this.tflockFileName);
-    if (!tfLockFile.exists()) {
+    if (!(await tfLockFile.exists())) {
       getLogger().debug(`Folder ${folder.path} has no terraform lock file and is therefore not initialized`);
       return [];
     }
@@ -219,7 +219,7 @@ export class IacProjectHelper implements IIacProjectHelper {
     if ((await this.checkfolderContainsValidTfFiles(folder)) === false) {
       throw new NoValidIacFolder(`Folder ${folder.path} does not contain any modules or providers and can therefore not be initialized`);
     }
-    if (this.checkFolderHasBeenInitialized(folder) === false) {
+    if ((await this.checkFolderHasBeenInitialized(folder)) === false) {
       throw new IacFolderNotInitialized(`Folder ${folder.path} is not initialized`);
     }
     getLogger().debug(`Refreshing modules in folder ${folder.path}`);

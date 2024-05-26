@@ -94,6 +94,7 @@ export class SpaceliftAuthenticationHandler implements ISpaceliftAuthenticationH
       async (progress, token) => {
         token.onCancellationRequested(() => {
           getLogger().debug("User has cancelled spacectl login");
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
           vscode.window.showWarningMessage("Spacectl login cancelled");
           return false;
         });

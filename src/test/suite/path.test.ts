@@ -1,7 +1,10 @@
-import { expect } from "chai";
+import { use as chaiUse, expect } from "chai";
 import * as fs from "fs";
 import * as path from "path";
 import { PathObject } from "../../utils/path";
+import chaiAsPromised = require("chai-as-promised");
+
+chaiUse(chaiAsPromised);
 
 describe("Path", () => {
   const testDir = path.join(__dirname, "testDir");
@@ -26,54 +29,54 @@ describe("Path", () => {
   });
 
   describe("#exists", () => {
-    it("should return true if the path exists", () => {
+    it("should return true if the path exists", async () => {
       const pathObj = new PathObject(testFile);
-      expect(pathObj.exists()).to.be.true;
+      expect(await pathObj.exists()).to.be.true;
     });
 
-    it("should return false if the path does not exist", () => {
+    it("should return false if the path does not exist", async () => {
       const pathObj = new PathObject(path.join(testDir, "nonexistent.txt"));
-      expect(pathObj.exists()).to.be.false;
+      expect(await pathObj.exists()).to.be.false;
     });
   });
 
   describe("#isFile", () => {
-    it("should return true if the path is a file", () => {
+    it("should return true if the path is a file", async () => {
       const pathObj = new PathObject(testFile);
-      expect(pathObj.isFile()).to.be.true;
+      expect(await pathObj.isFile()).to.be.true;
     });
 
-    it("should return false if the path is a directory", () => {
+    it("should return false if the path is a directory", async () => {
       const pathObj = new PathObject(testDir);
-      expect(pathObj.isFile()).to.be.false;
+      expect(await pathObj.isFile()).to.be.false;
     });
   });
 
   describe("#isDirectory", () => {
-    it("should return true if the path is a directory", () => {
+    it("should return true if the path is a directory", async () => {
       const pathObj = new PathObject(testDir);
-      expect(pathObj.isDirectory()).to.be.true;
+      expect(await pathObj.isDirectory()).to.be.true;
     });
 
-    it("should return false if the path is a file", () => {
+    it("should return false if the path is a file", async () => {
       const pathObj = new PathObject(testFile);
-      expect(pathObj.isDirectory()).to.be.false;
+      expect(await pathObj.isDirectory()).to.be.false;
     });
   });
 
   describe("#isLocked", () => {
-    it("should return false if the file is not locked", () => {
+    it("should return false if the file is not locked", async () => {
       const pathObj = new PathObject(testFile);
-      expect(pathObj.isLocked()).to.be.false;
+      expect(await pathObj.isLocked()).to.be.false;
     });
-    it("should throw an error if the file does not exist", () => {
+    it("should throw an error if the file does not exist", async () => {
       const pathObj = new PathObject(path.join(testDir, "nonexistent.txt"));
-      expect(() => pathObj.isLocked()).to.throw(Error, /does not exist/);
+      await expect(pathObj.isLocked()).to.eventually.be.rejectedWith("does not exist");
     });
 
-    it("should throw an error if the path is a directory", () => {
+    it("should throw an error if the path is a directory", async () => {
       const pathObj = new PathObject(testDir);
-      expect(() => pathObj.isLocked()).to.throw(Error, /is a directory/);
+      await expect(pathObj.isLocked()).to.eventually.be.rejectedWith("is a directory");
     });
   });
 
@@ -94,21 +97,21 @@ describe("Path", () => {
   });
 
   describe("#delete", () => {
-    it("should delete the file if it exists", () => {
+    it("should delete the file if it exists", async () => {
       const pathObj = new PathObject(testFile);
-      pathObj.delete();
+      await pathObj.delete();
       expect(fs.existsSync(testFile)).to.be.false;
     });
 
-    it("should delete the directory if it exists", () => {
+    it("should delete the directory if it exists", async () => {
       const pathObj = new PathObject(testDir);
-      pathObj.delete();
+      await pathObj.delete();
       expect(fs.existsSync(testDir)).to.be.false;
     });
 
-    it("should do nothing if the path does not exist", () => {
+    it("should do nothing if the path does not exist", async () => {
       const pathObj = new PathObject(path.join(testDir, "nonexistent.txt"));
-      pathObj.delete();
+      await pathObj.delete();
       expect(fs.existsSync(path.join(testDir, "nonexistent.txt"))).to.be.false;
     });
   });

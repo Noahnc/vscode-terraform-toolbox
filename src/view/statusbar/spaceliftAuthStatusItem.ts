@@ -20,6 +20,5 @@ export class SpaceliftApiAuthenticationStatus extends BaseStatusBarItem {
     this.statusBarItem.text = "$(error) authenticate spacectl";
     this.statusBarItem.color = "orange";
     this.statusBarItem.show();
-    return;
   }
 }

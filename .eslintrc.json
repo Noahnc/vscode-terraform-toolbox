@@ -6,11 +6,13 @@
   "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
-    "ecmaVersion": "latest"
+    "ecmaVersion": "latest",
+    "project": "./tsconfig.json"
   },
   "plugins": ["@typescript-eslint"],
   "rules": {
     "prefer-template": "error",
+    "@typescript-eslint/no-floating-promises": "warn",
     "@typescript-eslint/prefer-for-of": "error",
     "id-match": "error",
     "no-debugger": "error",
@@ -50,5 +52,13 @@
         "format": ["PascalCase"]
       }
     ]
-  }
+  },
+  "overrides": [
+    {
+      "files": ["*.ts"],
+      "parserOptions": {
+        "project": "./tsconfig.json"
+      }
+    }
+  ]
 }

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-floating-promises */
 import { GraphQLClient } from "graphql-request";
 import * as hcl from "hcl2-parser";
 import fetch from "node-fetch";
@@ -267,7 +268,7 @@ export async function activate(context: vscode.ExtensionContext) {
     }
   }
 
-  if (primaryVersionManager.getActiveVersion() === undefined) {
+  if ((await primaryVersionManager.getActiveVersion()) === undefined) {
     const showVersionsSelection = "Show versions";
     const decision = await helpers.showNotificationWithDecisions(
       `No ${iacProvider.name} version installed by this extension yet. Do you want to select a version to install now?`,
@@ -295,7 +296,6 @@ export async function activate(context: vscode.ExtensionContext) {
 
   new IacInitService(iacProjectHelper, iacCli, iacParser, iacProvider, tfInitAllProjectsCommand, settings);
 
-  // update status bar item once at start
   iacVersionItem.refresh();
 }
 
@@ -307,7 +307,7 @@ async function spacectlInit(settings: Settings): Promise<[IspaceliftClient, ISpa
   const spacectlProfileName = settings.spacectlProfileName.value;
   const spacectlInstance = new Spacectl(new Cli());
   if (spacectlProfileName !== null && spacectlProfileName !== undefined) {
-    spacectlInstance.setUserprofile(spacectlProfileName);
+    await spacectlInstance.setUserprofile(spacectlProfileName);
   }
   await spacectlInstance.ensureSpacectlIsInstalled();
   let spaceliftTenantID: string;

@@ -1,4 +1,4 @@
-import * as fs from "fs";
+import { promises as fs } from "fs";
 import * as vscode from "vscode";
 import { IacResources } from "../../models/iac/iacResources";
 import { IacModule } from "../../models/iac/module";
@@ -50,7 +50,8 @@ export class IacParser implements IIacParser {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let hclObject: any;
     try {
-      hclObject = this.hclParser.parseToObject(fs.readFileSync(file.path, "utf8"));
+      const hclFileContent = await fs.readFile(file.path, "utf8");
+      hclObject = this.hclParser.parseToObject(hclFileContent);
       if (hclObject === undefined) {
         getLogger().debug(`Error parsing file: ${file.path}`);
         return undefined;
@@ -116,6 +117,6 @@ export class IacParser implements IIacParser {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async getRawHclFromFile(file: PathObject): Promise<any> {
-    return this.hclParser.parseToObject(fs.readFileSync(file.path, "utf8"));
+    return this.hclParser.parseToObject(await fs.readFile(file.path, "utf8"));
   }
 }

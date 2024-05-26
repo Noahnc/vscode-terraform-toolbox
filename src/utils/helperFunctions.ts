@@ -99,6 +99,7 @@ export async function showNotificationWithDecisions(message: string, showSetting
 export function showInformation(message: string, silent = false) {
   getLogger().info(message);
   if (silent === false) {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     vscode.window.showInformationMessage(message);
   }
 }
@@ -106,6 +107,7 @@ export function showInformation(message: string, silent = false) {
 export function showWarning(message: string, silent = false) {
   getLogger().warn(message);
   if (silent === false) {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     vscode.window.showWarningMessage(message);
   }
 }
@@ -113,6 +115,7 @@ export function showWarning(message: string, silent = false) {
 export function showError(message: string, silent = false) {
   getLogger().error(message);
   if (silent === false) {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     vscode.window.showErrorMessage(message);
   }
 }

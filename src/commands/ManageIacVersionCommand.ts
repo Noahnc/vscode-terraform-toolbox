@@ -1,4 +1,4 @@
-import * as fs from "fs";
+import { promises as fs } from "fs";
 import * as hcl from "hcl2-parser";
 import * as vscode from "vscode";
 import * as helpers from "../utils/helperFunctions";
@@ -28,9 +28,9 @@ export class ChoseAndSetIacVersionCommand extends BaseCommand {
       return;
     }
     if (!(await this.versionManager.switchVersion(chosenRelease))) {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       vscode.window.showInformationMessage(`${this.iacProvider.name} version ${chosenRelease.name} is already active.`);
       getLogger().debug(`${this.iacProvider.name} version ${chosenRelease.name} is already active.`);
-      return;
     }
   }
 }
@@ -53,6 +53,7 @@ export class SetIacVersionBasedOnProjectRequirementsCommand extends BaseCommand 
     if (workspaces === undefined) {
       getLogger().debug(`No workspace folder open. Skipping setting ${this.iacProvider.name} version based on project requirements.`);
       if (!silent) {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         vscode.window.showInformationMessage("No workspace folder open.");
       }
       return;
@@ -66,6 +67,7 @@ export class SetIacVersionBasedOnProjectRequirementsCommand extends BaseCommand 
     if (iacVersionRequirements.length === 0) {
       getLogger().debug(`No ${this.iacProvider.name} version requirements found in any of your workspace files, skipping...`);
       if (!silent) {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         vscode.window.showInformationMessage(`No ${this.iacProvider.name} version requirement found in project stacks.`);
       }
       return;
@@ -74,6 +76,7 @@ export class SetIacVersionBasedOnProjectRequirementsCommand extends BaseCommand 
     const targetRelease = releases.getNewestReleaseMatchingVersionConstraints(iacVersionRequirements);
     if (!(await this.versionManager.switchVersion(targetRelease))) {
       if (!silent) {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         vscode.window.showInformationMessage(`${this.iacProvider.name} version ${targetRelease.name} is already active.`);
       }
       return;
@@ -81,12 +84,12 @@ export class SetIacVersionBasedOnProjectRequirementsCommand extends BaseCommand 
   }
 
   // This is a feature specific to our workflow at CMI. We have a file ./Spacelift-Resources/main.tf in our projects, which contains the terraform version requirement for all Stacks in the project.
-  private readTfVersionReqFromSpaceliftProjectInWorkspace(spaceliftStackTfFile: PathObject): string | undefined {
+  private async readTfVersionReqFromSpaceliftProjectInWorkspace(spaceliftStackTfFile: PathObject): Promise<string | undefined> {
     if (!spaceliftStackTfFile.exists()) {
       getLogger().debug(`No spacelift stacks file found at ${spaceliftStackTfFile.path}`);
       return undefined;
     }
-    const spaceliftStacks = hcl.parseToObject(fs.readFileSync(spaceliftStackTfFile.path, "utf8"));
+    const spaceliftStacks = hcl.parseToObject(await fs.readFile(spaceliftStackTfFile.path, "utf8"));
     getLogger().trace(`Spacelift resources file content: ${JSON.stringify(spaceliftStacks)}`);
     try {
       const terraformVersion = spaceliftStacks[0].module["cmi-spacelift-stacks"][0].terraform_version;
@@ -100,9 +103,9 @@ export class SetIacVersionBasedOnProjectRequirementsCommand extends BaseCommand 
 
   private readTfVersionReqFromSpaceliftProjectAllWorkspaces(workspaces: vscode.WorkspaceFolder[]): string[] {
     const versionRequirements: string[] = [];
-    workspaces.forEach((workspace) => {
+    workspaces.forEach(async (workspace) => {
       const spaceliftStackTffile = new PathObject(path.join(workspace.uri.fsPath, "Spacelift-Resources", "main.tf"));
-      const requiredTerraformVersion = this.readTfVersionReqFromSpaceliftProjectInWorkspace(spaceliftStackTffile);
+      const requiredTerraformVersion = await this.readTfVersionReqFromSpaceliftProjectInWorkspace(spaceliftStackTffile);
       if (requiredTerraformVersion !== undefined) {
         versionRequirements.push(requiredTerraformVersion);
       }
@@ -124,6 +127,7 @@ export class ChoseAndDeleteIacVersionsCommand extends BaseCommand {
   async init() {
     const releases = await this.versionManager.getReleases();
     if (releases.installedNotActive.length === 0) {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       vscode.window.showInformationMessage(`No ${this.iacProvider.name} version installed besides the active one.`);
       return;
     }
@@ -132,6 +136,6 @@ export class ChoseAndDeleteIacVersionsCommand extends BaseCommand {
       getLogger().info(`No ${this.iacProvider.name} versions chosen. Skipping...`);
       return;
     }
-    this.versionManager.deleteReleases(chosenReleases);
+    await this.versionManager.deleteReleases(chosenReleases);
   }
 }

@@ -142,8 +142,10 @@ export class SettingsElement<T> {
     if (event.affectsConfiguration(this.key)) {
       getLogger().info(`Setting ${this.key} changed and requires restart of the extension.`);
       // show a information with two buttons to restart the extension or skip
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       vscode.window.showInformationMessage(`The setting ${this.key} changed and requires a restart of the extension.`, "Restart", "Skip").then((value) => {
         if (value === "Restart") {
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
           vscode.commands.executeCommand("workbench.action.reloadWindow");
         }
       });
