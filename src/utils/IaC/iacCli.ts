@@ -1,4 +1,4 @@
-import { ICli } from "../cli";
+import { ICli } from "../Cli/cli";
 import { getLogger } from "../logger";
 import { PathObject } from "../path";
 

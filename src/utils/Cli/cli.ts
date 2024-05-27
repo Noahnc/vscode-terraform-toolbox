@@ -1,5 +1,6 @@
 import { exec } from "child_process";
-import { getLogger } from "./logger";
+import { getLogger } from "../logger";
+import { IEnvironmentPathsProvider } from "./IEnvironmentPathsProvider";
 
 export interface ICli {
   runShellCommand(command: string): Promise<[boolean, string, string]>;
@@ -7,11 +8,18 @@ export interface ICli {
 }
 
 export class Cli implements ICli {
+  private readonly pathProvider: IEnvironmentPathsProvider;
+
+  constructor(pathProvider: IEnvironmentPathsProvider) {
+    this.pathProvider = pathProvider;
+  }
+
   async runShellCommand(command: string): Promise<[boolean, string, string]> {
     getLogger().debug(`Running shell command: ${command}`);
     return await new Promise<[boolean, string, string]>((resolve) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      exec(command, { silent: true } as any, (error: any, stdout: any, stderr: any) => {
+      const pathVar = this.pathProvider.getPathValue();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/naming-convention
+      exec(command, { silent: true, env: { PATH: pathVar } } as any, (error: any, stdout: any, stderr: any) => {
         getLogger().trace(`Stdout: ${stdout}`);
         getLogger().trace(`Stderr: ${stderr}`);
         if (error) {

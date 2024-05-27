@@ -1,8 +1,11 @@
 import { expect } from "chai";
-import { Cli } from "../../utils/cli";
+import { mockExtensionContext } from "../../mocks/ExtensionContextMock";
+import { Cli } from "../../utils/Cli/cli";
+import { PathEnvironmentHelper } from "../../utils/PathEnvironmentHelper";
 
 describe("CLI", () => {
-  const cli = new Cli();
+  const envPathHelper = new PathEnvironmentHelper(mockExtensionContext);
+  const cli = new Cli(envPathHelper);
 
   it("should find ping in path", async () => {
     const installed = await cli.checkIfBinaryIsInPath("ping");
