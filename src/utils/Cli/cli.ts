@@ -17,9 +17,8 @@ export class Cli implements ICli {
   async runShellCommand(command: string): Promise<[boolean, string, string]> {
     getLogger().debug(`Running shell command: ${command}`);
     return await new Promise<[boolean, string, string]>((resolve) => {
-      const pathVar = this.pathProvider.getPathValue();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/naming-convention
-      exec(command, { silent: true, env: { PATH: pathVar } } as any, (error: any, stdout: any, stderr: any) => {
+      exec(command, { silent: true, env: { PATH: this.pathProvider.getPathValue() } } as any, (error: any, stdout: any, stderr: any) => {
         getLogger().trace(`Stdout: ${stdout}`);
         getLogger().trace(`Stderr: ${stderr}`);
         if (error) {
