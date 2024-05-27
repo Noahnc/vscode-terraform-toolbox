@@ -120,7 +120,7 @@ Since the init command is required for many features of the official Hashicorp T
 
 #### Auto-install providers
 
-By enabling the setting `tftoolbox.iac.enableAutoInit`, the extension will automatically initialize a terraform / opentofu project when a changed .tf file contains a provider version constraint for which no provider is currently installed. The extension will then run terraform / opentofu init in that folder.
+By enabling the setting `tftoolbox.iac.enableAutoProviderInitialization`, the extension will automatically initialize a terraform / opentofu project when a changed .tf file contains a provider version constraint for which no provider is currently installed. The extension will then run terraform / opentofu init in that folder.
 
 > [!IMPORTANT]  
 > This feature is experimental and might use lots of system resources when switching branches in git with many provider version changes. It is also not recommended to use in combination with the vscode setting `Auto Save: afterDelay`. Instead, use the setting `Auto Save: onFocusChange` or `Auto Save: onWindowChange`.
