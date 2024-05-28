@@ -2,6 +2,12 @@
 
 All notable changes to the terraform-toolbox extension will be documented in this file.
 
+## [0.5.0]
+
+- (feat): Added a new Service that watches for changed .tf files and automatically initializes terraform directories when a provider is not installed or a module is missing.
+- (feat): Added Envrionment-PATH management. Terraform and OpenTofu binaries installed by this extension are now automatically added to the PATH for all VSCode terminals.
+- (refac): Make all file system operations async to improve performance.
+
 ## [0.4.0]
 
 - (feat): This update adds OpenTofu support. You can now select OpenTofu as IaC provider in the settings.
