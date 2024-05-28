@@ -5,7 +5,7 @@ All notable changes to the terraform-toolbox extension will be documented in thi
 ## [0.5.0]
 
 - (feat): Added a new Service that watches for changed .tf files and automatically initializes terraform directories when a provider is not installed or a module is missing.
-- (feat): Added Envrionment-PATH management. Terraform and OpenTofu binaries installed by this extension are now automatically added to the PATH for all VSCode terminals.
+- (feat): The extension will now automatically add the active Terraform / OpenTofu version to your PATH within VSCode. Any VSCode terminal and other extensions should respect this PATH change. If you want to use the installed Terraform / OpenTofu version outside of VSCode, you have configure your PATH manually.
 - (refac): Make all file system operations async to improve performance.
 
 ## [0.4.0]
