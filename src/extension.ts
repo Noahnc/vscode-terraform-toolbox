@@ -316,7 +316,7 @@ async function spacectlInit(settings: Settings, cli: ICli): Promise<[IspaceliftC
     spaceliftTenantID = settings.spaceliftTenantID.value;
   }
   const spaceliftEndpoint = `https://${spaceliftTenantID}${cst.SPACELIFT_BASE_DOMAIN}/graphql`;
-  const authenticationHandler = new SpaceliftAuthenticationHandler(spacectlInstance, spacectlInstance, new GraphQLClient(spaceliftEndpoint));
+  const authenticationHandler = new SpaceliftAuthenticationHandler(spacectlInstance, new GraphQLClient(spaceliftEndpoint));
   const spacelift = new SpaceliftClient(new GraphQLClient(spaceliftEndpoint), authenticationHandler);
   return [spacelift, spacectlInstance, spaceliftTenantID, authenticationHandler];
 }
