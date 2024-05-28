@@ -30,7 +30,7 @@ export class RunSpacectlLocalPreviewCurrentStackCommand extends BaseCommand {
       return;
     }
     getLogger().info(`Running local preview for stack: ${chosenWorkspaceStack.name}`);
-    this.spacectl.executeLocalPreview(chosenWorkspaceStack, currentWorkspace.uri.fsPath);
+    await this.spacectl.executeLocalPreview(chosenWorkspaceStack, currentWorkspace.uri.fsPath);
   }
 }
 
@@ -68,7 +68,7 @@ export class RunSpacectlLocalPreviewCommand extends BaseCommand {
       return;
     }
     getLogger().info(`Running local preview for stack: ${chosenWorkspaceStack.name}`);
-    this.spacectl.executeLocalPreview(chosenWorkspaceStack, currentWorkspace.uri.fsPath);
+    await this.spacectl.executeLocalPreview(chosenWorkspaceStack, currentWorkspace.uri.fsPath);
   }
 
   async choseStacks(stacks: Stack[]): Promise<Stack[] | undefined> {

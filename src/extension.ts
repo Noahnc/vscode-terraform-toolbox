@@ -3,6 +3,8 @@ import { GraphQLClient } from "graphql-request";
 import * as hcl from "hcl2-parser";
 import fetch from "node-fetch";
 import { Octokit } from "octokit";
+import * as os from "os";
+import * as path from "path";
 import * as vscode from "vscode";
 import { IacFetchModulesCurrentProjectCommand, IacInitAllProjectsCommand, IacInitCurrentProjectCommand } from "./commands/IacInitCommand";
 import { AutoSetIacWorkspaceCommand, ChoseAndSetIacWorkspaceCommand } from "./commands/IacWorkspaceCommand";
@@ -10,7 +12,7 @@ import { ChoseAndDeleteIacVersionsCommand, ChoseAndSetIacVersionCommand, SetIacV
 import { RunSpacectlLocalPreviewCommand, RunSpacectlLocalPreviewCurrentStackCommand } from "./commands/SpaceliftLocalPreviewCommand";
 import * as cst from "./constants";
 import { IacProvider, Settings } from "./models/settings";
-import { Cli } from "./utils/cli";
+import { Cli, ICli } from "./utils/Cli/cli";
 import * as helpers from "./utils/helperFunctions";
 import { IacProjectHelper } from "./utils/IaC/iacProjectHelper";
 import { IacVersionProvider } from "./utils/IaC/IacVersionProvider";
@@ -25,6 +27,7 @@ import { IacCli } from "./utils/IaC/iacCli";
 import { IacParser } from "./utils/IaC/iacParser";
 import { IIaCProvider } from "./utils/IaC/IIaCProvider";
 import { OpenTofuProvider } from "./utils/OpenTofu/opentofuIacProvider";
+import { PathEnvironmentHelper } from "./utils/PathEnvironmentHelper";
 import { SpaceliftAuthenticationHandler } from "./utils/Spacelift/spaceliftAuthenticationHandler";
 import { TerraformProvider } from "./utils/Terraform/terraformIacProvider";
 import { IacActiveVersionItem } from "./view/statusbar/iacVersionItem";
@@ -68,8 +71,12 @@ export async function activate(context: vscode.ExtensionContext) {
   let iacProvider: IIaCProvider;
   let primaryVersionManager: IversionManager;
   let setVersionCommand: string;
+  const envPathHelper = new PathEnvironmentHelper(context);
   const terraformIacProvider = new TerraformProvider();
   const opentofuIacProvider = new OpenTofuProvider();
+
+  const activeBinariesPath = path.join(os.homedir(), cst.EXTENSION_BINARY_FOLDER_NAME, "active");
+  envPathHelper.addPath(activeBinariesPath);
 
   const terraformVersionManager = new VersionManager(new IacVersionProvider(context, new Octokit({ request: { fetch } }), terraformIacProvider), cst.EXTENSION_BINARY_FOLDER_NAME);
   const opentofuVersionManager = new VersionManager(new IacVersionProvider(context, new Octokit({ request: { fetch } }), opentofuIacProvider), cst.EXTENSION_BINARY_FOLDER_NAME);
@@ -92,7 +99,7 @@ export async function activate(context: vscode.ExtensionContext) {
       throw new Error("IaC provider not supported");
   }
 
-  const iacCli = new IacCli(new Cli(), iacProvider.binaryName);
+  const iacCli = new IacCli(new Cli(envPathHelper), iacProvider.binaryName);
   const iacParser = new IacParser(hcl);
   const iacProjectHelper = new IacProjectHelper(iacParser, iacCli, settings);
 
@@ -118,7 +125,7 @@ export async function activate(context: vscode.ExtensionContext) {
   );
 
   // Init spacelift commands if spacelift is configured
-  spacectlInit(settings).then(([spaceliftClient, spacectlInstance, tenantID, authenticationHandler]) => {
+  spacectlInit(settings, new Cli(envPathHelper)).then(([spaceliftClient, spacectlInstance, tenantID, authenticationHandler]) => {
     new RunSpacectlLocalPreviewCurrentStackCommand(context, { command: cst.COMMAND_LOCAL_PREVIEW_CURRENT_STACK, checkInternetConnection: true }, spaceliftClient, spacectlInstance);
     new RunSpacectlLocalPreviewCommand(context, { command: cst.COMMAND_LOCAL_PREVIEW, checkInternetConnection: true }, spaceliftClient, spacectlInstance);
     const openSpaceliftWebPortalCommand = "openSpaceliftWebPortal";
@@ -294,9 +301,9 @@ function createCommandAlias(alias: string, command: string) {
   vscode.commands.registerCommand(alias, () => vscode.commands.executeCommand(command));
 }
 
-async function spacectlInit(settings: Settings): Promise<[IspaceliftClient, ISpacectl, string, SpaceliftAuthenticationHandler]> {
+async function spacectlInit(settings: Settings, cli: ICli): Promise<[IspaceliftClient, ISpacectl, string, SpaceliftAuthenticationHandler]> {
   const spacectlProfileName = settings.spacectlProfileName.value;
-  const spacectlInstance = new Spacectl(new Cli());
+  const spacectlInstance = new Spacectl(cli);
   if (spacectlProfileName !== null && spacectlProfileName !== undefined) {
     await spacectlInstance.setUserprofile(spacectlProfileName);
   }
@@ -309,7 +316,7 @@ async function spacectlInit(settings: Settings): Promise<[IspaceliftClient, ISpa
     spaceliftTenantID = settings.spaceliftTenantID.value;
   }
   const spaceliftEndpoint = `https://${spaceliftTenantID}${cst.SPACELIFT_BASE_DOMAIN}/graphql`;
-  const authenticationHandler = new SpaceliftAuthenticationHandler(spacectlInstance, spacectlInstance, new GraphQLClient(spaceliftEndpoint));
+  const authenticationHandler = new SpaceliftAuthenticationHandler(spacectlInstance, new GraphQLClient(spaceliftEndpoint));
   const spacelift = new SpaceliftClient(new GraphQLClient(spaceliftEndpoint), authenticationHandler);
   return [spacelift, spacectlInstance, spaceliftTenantID, authenticationHandler];
 }

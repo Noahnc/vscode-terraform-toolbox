@@ -3,7 +3,7 @@ import * as constants from "../../constants";
 import { UserShownError } from "../../custom_errors";
 import { SpaceliftJwt } from "../../models/spacelift/jwt";
 import { Stack } from "../../models/spacelift/stack";
-import { ICli } from "../cli";
+import { ICli } from "../Cli/cli";
 import { getLogger } from "../logger";
 
 export interface ISpacectl {
