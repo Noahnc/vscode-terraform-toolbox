@@ -246,7 +246,7 @@
     "hcl2-parser": "^1.0.3",
     "jest": "^29.7.0",
     "jwt-decode": "^4.0.0",
-    "octokit": "^3.2.1",
+    "octokit": "^4.0.2",
     "semver": "^7.6.2",
     "wget-improved": "^3.4.0"
   }
