@@ -7,7 +7,7 @@
     "url": "https://github.com/Noahnc/vscode-terraform-toolbox"
   },
   "description": "VSCode extension adding a bunch of featurees regarding Terraform / OpenTofu and Spacelift.",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "icon": "Images/terraform_toolbox_icon.png",
   "engines": {
     "vscode": "^1.83.0"
@@ -224,15 +224,15 @@
     "@types/glob": "^8.1.0",
     "@types/mocha": "^10.0.6",
     "@types/node": "20.x",
-    "@types/node-fetch": "^2.6.9",
+    "@types/node-fetch": "^2.6.11",
     "@types/vscode": "^1.83.0",
     "@typescript-eslint/eslint-plugin": "^7.8.0",
-    "@typescript-eslint/parser": "^7.10.0",
+    "@typescript-eslint/parser": "^7.18.0",
     "@vscode/test-electron": "^2.3.10",
     "chai": "^5.1.1",
     "chai-as-promised": "^7.1.2",
     "depcheck": "^1.4.6",
-    "esbuild": "^0.20.2",
+    "esbuild": "^0.23.1",
     "eslint": "^8.57.0",
     "glob": "^10.4.1",
     "mocha": "^10.4.0",
@@ -240,14 +240,14 @@
   },
   "dependencies": {
     "@vscode-logging/wrapper": "^2.0.0",
-    "axios": "1.6.8",
+    "axios": "1.7.5",
     "decompress": "^4.2.1",
     "graphql-request": "^6.1.0",
     "hcl2-parser": "^1.0.3",
     "jest": "^29.7.0",
     "jwt-decode": "^4.0.0",
     "octokit": "^3.2.1",
-    "semver": "^7.5.3",
+    "semver": "^7.6.2",
     "wget-improved": "^3.4.0"
   }
 }

@@ -7,14 +7,13 @@ VSCode extension adding a bunch of featurees regarding Terraform / OpenTofu and 
 - [Terraform-Toolbox VSCode Extension](#terraform-toolbox-vscode-extension)
   - [Motivation](#motivation)
   - [Getting startet](#getting-startet)
-    - [Terraform / OpenTofu version manager](#terraform--opentofu-version-manager)
     - [Spacelift](#spacelift)
   - [Breaking changes](#breaking-changes)
     - [0.4.0](#040)
   - [Supported platforms](#supported-platforms)
   - [IaC Providers](#iac-providers)
   - [Features](#features)
-    - [Terraform / OpenTofu version manager](#terraform--opentofu-version-manager-1)
+    - [Terraform / OpenTofu version manager](#terraform--opentofu-version-manager)
     - [Terraform / OpenTofu workspace](#terraform--opentofu-workspace)
     - [Terraform / OpenTofu Init](#terraform--opentofu-init)
       - [Auto-install providers](#auto-install-providers)
@@ -29,16 +28,6 @@ The main motivation behind building this extension was to improve the IaC workfl
 ## Getting startet
 
 The following features require manual configuration and installation steps:
-
-### Terraform / OpenTofu version manager
-
-The following requirements must be met for the version manager to work:
-
-- Active Terraform or OpenTofu versions are stored in the following folder:
-  - Windows: `%USERPROFILE%\.terraform-toolbox\active`
-  - Mac: `$HOME/.terraform-toolbox/active`
-
-This folder must be added to your path. Also, make sure that you have no other Terraform or OpenTofu binaries in your path.
 
 ### Spacelift
 
@@ -80,11 +69,16 @@ The extension supports both Terraform and OpenTofu as IaC providers. Terraform w
 
 ### Terraform / OpenTofu version manager
 
-This extension adds version managers for both Terraform and OpenTofu. They allow you to install and switch between any terraform or OpenTofu version available, including betas, alphas, and rc.
+This extension adds version managers for both Terraform and OpenTofu. They allow you to install and switch between any Terraform or OpenTofu version available, including betas, alphas, and rc.
 
-In case of Terraform, binaries are downloaded from `https://releases.hashicorp.com/terraform`. The active binary is stored in the following folder: `%USERPROFILE%\.terraform-toolbox/active` (Windows) or `$HOME/.terraform-toolbox/active` (Mac). Not active but installed versions are stored in `$HOME/.terraform-toolbox/terraform` (Mac) or `%USERPROFILE%\.terraform-toolbox\terraform` (Windows).
+The following overview shows where the OpenTofu and Terraform binaries are stored on your system:
 
-For OpenTofu, binaries are downloaded from the official OpenTofu GitHub releases page. The active binary is stored in the following folder: `%USERPROFILE%\.terraform-toolbox/active` (Windows) or `$HOME/.terraform-toolbox/active` (Mac). Not active but installed versions are stored in `$HOME/.terraform-toolbox/opentofu` (Mac) or `%USERPROFILE%\.terraform-toolbox\opentofu` (Windows).
+| Name      | Active binary (Windows)                   | Active binary (Mac)               | Installed binaries (Windows)                 | Installed binaries (Mac)             |
+| --------- | ----------------------------------------- | --------------------------------- | -------------------------------------------- | ------------------------------------ |
+| Terraform | `%USERPROFILE%\.terraform-toolbox\active` | `$HOME/.terraform-toolbox/active` | `%USERPROFILE%\.terraform-toolbox\terraform` | `$HOME/.terraform-toolbox/terraform` |
+| OpenTofu  | `%USERPROFILE%\.terraform-toolbox\active` | `$HOME/.terraform-toolbox/active` | `%USERPROFILE%\.terraform-toolbox\opentofu`  | `$HOME/.terraform-toolbox/opentofu`  |
+
+For all terminals opened by VSCode, the PATH variable is automatically extended. This allows you to use the active Terraform / OpenTofu binary in all terminals opened by VSCode. If you want to use the active Terraform / OpenTofu binary outside VSCode, you have to add the directory to your global PATH variable.
 
 - Command [`tftoolbox.iac.setVersion`]: Select and install a specific version for the active IaC Provider.
   ![terraform-version](Images/examples/terraform_version.gif)
@@ -120,7 +114,7 @@ Since the init command is required for many features of the official Hashicorp T
 
 #### Auto-install providers
 
-By enabling the setting `tftoolbox.iac.enableAutoProviderInitialization`, the extension will automatically initialize a terraform / opentofu project when a changed .tf file contains a provider version constraint for which no provider is currently installed. The extension will then run terraform / opentofu init in that folder.
+By enabling the setting `tftoolbox.iac.enableAutoProviderInitialization`, the extension will automatically initialize a terraform / opentofu project when a changed .tf file contains a provider version constraint for which no provider is currently installed. The extension will then run terraform / opentofu init in that folder. The folder has to be initialized manually for the first time to be considered for auto-initialization.
 
 > [!IMPORTANT]  
 > This feature is experimental and might use lots of system resources when switching branches in git with many provider version changes. It is also not recommended to use in combination with the vscode setting `Auto Save: afterDelay`. Instead, use the setting `Auto Save: onFocusChange` or `Auto Save: onWindowChange`.

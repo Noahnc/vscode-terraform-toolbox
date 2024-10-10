@@ -95,7 +95,12 @@ export class IacProjectHelper implements IIacProjectHelper {
   async checkFolderHasBeenInitialized(folder: PathObject): Promise<boolean> {
     const tfFolder = folder.join(this.tfrcFolder);
     if (!(await tfFolder.exists())) {
-      getLogger().debug(`Folder ${folder.path} contains no .terraform folder and is therefore not initialized`);
+      getLogger().trace(`Folder ${folder.path} contains no .terraform folder and is therefore not initialized`);
+      return false;
+    }
+    const tfLockFile = folder.join(this.tflockFileName);
+    if (!(await tfLockFile.exists())) {
+      getLogger().trace(`Folder ${folder.path} has no terraform lock file and is therefore not initialized`);
       return false;
     }
     return true;

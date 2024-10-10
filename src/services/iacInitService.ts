@@ -50,6 +50,12 @@ export class IacInitService {
 
     const file = new PathObject(uri.fsPath);
     const directory = file.directory;
+
+    if (!(await this.iacHelper.checkFolderHasBeenInitialized(directory))) {
+      getLogger().trace(`${directory.path} is not initialized yet. If you want to auto install providers and modules, init the project first.`);
+      return;
+    }
+
     let semaphore: AsyncSemaphore | undefined;
     semaphore = this.directoryLocks.get(file.directory.path);
     if (semaphore === undefined) {

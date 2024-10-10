@@ -20,19 +20,17 @@ export interface ISpaceliftAuthenticationHandler {
 
 export class SpaceliftAuthenticationHandler implements ISpaceliftAuthenticationHandler {
   private spacectl: ISpacectl;
-  private cli: ISpacectl;
   private spaceliftJwt: SpaceliftJwt | undefined;
   private graphQlClient: GraphQLClient;
 
-  constructor(spacectl: ISpacectl, cli: ISpacectl, graphqlClient: GraphQLClient) {
+  constructor(spacectl: ISpacectl, graphqlClient: GraphQLClient) {
     this.spacectl = spacectl;
-    this.cli = cli;
     this.graphQlClient = graphqlClient;
   }
 
   async checkTokenValid(): Promise<boolean> {
     if (this.spaceliftJwt === undefined) {
-      this.spaceliftJwt = await this.cli.getExportedToken();
+      this.spaceliftJwt = await this.spacectl.getExportedToken();
     }
     if (this.spaceliftJwt.isExpired()) {
       return false;
@@ -98,20 +96,20 @@ export class SpaceliftAuthenticationHandler implements ISpaceliftAuthenticationH
           vscode.window.showWarningMessage("Spacectl login cancelled");
           return false;
         });
-        return await this.cli.loginInteractive();
+        return await this.spacectl.loginInteractive();
       }
     );
     if (loginResult === false) {
       return false;
     }
-    this.spaceliftJwt = await this.cli.getExportedToken();
+    this.spaceliftJwt = await this.spacectl.getExportedToken();
     return true;
   }
 
   async getToken(): Promise<SpaceliftJwt | null> {
     if (this.spaceliftJwt === undefined) {
       getLogger().debug("No spacelift token cached, trying export from spacectl");
-      this.spaceliftJwt = await this.cli.getExportedToken();
+      this.spaceliftJwt = await this.spacectl.getExportedToken();
       if (await this.checkTokenValid()) {
         getLogger().debug("Got valid spacelift token from spacectl");
         return this.spaceliftJwt;
@@ -126,7 +124,7 @@ export class SpaceliftAuthenticationHandler implements ISpaceliftAuthenticationH
     }
 
     getLogger().debug("Cached spacelift token is not valid, trying to get new token from spacectl");
-    this.spaceliftJwt = await this.cli.getExportedToken();
+    this.spaceliftJwt = await this.spacectl.getExportedToken();
 
     if (await this.checkTokenValid()) {
       getLogger().debug("Got valid spacelift token from spacectl");
