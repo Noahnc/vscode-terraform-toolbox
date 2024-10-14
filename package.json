@@ -242,7 +242,7 @@
     "@vscode-logging/wrapper": "^2.0.0",
     "axios": "1.7.5",
     "decompress": "^4.2.1",
-    "graphql-request": "^6.1.0",
+    "graphql-request": "^7.1.0",
     "hcl2-parser": "^1.0.3",
     "jest": "^29.7.0",
     "jwt-decode": "^4.0.0",
